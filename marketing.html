@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIS — Marketing</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="logo-mark">FIS</div>
+    <div class="nav-section-label">MAIN</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">⬡</span><span class="nav-label">Dashboard</span></a>
+    <a href="readiness.html" class="nav-item"><span class="nav-icon">💚</span><span class="nav-label">Player Readiness</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">OPERATIONS</div>
+    <a href="roster.html" class="nav-item"><span class="nav-icon">👥</span><span class="nav-label">Roster</span></a>
+    <a href="recruiting.html" class="nav-item"><span class="nav-icon">🎯</span><span class="nav-label">Recruiting</span></a>
+    <a href="schedule.html" class="nav-item"><span class="nav-icon">📅</span><span class="nav-label">Schedule</span></a>
+    <a href="tasks.html" class="nav-item"><span class="nav-icon">✅</span><span class="nav-label">Staff Tasks</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">SPORT SCIENCE</div>
+    <a href="training.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Training & Load</span></a>
+    <a href="opponents.html" class="nav-item"><span class="nav-icon">🔍</span><span class="nav-label">Opponents</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">PROGRAM</div>
+    <a href="academics.html" class="nav-item"><span class="nav-icon">🎓</span><span class="nav-label">Academics</span></a>
+    <a href="budget.html" class="nav-item"><span class="nav-icon">💰</span><span class="nav-label">Budget</span></a>
+    <a href="marketing.html" class="nav-item active"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
+    <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
+    <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+  </nav>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">MARKETING <span>KPIs</span></div>
+      <div class="topbar-actions">
+        <button class="btn btn-gold" onclick="openAddModal()">+ Log Weekly KPIs</button>
+        <div class="avatar">HC</div>
+      </div>
+    </header>
+    <div class="page">
+      <div class="stats-row" style="margin-bottom:20px;">
+        <div class="stat-card" style="--accent:var(--blue);"><div class="stat-icon">👥</div><div class="stat-label">Total Followers</div><div class="stat-value" id="m-followers" style="color:var(--blue);">—</div></div>
+        <div class="stat-card" style="--accent:var(--gold);"><div class="stat-icon">👁</div><div class="stat-label">Avg Weekly Reach</div><div class="stat-value" id="m-reach" style="color:var(--gold2);">—</div></div>
+        <div class="stat-card" style="--accent:var(--green);"><div class="stat-icon">❤️</div><div class="stat-label">Avg Engagement</div><div class="stat-value" id="m-engage" style="color:var(--green);">—</div></div>
+        <div class="stat-card" style="--accent:var(--slate);"><div class="stat-icon">📅</div><div class="stat-label">Weeks Tracked</div><div class="stat-value" id="m-weeks" style="color:var(--slate2);">—</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="dot"></div>Weekly KPI Log</div>
+          <select class="form-select" id="platformFilter" onchange="loadMarketing()" style="width:140px;padding:5px 8px;">
+            <option value="">All Platforms</option>
+            <option>Instagram</option><option>Twitter/X</option><option>TikTok</option><option>Facebook</option>
+          </select>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <table class="data-table">
+            <thead><tr><th>Week</th><th>Platform</th><th>Followers</th><th>Reach</th><th>Engagement %</th><th>Top Post</th><th>Notes</th></tr></thead>
+            <tbody id="mktBody"><tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-title">📣 Log Weekly KPIs</div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Week (Date)</label><input class="form-input" id="m-week" type="date"></div>
+      <div class="form-group"><label class="form-label">Platform</label>
+        <select class="form-select" id="m-platform"><option>Instagram</option><option>Twitter/X</option><option>TikTok</option><option>Facebook</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Followers</label><input class="form-input" id="m-foll" type="number" placeholder="2400"></div>
+      <div class="form-group"><label class="form-label">Reach</label><input class="form-input" id="m-reach-in" type="number" placeholder="12000"></div>
+      <div class="form-group"><label class="form-label">Engagement Rate (%)</label><input class="form-input" id="m-eng" type="number" step="0.1" placeholder="4.2"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Top Post</label><input class="form-input" id="m-top" placeholder="e.g. Match day hype video — 847 likes"></div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="m-notes"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="addKPI()">Save KPIs</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="config.js"></script>
+<script>
+function showToast(msg,dur=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function closeModal(){document.getElementById('addModal').classList.remove('open');}
+
+async function loadMarketing() {
+  const plat = document.getElementById('platformFilter').value;
+  try {
+    const params = { sort:[{field:'Week',direction:'desc'}] };
+    if (plat) params.filterByFormula = `{Platform}="${plat}"`;
+    const records = await airtableFetch(FIS_CONFIG.TABLES.MARKETING, params);
+
+    const followers = records.map(r => parseFloat(r.fields['Followers']||0));
+    const reaches = records.map(r => parseFloat(r.fields['Reach']||0)).filter(x=>x>0);
+    const engages = records.map(r => parseFloat(r.fields['Engagement Rate']||0)).filter(x=>x>0);
+
+    document.getElementById('m-followers').textContent = followers.length ? Math.max(...followers).toLocaleString() : '—';
+    document.getElementById('m-reach').textContent = reaches.length ? Math.round(reaches.reduce((a,b)=>a+b,0)/reaches.length).toLocaleString() : '—';
+    document.getElementById('m-engage').textContent = engages.length ? (engages.reduce((a,b)=>a+b,0)/engages.length).toFixed(1)+'%' : '—';
+    document.getElementById('m-weeks').textContent = records.length;
+
+    const tbody = document.getElementById('mktBody');
+    tbody.innerHTML = records.length ? records.map(r => {
+      const f = r.fields;
+      const eng = parseFloat(f['Engagement Rate']||0);
+      const engColor = eng >= 5 ? 'var(--green)' : eng >= 2 ? 'var(--yellow)' : 'var(--red)';
+      const platIcon = {'Instagram':'📸','Twitter/X':'🐦','TikTok':'🎵','Facebook':'📘'}[f['Platform']] || '📱';
+      return `<tr>
+        <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);">${f['Week']||'—'}</td>
+        <td><span class="pill pill-blue">${platIcon} ${f['Platform']||'—'}</span></td>
+        <td style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;color:var(--white);">${parseFloat(f['Followers']||0).toLocaleString()}</td>
+        <td style="color:var(--slate2);">${parseFloat(f['Reach']||0).toLocaleString()}</td>
+        <td style="font-weight:700;color:${engColor};">${f['Engagement Rate'] ? f['Engagement Rate']+'%' : '—'}</td>
+        <td style="font-size:11px;color:var(--slate2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f['Top Post']||''}</td>
+        <td style="font-size:11px;color:var(--slate);">${f['Notes']||''}</td>
+      </tr>`;
+    }).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-text">No KPI data yet — log your first week</div></div></td></tr>';
+  } catch(e) {
+    document.getElementById('mktBody').innerHTML = `<tr><td colspan="7" style="color:var(--red);padding:16px;">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function openAddModal(){document.getElementById('m-week').value=new Date().toISOString().split('T')[0];document.getElementById('addModal').classList.add('open');}
+async function addKPI(){
+  try {
+    await airtableCreate(FIS_CONFIG.TABLES.MARKETING,{
+      'Week':document.getElementById('m-week').value,
+      'Platform':document.getElementById('m-platform').value,
+      'Followers':parseInt(document.getElementById('m-foll').value)||null,
+      'Reach':parseInt(document.getElementById('m-reach-in').value)||null,
+      'Engagement Rate':parseFloat(document.getElementById('m-eng').value)||null,
+      'Top Post':document.getElementById('m-top').value,
+      'Notes':document.getElementById('m-notes').value,
+    });
+    closeModal();showToast('KPIs logged ✓');loadMarketing();
+  } catch(e){showToast(`Error: ${e.message}`);}
+}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+loadMarketing();
+</script>
+</body>
+</html>

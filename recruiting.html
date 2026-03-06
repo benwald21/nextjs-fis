@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIS — Recruiting</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="logo-mark">FIS</div>
+    <div class="nav-section-label">MAIN</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">⬡</span><span class="nav-label">Dashboard</span></a>
+    <a href="readiness.html" class="nav-item"><span class="nav-icon">💚</span><span class="nav-label">Player Readiness</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">OPERATIONS</div>
+    <a href="roster.html" class="nav-item"><span class="nav-icon">👥</span><span class="nav-label">Roster</span></a>
+    <a href="recruiting.html" class="nav-item active"><span class="nav-icon">🎯</span><span class="nav-label">Recruiting</span></a>
+    <a href="schedule.html" class="nav-item"><span class="nav-icon">📅</span><span class="nav-label">Schedule</span></a>
+    <a href="tasks.html" class="nav-item"><span class="nav-icon">✅</span><span class="nav-label">Staff Tasks</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">SPORT SCIENCE</div>
+    <a href="training.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Training &amp; Load</span></a>
+    <a href="opponents.html" class="nav-item"><span class="nav-icon">🔍</span><span class="nav-label">Opponents</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">PROGRAM</div>
+    <a href="academics.html" class="nav-item"><span class="nav-icon">🎓</span><span class="nav-label">Academics</span></a>
+    <a href="budget.html" class="nav-item"><span class="nav-icon">💰</span><span class="nav-label">Budget</span></a>
+    <a href="marketing.html" class="nav-item"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
+    <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
+    <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+  </nav>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">RECRUITING <span>PIPELINE</span></div>
+      <div class="topbar-actions">
+        <select class="form-select" id="classFilter" onchange="loadPipeline()" style="width:140px;">
+          <option value="">All Classes</option>
+          <option>2026</option><option>2027</option><option>2028</option><option>2029</option>
+        </select>
+        <select class="form-select" id="posFilter" onchange="loadPipeline()" style="width:120px;">
+          <option value="">All Positions</option>
+          <option>GK</option><option>CB</option><option>RB</option><option>LB</option>
+          <option>CDM</option><option>CM</option><option>RW</option><option>LW</option><option>ST</option>
+        </select>
+        <button class="btn btn-gold" onclick="openAddModal()">+ Add Prospect</button>
+        <div class="avatar">HC</div>
+      </div>
+    </header>
+    <div class="page">
+      <!-- STATS -->
+      <div class="stats-row" style="margin-bottom:20px;">
+        <div class="stat-card" style="--accent:var(--blue);">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-label">Total Pipeline</div>
+          <div class="stat-value" id="stat-total" style="color:var(--blue);">—</div>
+          <div class="stat-delta">Active prospects</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--gold);">
+          <div class="stat-icon">📋</div>
+          <div class="stat-label">Offers Out</div>
+          <div class="stat-value" id="stat-offered" style="color:var(--gold2);">—</div>
+          <div class="stat-delta">Awaiting decision</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--green);">
+          <div class="stat-icon">✅</div>
+          <div class="stat-label">Committed</div>
+          <div class="stat-value" id="stat-committed" style="color:var(--green);">—</div>
+          <div class="stat-delta">Verbal commits</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--purple,#c864f0);">
+          <div class="stat-icon">✍️</div>
+          <div class="stat-label">Signed</div>
+          <div class="stat-value" id="stat-signed" style="color:#c864f0;">—</div>
+          <div class="stat-delta">NLI signed</div>
+        </div>
+      </div>
+
+      <!-- KANBAN -->
+      <div class="kanban-board" id="kanbanBoard">
+        <div class="loading"><div class="spinner"></div> Loading pipeline...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD PROSPECT MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal" style="width:580px;">
+    <div class="modal-title">🎯 Add Prospect</div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Prospect Name *</label><input class="form-input" id="p-name" placeholder="Last, First"></div>
+      <div class="form-group"><label class="form-label">Class Year</label>
+        <select class="form-select" id="p-class"><option>2026</option><option>2027</option><option>2028</option><option>2029</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Position</label>
+        <select class="form-select" id="p-pos"><option>GK</option><option>RB</option><option>CB</option><option>LB</option><option>CDM</option><option>CM</option><option>RW</option><option>LW</option><option>ST</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Stage</label>
+        <select class="form-select" id="p-stage">
+          <option>Identified</option><option>Contacted</option><option>Engaged</option>
+          <option>Campus Visit</option><option>Offered</option><option>Committed</option><option>Signed</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">National Rank</label><input class="form-input" id="p-rank" type="number" placeholder="e.g. 142"></div>
+      <div class="form-group"><label class="form-label">GPA</label><input class="form-input" id="p-gpa" type="number" step="0.01" placeholder="3.85"></div>
+      <div class="form-group"><label class="form-label">Hometown</label><input class="form-input" id="p-hometown" placeholder="City, State"></div>
+      <div class="form-group"><label class="form-label">AI Fit Score (1-10)</label><input class="form-input" id="p-fit" type="number" min="1" max="10" placeholder="8"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Wyscout Profile URL</label><input class="form-input" id="p-wyscout" placeholder="https://..."></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="addProspect()">Add to Pipeline</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROSPECT DETAIL MODAL -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-title" id="d-name"></div>
+    <div class="grid-2" style="margin-bottom:14px;">
+      <div><div class="form-label">Class Year</div><div id="d-class" style="font-size:14px;color:var(--white);"></div></div>
+      <div><div class="form-label">Position</div><div id="d-pos"></div></div>
+      <div><div class="form-label">Current Stage</div><div id="d-stage"></div></div>
+      <div><div class="form-label">National Rank</div><div id="d-rank" style="font-size:14px;color:var(--white);"></div></div>
+      <div><div class="form-label">GPA</div><div id="d-gpa" style="font-size:14px;color:var(--white);"></div></div>
+      <div><div class="form-label">AI Fit Score</div><div id="d-fit" style="font-size:22px;font-family:'Barlow Condensed',sans-serif;font-weight:800;color:var(--gold2);"></div></div>
+      <div><div class="form-label">Hometown</div><div id="d-hometown" style="font-size:13px;color:var(--white);"></div></div>
+      <div><div class="form-label">Last Contact</div><div id="d-contact" style="font-size:13px;color:var(--slate);"></div></div>
+    </div>
+    <div><div class="form-label">Move to Stage</div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:6px;" id="stageBtns"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeDetailModal()">Close</button>
+      <button class="btn btn-gold" id="wyscoutBtn" style="display:none;">View on Wyscout ↗</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="config.js"></script>
+<script>
+const STAGES = ['Identified','Contacted','Engaged','Campus Visit','Offered','Committed','Signed','Not Pursuing'];
+const STAGE_COLORS = { 'Identified':'var(--slate)','Contacted':'var(--blue)','Engaged':'var(--gold2)','Campus Visit':'var(--yellow)','Offered':'var(--purple,#c864f0)','Committed':'var(--green)','Signed':'var(--green)','Not Pursuing':'var(--red)' };
+let allProspects = [];
+let currentProspectId = null;
+
+function showToast(msg, dur=2800) {
+  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+async function loadPipeline() {
+  const board = document.getElementById('kanbanBoard');
+  board.innerHTML = `<div class="loading"><div class="spinner"></div></div>`;
+  const classFilter = document.getElementById('classFilter').value;
+  const posFilter = document.getElementById('posFilter').value;
+
+  try {
+    allProspects = await airtableFetch(FIS_CONFIG.TABLES.PROSPECTS, {
+      sort: [{ field: 'Prospect Name', direction: 'asc' }]
+    });
+
+    let filtered = allProspects.filter(p => p.fields['Stage'] !== 'Not Pursuing');
+    if (classFilter) filtered = filtered.filter(p => String(p.fields['Class Year']) === classFilter);
+    if (posFilter) filtered = filtered.filter(p => p.fields['Position'] === posFilter);
+
+    // Stats
+    document.getElementById('stat-total').textContent = filtered.length;
+    document.getElementById('stat-offered').textContent = filtered.filter(p => p.fields['Stage'] === 'Offered').length;
+    document.getElementById('stat-committed').textContent = filtered.filter(p => p.fields['Stage'] === 'Committed').length;
+    document.getElementById('stat-signed').textContent = filtered.filter(p => p.fields['Stage'] === 'Signed').length;
+
+    // Build kanban
+    const activeStages = STAGES.filter(s => s !== 'Not Pursuing');
+    board.innerHTML = activeStages.map(stage => {
+      const cards = filtered.filter(p => p.fields['Stage'] === stage);
+      return `<div class="kanban-col">
+        <div class="kanban-col-head" style="border-top:3px solid ${STAGE_COLORS[stage]};">
+          ${stage} <span class="kanban-col-count">${cards.length}</span>
+        </div>
+        <div class="kanban-cards">
+          ${cards.length ? cards.map(p => {
+            const f = p.fields;
+            return `<div class="kanban-card" onclick="openDetail('${p.id}')">
+              <div class="kanban-card-name">${f['Prospect Name'] || '—'}</div>
+              <div class="kanban-card-meta">
+                <span>${f['Position'] || '—'}</span>
+                <span>·</span>
+                <span>Class of ${f['Class Year'] || '—'}</span>
+                ${f['National Rank'] ? `<span>· Rank #${f['National Rank']}</span>` : ''}
+                ${f['AI Fit Score'] ? `<span style="margin-left:auto;color:var(--gold2);font-weight:700;">FIT: ${f['AI Fit Score']}/10</span>` : ''}
+              </div>
+            </div>`;
+          }).join('') : '<div style="text-align:center;padding:20px;color:var(--slate);font-size:12px;">Empty</div>'}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    board.innerHTML = `<div style="color:var(--red);padding:20px;">Error loading pipeline: ${e.message}</div>`;
+  }
+}
+
+function openDetail(id) {
+  currentProspectId = id;
+  const p = allProspects.find(x => x.id === id);
+  if (!p) return;
+  const f = p.fields;
+  document.getElementById('d-name').textContent = f['Prospect Name'] || '—';
+  document.getElementById('d-class').textContent = f['Class Year'] ? `Class of ${f['Class Year']}` : '—';
+  document.getElementById('d-pos').innerHTML = `<span class="pill pill-slate">${f['Position']||'—'}</span>`;
+  document.getElementById('d-stage').innerHTML = `<span style="color:${STAGE_COLORS[f['Stage']]||'var(--slate)'};font-weight:700;">${f['Stage']||'—'}</span>`;
+  document.getElementById('d-rank').textContent = f['National Rank'] ? `#${f['National Rank']}` : 'Unranked';
+  document.getElementById('d-gpa').textContent = f['GPA'] || '—';
+  document.getElementById('d-fit').textContent = f['AI Fit Score'] ? `${f['AI Fit Score']}/10` : '—';
+  document.getElementById('d-hometown').textContent = f['Hometown'] || '—';
+  document.getElementById('d-contact').textContent = f['Last Contact'] || 'No contact logged';
+
+  const stageBtns = document.getElementById('stageBtns');
+  stageBtns.innerHTML = STAGES.map(s => `<button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;${s===f['Stage']?'border-color:var(--gold);color:var(--gold2);':''}" onclick="moveToStage('${s}')">${s}</button>`).join('');
+
+  const wb = document.getElementById('wyscoutBtn');
+  if (f['Wyscout Profile URL']) { wb.style.display='block'; wb.onclick=()=>window.open(f['Wyscout Profile URL'],'_blank'); }
+  else wb.style.display='none';
+
+  document.getElementById('detailModal').classList.add('open');
+}
+
+async function moveToStage(stage) {
+  if (!currentProspectId) return;
+  try {
+    await airtableUpdate(FIS_CONFIG.TABLES.PROSPECTS, currentProspectId, { 'Stage': stage });
+    showToast(`Moved to ${stage} ✓`);
+    closeDetailModal();
+    loadPipeline();
+  } catch(e) { showToast(`Error: ${e.message}`); }
+}
+
+function openAddModal() { document.getElementById('addModal').classList.add('open'); }
+function closeModal() { document.getElementById('addModal').classList.remove('open'); }
+function closeDetailModal() { document.getElementById('detailModal').classList.remove('open'); currentProspectId = null; }
+
+async function addProspect() {
+  const name = document.getElementById('p-name').value.trim();
+  if (!name) { showToast('Prospect name is required'); return; }
+  try {
+    await airtableCreate(FIS_CONFIG.TABLES.PROSPECTS, {
+      'Prospect Name': name,
+      'Class Year': document.getElementById('p-class').value,
+      'Position': document.getElementById('p-pos').value,
+      'Stage': document.getElementById('p-stage').value,
+      'National Rank': parseInt(document.getElementById('p-rank').value) || null,
+      'GPA': parseFloat(document.getElementById('p-gpa').value) || null,
+      'Hometown': document.getElementById('p-hometown').value,
+      'AI Fit Score': parseFloat(document.getElementById('p-fit').value) || null,
+      'Wyscout Profile URL': document.getElementById('p-wyscout').value,
+    });
+    closeModal();
+    showToast(`${name} added to pipeline ✓`);
+    loadPipeline();
+  } catch(e) { showToast(`Error: ${e.message}`); }
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) { o.classList.remove('open'); currentProspectId=null; } });
+});
+
+loadPipeline();
+</script>
+</body>
+</html>

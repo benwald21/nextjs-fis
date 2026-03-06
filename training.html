@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIS — Training</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="logo-mark">FIS</div>
+    <div class="nav-section-label">MAIN</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">⬡</span><span class="nav-label">Dashboard</span></a>
+    <a href="readiness.html" class="nav-item"><span class="nav-icon">💚</span><span class="nav-label">Player Readiness</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">OPERATIONS</div>
+    <a href="roster.html" class="nav-item"><span class="nav-icon">👥</span><span class="nav-label">Roster</span></a>
+    <a href="recruiting.html" class="nav-item"><span class="nav-icon">🎯</span><span class="nav-label">Recruiting</span></a>
+    <a href="schedule.html" class="nav-item"><span class="nav-icon">📅</span><span class="nav-label">Schedule</span></a>
+    <a href="tasks.html" class="nav-item"><span class="nav-icon">✅</span><span class="nav-label">Staff Tasks</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">SPORT SCIENCE</div>
+    <a href="training.html" class="nav-item active"><span class="nav-icon">⚡</span><span class="nav-label">Training & Load</span></a>
+    <a href="opponents.html" class="nav-item"><span class="nav-icon">🔍</span><span class="nav-label">Opponents</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">PROGRAM</div>
+    <a href="academics.html" class="nav-item"><span class="nav-icon">🎓</span><span class="nav-label">Academics</span></a>
+    <a href="budget.html" class="nav-item"><span class="nav-icon">💰</span><span class="nav-label">Budget</span></a>
+    <a href="marketing.html" class="nav-item"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
+    <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
+    <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+  </nav>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">TRAINING <span>&amp; LOAD DATA</span></div>
+      <div class="topbar-actions">
+        <button class="btn btn-gold" onclick="openAddSession()">+ Log Session</button>
+        <div class="avatar">HC</div>
+      </div>
+    </header>
+    <div class="page">
+      <div class="stats-row" style="margin-bottom:20px;">
+        <div class="stat-card" style="--accent:var(--blue);"><div class="stat-icon">⚡</div><div class="stat-label">Total Sessions</div><div class="stat-value" id="ts-total" style="color:var(--blue);">—</div></div>
+        <div class="stat-card" style="--accent:var(--gold);"><div class="stat-icon">⏱</div><div class="stat-label">This Week</div><div class="stat-value" id="ts-week" style="color:var(--gold2);">—</div></div>
+        <div class="stat-card" style="--accent:var(--red);"><div class="stat-icon">🔴</div><div class="stat-label">High Load Flags</div><div class="stat-value" id="ts-flags" style="color:var(--red);">—</div></div>
+        <div class="stat-card" style="--accent:var(--green);"><div class="stat-icon">📊</div><div class="stat-label">Load Records</div><div class="stat-value" id="ts-records" style="color:var(--green);">—</div></div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:20px;">
+        <!-- SESSIONS -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><div class="dot"></div>Training Sessions</div>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <table class="data-table">
+              <thead><tr><th>Date</th><th>Session</th><th>Type</th><th>Duration</th><th>Intensity</th><th>Focus</th></tr></thead>
+              <tbody id="sessionsBody"><tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- LOAD DATA -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><div class="dot" style="background:var(--red);"></div>Player Load Data</div>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <table class="data-table">
+              <thead><tr><th>Player</th><th>Distance</th><th>HSR</th><th>Max Speed</th><th>PlayerLoad</th><th>Risk</th></tr></thead>
+              <tbody id="loadBody"><tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD SESSION MODAL -->
+<div class="modal-overlay" id="addSessionModal">
+  <div class="modal">
+    <div class="modal-title">⚡ Log Training Session</div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Session Name *</label><input class="form-input" id="s-name" placeholder="e.g. Pre-Match Activation"></div>
+      <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="s-date" type="date"></div>
+      <div class="form-group"><label class="form-label">Type</label>
+        <select class="form-select" id="s-type">
+          <option>Technical</option><option>Tactical</option><option>Physical</option><option>Recovery</option><option>Pre-Match</option><option>Post-Match</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Duration (min)</label><input class="form-input" id="s-duration" type="number" placeholder="90"></div>
+      <div class="form-group"><label class="form-label">Intensity</label>
+        <select class="form-select" id="s-intensity">
+          <option>Low</option><option>Medium</option><option>High</option><option>Match Intensity</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Focus</label><input class="form-input" id="s-focus" placeholder="e.g. Pressing triggers"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="s-notes"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addSessionModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="addSession()">Log Session</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="config.js"></script>
+<script>
+function showToast(msg,dur=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+function riskPill(risk) {
+  if (!risk) return '';
+  if (risk.includes('HIGH')) return '<span class="pill pill-red">HIGH</span>';
+  if (risk.includes('MOD')) return '<span class="pill pill-yellow">MOD</span>';
+  return '<span class="pill pill-green">OK</span>';
+}
+
+function intensityPill(i) {
+  if (!i) return '—';
+  if (i.includes('High') || i.includes('Match')) return `<span class="pill pill-red">${i}</span>`;
+  if (i.includes('Medium')) return `<span class="pill pill-yellow">${i}</span>`;
+  return `<span class="pill pill-green">${i}</span>`;
+}
+
+async function loadSessions() {
+  try {
+    const sessions = await airtableFetch(FIS_CONFIG.TABLES.TRAINING, {
+      sort: [{ field: 'Date', direction: 'desc' }], maxRecords: 30
+    });
+    // Stats
+    const now = new Date();
+    const weekAgo = new Date(now - 7*86400000).toISOString().split('T')[0];
+    const thisWeek = sessions.filter(s => (s.fields['Date']||'') >= weekAgo);
+    document.getElementById('ts-total').textContent = sessions.length;
+    document.getElementById('ts-week').textContent = thisWeek.length;
+
+    const tbody = document.getElementById('sessionsBody');
+    tbody.innerHTML = sessions.length ? sessions.map(s => {
+      const f = s.fields;
+      return `<tr>
+        <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);">${f['Date']||'—'}</td>
+        <td style="font-weight:600;color:var(--white);">${f['Session Name']||'—'}</td>
+        <td><span class="pill pill-blue">${f['Type']||'—'}</span></td>
+        <td style="color:var(--slate2);">${f['Duration (min)'] ? f['Duration (min)']+'m' : '—'}</td>
+        <td>${intensityPill(f['Intensity'])}</td>
+        <td style="color:var(--slate);font-size:12px;">${f['Focus']||'—'}</td>
+      </tr>`;
+    }).join('') : '<tr><td colspan="6"><div class="empty"><div class="empty-text">No sessions logged yet</div></div></td></tr>';
+  } catch(e) {
+    document.getElementById('sessionsBody').innerHTML = `<tr><td colspan="6" style="color:var(--red);padding:16px;">Error: ${e.message}</td></tr>`;
+  }
+}
+
+async function loadLoadData() {
+  try {
+    const records = await airtableFetch(FIS_CONFIG.TABLES.LOAD, {
+      sort: [{ field: 'PlayerLoad', direction: 'desc' }], maxRecords: 30
+    });
+    const flags = records.filter(r => (r.fields['Load Risk Flag']||'').includes('HIGH'));
+    document.getElementById('ts-flags').textContent = flags.length;
+    document.getElementById('ts-records').textContent = records.length;
+
+    const tbody = document.getElementById('loadBody');
+    tbody.innerHTML = records.length ? records.map(r => {
+      const f = r.fields;
+      const player = Array.isArray(f['Player']) ? f['Player'][0] : (f['Player']||'—');
+      const load = f['PlayerLoad'];
+      let risk = load > 800 ? '🔴 HIGH' : load > 600 ? '🟡 MODERATE' : '🟢 NORMAL';
+      return `<tr>
+        <td style="font-weight:600;color:var(--white);">${player}</td>
+        <td style="color:var(--slate2);">${f['Total Distance (m)'] ? (f['Total Distance (m)']/1000).toFixed(1)+'km' : '—'}</td>
+        <td style="color:var(--blue);">${f['HSR Distance (m)'] ? f['HSR Distance (m)']+'m' : '—'}</td>
+        <td style="color:var(--gold2);">${f['Max Speed (km/h)'] ? f['Max Speed (km/h)']+'km/h' : '—'}</td>
+        <td style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;color:var(--white);">${load||'—'}</td>
+        <td>${riskPill(risk)}</td>
+      </tr>`;
+    }).join('') : '<tr><td colspan="6"><div class="empty"><div class="empty-text">No load data yet. Upload Catapult CSV to Airtable to populate.</div></div></td></tr>';
+  } catch(e) {
+    document.getElementById('loadBody').innerHTML = `<tr><td colspan="6" style="color:var(--red);padding:16px;">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function openAddSession() {
+  document.getElementById('s-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('addSessionModal').classList.add('open');
+}
+
+async function addSession() {
+  const name = document.getElementById('s-name').value.trim();
+  if (!name) { showToast('Session name required'); return; }
+  try {
+    await airtableCreate(FIS_CONFIG.TABLES.TRAINING, {
+      'Session Name': name,
+      'Date': document.getElementById('s-date').value,
+      'Type': document.getElementById('s-type').value,
+      'Duration (min)': parseInt(document.getElementById('s-duration').value)||null,
+      'Intensity': document.getElementById('s-intensity').value,
+      'Focus': document.getElementById('s-focus').value,
+      'Notes': document.getElementById('s-notes').value,
+    });
+    closeModal('addSessionModal');
+    showToast('Session logged ✓');
+    loadSessions();
+  } catch(e) { showToast(`Error: ${e.message}`); }
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
+loadSessions(); loadLoadData();
+</script>
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIS — Player Readiness</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="logo-mark">FIS</div>
+    <div class="nav-section-label">MAIN</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">⬡</span><span class="nav-label">Dashboard</span></a>
+    <a href="readiness.html" class="nav-item active"><span class="nav-icon">💚</span><span class="nav-label">Player Readiness</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">OPERATIONS</div>
+    <a href="roster.html" class="nav-item"><span class="nav-icon">👥</span><span class="nav-label">Roster</span></a>
+    <a href="recruiting.html" class="nav-item"><span class="nav-icon">🎯</span><span class="nav-label">Recruiting</span></a>
+    <a href="schedule.html" class="nav-item"><span class="nav-icon">📅</span><span class="nav-label">Schedule</span></a>
+    <a href="tasks.html" class="nav-item"><span class="nav-icon">✅</span><span class="nav-label">Staff Tasks</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">SPORT SCIENCE</div>
+    <a href="training.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Training &amp; Load</span></a>
+    <a href="opponents.html" class="nav-item"><span class="nav-icon">🔍</span><span class="nav-label">Opponents</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">PROGRAM</div>
+    <a href="academics.html" class="nav-item"><span class="nav-icon">🎓</span><span class="nav-label">Academics</span></a>
+    <a href="budget.html" class="nav-item"><span class="nav-icon">💰</span><span class="nav-label">Budget</span></a>
+    <a href="marketing.html" class="nav-item"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
+    <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
+    <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+  </nav>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">PLAYER <span>READINESS</span></div>
+      <div class="topbar-actions">
+        <button class="btn btn-gold" onclick="openWellnessModal()">+ Wellness Check-in</button>
+        <button class="btn btn-ghost" onclick="openInjuryModal()">+ Log Injury</button>
+        <div class="avatar">HC</div>
+      </div>
+    </header>
+    <div class="page">
+      <!-- STAT CARDS -->
+      <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
+        <div class="stat-card" style="--accent:var(--green);">
+          <div class="stat-icon">✅</div>
+          <div class="stat-label">Available Today</div>
+          <div class="stat-value" id="stat-avail" style="color:var(--green);">—</div>
+          <div class="stat-delta" id="stat-avail-sub">Loading...</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--red);">
+          <div class="stat-icon">🚫</div>
+          <div class="stat-label">Active Injuries</div>
+          <div class="stat-value" id="stat-inj" style="color:var(--red);">—</div>
+          <div class="stat-delta">Currently injured</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--yellow);">
+          <div class="stat-icon">⚡</div>
+          <div class="stat-label">Limited</div>
+          <div class="stat-value" id="stat-limit" style="color:var(--yellow);">—</div>
+          <div class="stat-delta">Modified training</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--blue);">
+          <div class="stat-icon">💚</div>
+          <div class="stat-label">Check-ins Today</div>
+          <div class="stat-value" id="stat-checkins" style="color:var(--blue);">—</div>
+          <div class="stat-delta" id="stat-checkins-sub">Wellness submissions</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:20px;">
+        <!-- WELLNESS TABLE -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><div class="dot" style="background:var(--green);"></div>Today's Wellness Check-ins</div>
+            <select class="form-select" id="wellnessDateFilter" style="width:140px;padding:5px 8px;" onchange="loadWellness()">
+              <option value="today">Today</option>
+              <option value="yesterday">Yesterday</option>
+              <option value="week">This Week</option>
+              <option value="all">All Time</option>
+            </select>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <table class="data-table">
+              <thead><tr><th>Player</th><th>Sleep</th><th>Soreness</th><th>Energy</th><th>Mood</th><th>Score</th><th>Notes</th></tr></thead>
+              <tbody id="wellnessBody"><tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- INJURY LOG -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><div class="dot" style="background:var(--red);"></div>Injury Log</div>
+            <select class="form-select" id="injuryFilter" style="width:130px;padding:5px 8px;" onchange="loadInjuries()">
+              <option value="Active">Active Only</option>
+              <option value="all">All Injuries</option>
+            </select>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <table class="data-table">
+              <thead><tr><th>Player</th><th>Injury</th><th>Area</th><th>Date</th><th>RTF Day</th><th>Expected RTF</th><th>Status</th></tr></thead>
+              <tbody id="injuryBody"><tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WELLNESS MODAL -->
+<div class="modal-overlay" id="wellnessModal">
+  <div class="modal">
+    <div class="modal-title">💚 Wellness Check-in</div>
+    <div class="form-group">
+      <label class="form-label">Player *</label>
+      <select class="form-select" id="w-player"><option value="">Select player...</option></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Date</label>
+      <input class="form-input" id="w-date" type="date">
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Sleep Quality (1-10)</label>
+        <input class="form-input" id="w-sleep" type="number" min="1" max="10" placeholder="7">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Soreness (1-10)</label>
+        <input class="form-input" id="w-soreness" type="number" min="1" max="10" placeholder="3">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Energy (1-10)</label>
+        <input class="form-input" id="w-energy" type="number" min="1" max="10" placeholder="7">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mood (1-10)</label>
+        <input class="form-input" id="w-mood" type="number" min="1" max="10" placeholder="8">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes</label>
+      <textarea class="form-textarea" id="w-notes" placeholder="Any concerns, pain locations, etc."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('wellnessModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="submitWellness()">Submit Check-in</button>
+    </div>
+  </div>
+</div>
+
+<!-- INJURY MODAL -->
+<div class="modal-overlay" id="injuryModal">
+  <div class="modal">
+    <div class="modal-title">🚫 Log Injury</div>
+    <div class="form-group">
+      <label class="form-label">Player *</label>
+      <select class="form-select" id="inj-player"><option value="">Select player...</option></select>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Injury Type</label>
+        <select class="form-select" id="inj-type">
+          <option>Muscle Strain</option><option>Ligament Sprain</option><option>Bone Stress</option>
+          <option>Concussion</option><option>Contusion</option><option>Tendinitis</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Body Area</label>
+        <select class="form-select" id="inj-area">
+          <option>Ankle</option><option>Knee</option><option>Hamstring</option><option>Quad</option>
+          <option>Hip</option><option>Groin</option><option>Calf</option><option>Shoulder</option>
+          <option>Head</option><option>Back</option><option>Foot</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date of Injury</label>
+        <input class="form-input" id="inj-date" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Expected RTF Date</label>
+        <input class="form-input" id="inj-rtf" type="date">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Medical Notes</label>
+      <textarea class="form-textarea" id="inj-notes" placeholder="Details, mechanism of injury, treatment plan..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('injuryModal')">Cancel</button>
+      <button class="btn btn-red" onclick="submitInjury()">Log Injury</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="config.js"></script>
+<script>
+let players = [];
+
+function showToast(msg, dur=2800) {
+  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+function scoreColor(score) {
+  if (score >= 7.5) return 'var(--green)';
+  if (score >= 5) return 'var(--yellow)';
+  return 'var(--red)';
+}
+
+function readinessScore(f) {
+  const sleep = parseFloat(f['Sleep (1-10)'] || f['Sleep'] || 0);
+  const soreness = parseFloat(f['Soreness (1-10)'] || f['Soreness'] || 0);
+  const energy = parseFloat(f['Energy (1-10)'] || f['Energy'] || 0);
+  const mood = parseFloat(f['Mood (1-10)'] || f['Mood'] || 0);
+  if (!sleep && !energy && !mood) return null;
+  return ((sleep + (10 - soreness) + energy + mood) / 4).toFixed(1);
+}
+
+async function loadStats() {
+  try {
+    const ps = await airtableFetch(FIS_CONFIG.TABLES.PLAYERS);
+    const avail = ps.filter(p => (p.fields['Team Status']||p.fields['Status']||'').toLowerCase().includes('active'));
+    const inj = ps.filter(p => (p.fields['Team Status']||p.fields['Status']||'').toLowerCase().includes('injur'));
+    const lim = ps.filter(p => (p.fields['Team Status']||p.fields['Status']||'').toLowerCase().includes('limit'));
+    document.getElementById('stat-avail').textContent = avail.length;
+    document.getElementById('stat-avail-sub').textContent = `of ${ps.length} total players`;
+    document.getElementById('stat-inj').textContent = inj.length;
+    document.getElementById('stat-limit').textContent = lim.length;
+  } catch(e) {}
+
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const checks = await airtableFetch(FIS_CONFIG.TABLES.WELLNESS, { filterByFormula: `{Date}="${today}"` });
+    document.getElementById('stat-checkins').textContent = checks.length;
+    document.getElementById('stat-checkins-sub').textContent = `submitted today`;
+  } catch(e) {}
+}
+
+async function loadWellness() {
+  const tbody = document.getElementById('wellnessBody');
+  tbody.innerHTML = `<tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr>`;
+  const filter = document.getElementById('wellnessDateFilter').value;
+  let formula = '';
+  const today = new Date().toISOString().split('T')[0];
+  const yesterday = new Date(Date.now()-86400000).toISOString().split('T')[0];
+  if (filter === 'today') formula = `{Date}="${today}"`;
+  else if (filter === 'yesterday') formula = `{Date}="${yesterday}"`;
+
+  try {
+    const params = { sort: [{ field: 'Date', direction: 'desc' }], maxRecords: 50 };
+    if (formula) params.filterByFormula = formula;
+    const records = await airtableFetch(FIS_CONFIG.TABLES.WELLNESS, params);
+    if (!records.length) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-text">No check-ins for this period</div></div></td></tr>`; return; }
+    tbody.innerHTML = records.map(r => {
+      const f = r.fields;
+      const playerName = Array.isArray(f['Player']) ? f['Player'][0] : (f['Player'] || '—');
+      const score = f['Readiness Score'] || readinessScore(f);
+      const scoreHTML = score ? `<span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;color:${scoreColor(parseFloat(score))};">${score}</span>` : '—';
+      return `<tr>
+        <td style="font-weight:600;color:var(--white);">${playerName}</td>
+        <td style="text-align:center;">${f['Sleep (1-10)']||f['Sleep']||'—'}</td>
+        <td style="text-align:center;">${f['Soreness (1-10)']||f['Soreness']||'—'}</td>
+        <td style="text-align:center;">${f['Energy (1-10)']||f['Energy']||'—'}</td>
+        <td style="text-align:center;">${f['Mood (1-10)']||f['Mood']||'—'}</td>
+        <td style="text-align:center;">${scoreHTML}</td>
+        <td style="font-size:11px;color:var(--slate);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${f['Notes']||''}">${f['Notes']||''}</td>
+      </tr>`;
+    }).join('');
+  } catch(e) { tbody.innerHTML = `<tr><td colspan="7" style="color:var(--red);padding:16px;">Error: ${e.message}</td></tr>`; }
+}
+
+async function loadInjuries() {
+  const tbody = document.getElementById('injuryBody');
+  tbody.innerHTML = `<tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr>`;
+  const filterVal = document.getElementById('injuryFilter').value;
+  try {
+    const params = { sort: [{ field: 'Date of Injury', direction: 'desc' }] };
+    if (filterVal === 'Active') params.filterByFormula = `{Status}="Active"`;
+    const records = await airtableFetch(FIS_CONFIG.TABLES.INJURIES, params);
+    if (!records.length) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon">✅</div><div class="empty-text">No injuries logged</div></div></td></tr>`; return; }
+    tbody.innerHTML = records.map(r => {
+      const f = r.fields;
+      const player = Array.isArray(f['Player']) ? f['Player'][0] : (f['Player'] || '—');
+      const status = f['Status'] || 'Active';
+      const statusClass = status === 'Active' ? 'pill-red' : status === 'Resolved' ? 'pill-green' : 'pill-yellow';
+      return `<tr>
+        <td style="font-weight:600;color:var(--white);">${player}</td>
+        <td>${f['Injury Type']||'—'}</td>
+        <td><span class="pill pill-slate">${f['Body Area']||'—'}</span></td>
+        <td style="color:var(--slate);">${f['Date of Injury']||'—'}</td>
+        <td style="text-align:center;color:var(--gold2);">Day ${f['RTF Protocol Day']||'1'}</td>
+        <td style="color:var(--slate);">${f['Expected RTF Date']||'TBD'}</td>
+        <td><span class="pill ${statusClass}">${status}</span></td>
+      </tr>`;
+    }).join('');
+  } catch(e) { tbody.innerHTML = `<tr><td colspan="7" style="color:var(--red);padding:16px;">Error: ${e.message}</td></tr>`; }
+}
+
+async function openWellnessModal() {
+  if (!players.length) {
+    players = await airtableFetch(FIS_CONFIG.TABLES.PLAYERS, { sort: [{ field: 'Player Name', direction: 'asc' }] });
+  }
+  const sel = document.getElementById('w-player');
+  sel.innerHTML = '<option value="">Select player...</option>' + players.map(p => `<option value="${p.fields['Player Name']}">${p.fields['Player Name']}</option>`).join('');
+  document.getElementById('w-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('wellnessModal').classList.add('open');
+}
+
+async function openInjuryModal() {
+  if (!players.length) {
+    players = await airtableFetch(FIS_CONFIG.TABLES.PLAYERS, { sort: [{ field: 'Player Name', direction: 'asc' }] });
+  }
+  const sel = document.getElementById('inj-player');
+  sel.innerHTML = '<option value="">Select player...</option>' + players.map(p => `<option value="${p.fields['Player Name']}">${p.fields['Player Name']}</option>`).join('');
+  document.getElementById('inj-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('injuryModal').classList.add('open');
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+async function submitWellness() {
+  const player = document.getElementById('w-player').value;
+  if (!player) { showToast('Please select a player'); return; }
+  try {
+    await airtableCreate(FIS_CONFIG.TABLES.WELLNESS, {
+      'Player': player,
+      'Date': document.getElementById('w-date').value,
+      'Sleep (1-10)': parseFloat(document.getElementById('w-sleep').value) || null,
+      'Soreness (1-10)': parseFloat(document.getElementById('w-soreness').value) || null,
+      'Energy (1-10)': parseFloat(document.getElementById('w-energy').value) || null,
+      'Mood (1-10)': parseFloat(document.getElementById('w-mood').value) || null,
+      'Notes': document.getElementById('w-notes').value,
+    });
+    closeModal('wellnessModal');
+    showToast(`Wellness check-in submitted for ${player} ✓`);
+    loadWellness(); loadStats();
+  } catch(e) { showToast(`Error: ${e.message}`); }
+}
+
+async function submitInjury() {
+  const player = document.getElementById('inj-player').value;
+  if (!player) { showToast('Please select a player'); return; }
+  try {
+    await airtableCreate(FIS_CONFIG.TABLES.INJURIES, {
+      'Player': player,
+      'Injury Type': document.getElementById('inj-type').value,
+      'Body Area': document.getElementById('inj-area').value,
+      'Date of Injury': document.getElementById('inj-date').value,
+      'Expected RTF Date': document.getElementById('inj-rtf').value,
+      'Medical Notes': document.getElementById('inj-notes').value,
+      'Status': 'Active',
+      'RTF Protocol Day': 1,
+    });
+    closeModal('injuryModal');
+    showToast(`Injury logged for ${player} ✓`);
+    loadInjuries(); loadStats();
+  } catch(e) { showToast(`Error: ${e.message}`); }
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+loadStats(); loadWellness(); loadInjuries();
+</script>
+</body>
+</html>

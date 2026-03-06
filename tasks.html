@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIS — Staff Tasks</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="logo-mark">FIS</div>
+    <div class="nav-section-label">MAIN</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">⬡</span><span class="nav-label">Dashboard</span></a>
+    <a href="readiness.html" class="nav-item"><span class="nav-icon">💚</span><span class="nav-label">Player Readiness</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">OPERATIONS</div>
+    <a href="roster.html" class="nav-item"><span class="nav-icon">👥</span><span class="nav-label">Roster</span></a>
+    <a href="recruiting.html" class="nav-item"><span class="nav-icon">🎯</span><span class="nav-label">Recruiting</span></a>
+    <a href="schedule.html" class="nav-item"><span class="nav-icon">📅</span><span class="nav-label">Schedule</span></a>
+    <a href="tasks.html" class="nav-item active"><span class="nav-icon">✅</span><span class="nav-label">Staff Tasks</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">SPORT SCIENCE</div>
+    <a href="training.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Training &amp; Load</span></a>
+    <a href="opponents.html" class="nav-item"><span class="nav-icon">🔍</span><span class="nav-label">Opponents</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">PROGRAM</div>
+    <a href="academics.html" class="nav-item"><span class="nav-icon">🎓</span><span class="nav-label">Academics</span></a>
+    <a href="budget.html" class="nav-item"><span class="nav-icon">💰</span><span class="nav-label">Budget</span></a>
+    <a href="marketing.html" class="nav-item"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
+    <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
+    <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+  </nav>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">STAFF <span>TASKS</span></div>
+      <div class="topbar-actions">
+        <button class="btn btn-gold" onclick="openAddModal()">+ Assign Task</button>
+        <div class="avatar">HC</div>
+      </div>
+    </header>
+    <div class="page">
+      <div class="stats-row" style="margin-bottom:20px;">
+        <div class="stat-card" style="--accent:var(--red);"><div class="stat-icon">🔴</div><div class="stat-label">Overdue</div><div class="stat-value" id="t-overdue" style="color:var(--red);">—</div></div>
+        <div class="stat-card" style="--accent:var(--yellow);"><div class="stat-icon">⏳</div><div class="stat-label">In Progress</div><div class="stat-value" id="t-progress" style="color:var(--yellow);">—</div></div>
+        <div class="stat-card" style="--accent:var(--blue);"><div class="stat-icon">📋</div><div class="stat-label">To-Do</div><div class="stat-value" id="t-todo" style="color:var(--blue);">—</div></div>
+        <div class="stat-card" style="--accent:var(--green);"><div class="stat-icon">✅</div><div class="stat-label">Completed</div><div class="stat-value" id="t-complete" style="color:var(--green);">—</div></div>
+      </div>
+
+      <!-- KANBAN -->
+      <div class="kanban-board" id="taskBoard" style="align-items:flex-start;">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD TASK MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-title">✅ Assign Task</div>
+    <div class="form-group"><label class="form-label">Task Name *</label><input class="form-input" id="t-name" placeholder="e.g. Update recruiting board for 2027 class"></div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Assign To</label><input class="form-input" id="t-assign" placeholder="Staff member name"></div>
+      <div class="form-group"><label class="form-label">Department</label>
+        <select class="form-select" id="t-dept">
+          <option>Coaching</option><option>Recruiting</option><option>Sport Science</option>
+          <option>Player Readiness</option><option>Academics</option><option>Operations</option>
+          <option>Marketing</option><option>Budget</option><option>Alumni</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Due Date</label><input class="form-input" id="t-due" type="date"></div>
+      <div class="form-group"><label class="form-label">Priority</label>
+        <select class="form-select" id="t-priority">
+          <option>Normal</option><option>High</option><option>Urgent</option><option>Low</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="t-notes" placeholder="Details, context, links..."></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="addTask()">Assign Task</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="config.js"></script>
+<script>
+const TASK_STATUSES = ['To-Do', 'In Progress', 'Review', 'Complete'];
+const STATUS_COLORS = { 'To-Do':'var(--blue)', 'In Progress':'var(--yellow)', 'Review':'var(--gold)', 'Complete':'var(--green)' };
+let allTasks = [];
+
+function showToast(msg,dur=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+
+function priorityPill(p) {
+  if (!p) return '';
+  if (p==='Urgent') return '<span class="pill pill-red">Urgent</span>';
+  if (p==='High') return '<span class="pill pill-yellow">High</span>';
+  if (p==='Normal') return '<span class="pill pill-blue">Normal</span>';
+  return `<span class="pill pill-slate">${p}</span>`;
+}
+
+function isOverdue(task) {
+  const due = task.fields['Due Date'];
+  const status = task.fields['Status'] || 'To-Do';
+  if (!due || status === 'Complete') return false;
+  return new Date(due) < new Date();
+}
+
+async function loadTasks() {
+  const board = document.getElementById('taskBoard');
+  board.innerHTML = `<div class="loading"><div class="spinner"></div></div>`;
+  try {
+    allTasks = await airtableFetch(FIS_CONFIG.TABLES.TASKS, {
+      sort: [{ field: 'Due Date', direction: 'asc' }]
+    });
+
+    const today = new Date().toISOString().split('T')[0];
+    const overdue = allTasks.filter(t => isOverdue(t));
+    const inProg = allTasks.filter(t => t.fields['Status'] === 'In Progress');
+    const todo = allTasks.filter(t => t.fields['Status'] === 'To-Do');
+    const complete = allTasks.filter(t => t.fields['Status'] === 'Complete');
+
+    document.getElementById('t-overdue').textContent = overdue.length;
+    document.getElementById('t-progress').textContent = inProg.length;
+    document.getElementById('t-todo').textContent = todo.length;
+    document.getElementById('t-complete').textContent = complete.length;
+
+    board.innerHTML = TASK_STATUSES.map(status => {
+      const cards = allTasks.filter(t => (t.fields['Status'] || 'To-Do') === status);
+      return `<div class="kanban-col" style="min-width:220px;">
+        <div class="kanban-col-head" style="border-top:3px solid ${STATUS_COLORS[status]};">
+          ${status} <span class="kanban-col-count">${cards.length}</span>
+        </div>
+        <div class="kanban-cards">
+          ${cards.length ? cards.map(t => {
+            const f = t.fields;
+            const overdue = isOverdue(t);
+            return `<div class="kanban-card${overdue?' style="border-color:rgba(255,82,82,0.4);"':''}" onclick="updateStatus('${t.id}','${status}')">
+              <div class="kanban-card-name">${f['Task Name']||'Untitled'}</div>
+              <div class="kanban-card-meta" style="margin-top:4px;">
+                ${priorityPill(f['Priority'])}
+                <span>${f['Department']||'—'}</span>
+              </div>
+              <div style="margin-top:6px;font-size:11px;color:${overdue?'var(--red)':'var(--slate)'};">
+                👤 ${f['Assigned To']||'Unassigned'} · ${overdue?'⚠️ OVERDUE':'Due: '+( f['Due Date']||'No date')}
+              </div>
+            </div>`;
+          }).join('') : '<div style="text-align:center;padding:16px;color:var(--slate);font-size:12px;">Empty</div>'}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    board.innerHTML = `<div style="color:var(--red);padding:20px;">Error: ${e.message}</div>`;
+  }
+}
+
+async function updateStatus(id, currentStatus) {
+  const idx = TASK_STATUSES.indexOf(currentStatus);
+  const nextStatus = TASK_STATUSES[(idx + 1) % TASK_STATUSES.length];
+  try {
+    await airtableUpdate(FIS_CONFIG.TABLES.TASKS, id, { 'Status': nextStatus });
+    showToast(`Task moved to ${nextStatus} ✓`);
+    loadTasks();
+  } catch(e) { showToast(`Error: ${e.message}`); }
+}
+
+function openAddModal() {
+  document.getElementById('t-due').value = new Date(Date.now()+7*86400000).toISOString().split('T')[0];
+  document.getElementById('addModal').classList.add('open');
+}
+function closeModal() { document.getElementById('addModal').classList.remove('open'); }
+
+async function addTask() {
+  const name = document.getElementById('t-name').value.trim();
+  if (!name) { showToast('Task name is required'); return; }
+  try {
+    await airtableCreate(FIS_CONFIG.TABLES.TASKS, {
+      'Task Name': name,
+      'Assigned To': document.getElementById('t-assign').value,
+      'Department': document.getElementById('t-dept').value,
+      'Due Date': document.getElementById('t-due').value,
+      'Priority': document.getElementById('t-priority').value,
+      'Notes': document.getElementById('t-notes').value,
+      'Status': 'To-Do',
+    });
+    closeModal();
+    showToast(`Task assigned ✓`);
+    loadTasks();
+  } catch(e) { showToast(`Error: ${e.message}`); }
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); });
+});
+
+loadTasks();
+</script>
+</body>
+</html>

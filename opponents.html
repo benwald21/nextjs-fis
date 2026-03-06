@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIS — Opponents</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="logo-mark">FIS</div>
+    <div class="nav-section-label">MAIN</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">⬡</span><span class="nav-label">Dashboard</span></a>
+    <a href="readiness.html" class="nav-item"><span class="nav-icon">💚</span><span class="nav-label">Player Readiness</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">OPERATIONS</div>
+    <a href="roster.html" class="nav-item"><span class="nav-icon">👥</span><span class="nav-label">Roster</span></a>
+    <a href="recruiting.html" class="nav-item"><span class="nav-icon">🎯</span><span class="nav-label">Recruiting</span></a>
+    <a href="schedule.html" class="nav-item"><span class="nav-icon">📅</span><span class="nav-label">Schedule</span></a>
+    <a href="tasks.html" class="nav-item"><span class="nav-icon">✅</span><span class="nav-label">Staff Tasks</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">SPORT SCIENCE</div>
+    <a href="training.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Training & Load</span></a>
+    <a href="opponents.html" class="nav-item active"><span class="nav-icon">🔍</span><span class="nav-label">Opponents</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">PROGRAM</div>
+    <a href="academics.html" class="nav-item"><span class="nav-icon">🎓</span><span class="nav-label">Academics</span></a>
+    <a href="budget.html" class="nav-item"><span class="nav-icon">💰</span><span class="nav-label">Budget</span></a>
+    <a href="marketing.html" class="nav-item"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
+    <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
+    <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+  </nav>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">OPPONENT <span>ANALYSIS</span></div>
+      <div class="topbar-actions">
+        <button class="btn btn-gold" onclick="openAddModal()">+ Add Opponent</button>
+        <div class="avatar">HC</div>
+      </div>
+    </header>
+    <div class="page">
+      <div id="opponentGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal" style="width:580px;">
+    <div class="modal-title" id="d-name"></div>
+    <div class="grid-2" style="margin-bottom:16px;">
+      <div><div class="form-label">Conference</div><div id="d-conf" style="font-size:14px;color:var(--white);"></div></div>
+      <div><div class="form-label">Head Coach</div><div id="d-coach" style="font-size:14px;color:var(--white);"></div></div>
+      <div><div class="form-label">Formation</div><div id="d-form"></div></div>
+      <div><div class="form-label">Set Piece Risk</div><div id="d-risk"></div></div>
+      <div><div class="form-label">Press Trigger</div><div id="d-press" style="font-size:13px;color:var(--slate2);"></div></div>
+      <div><div class="form-label">Wyscout Team ID</div><div id="d-wyscout" style="font-size:13px;color:var(--slate);"></div></div>
+    </div>
+    <div><div class="form-label">Hudl Playlist</div><div id="d-hudl" style="margin-top:4px;"></div></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('detailModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD OPPONENT MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-title">🔍 Add Opponent</div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Team Name *</label><input class="form-input" id="o-name" placeholder="e.g. Pitt Panthers"></div>
+      <div class="form-group"><label class="form-label">Conference</label>
+        <select class="form-select" id="o-conf"><option>ACC</option><option>Big Ten</option><option>Big East</option><option>SEC</option><option>Pac-12</option><option>American</option><option>Independent</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Head Coach</label><input class="form-input" id="o-coach"></div>
+      <div class="form-group"><label class="form-label">Formation</label>
+        <select class="form-select" id="o-form"><option>4-3-3</option><option>4-2-3-1</option><option>3-5-2</option><option>4-4-2</option><option>4-1-4-1</option><option>5-3-2</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Set Piece Risk</label>
+        <select class="form-select" id="o-risk"><option>Low</option><option>Medium</option><option>High</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Wyscout Team ID</label><input class="form-input" id="o-wyscout" placeholder="e.g. 12345"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Press Trigger</label><input class="form-input" id="o-press" placeholder="e.g. Back pass to GK, high press on CBs"></div>
+    <div class="form-group"><label class="form-label">Hudl Playlist URL</label><input class="form-input" id="o-hudl" placeholder="https://..."></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="addOpponent()">Add Opponent</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="config.js"></script>
+<script>
+let opponents = [];
+function showToast(msg,dur=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+function riskColor(r) {
+  if ((r||'').includes('High')) return 'pill-red';
+  if ((r||'').includes('Medium')) return 'pill-yellow';
+  return 'pill-green';
+}
+
+async function loadOpponents() {
+  try {
+    opponents = await airtableFetch(FIS_CONFIG.TABLES.OPPONENTS, { sort:[{field:'Team Name',direction:'asc'}] });
+    const grid = document.getElementById('opponentGrid');
+    grid.innerHTML = opponents.length ? opponents.map(o => {
+      const f = o.fields;
+      return `<div class="card" style="cursor:pointer;transition:all 0.2s;" onclick="openDetail('${o.id}')" onmouseover="this.style.borderColor='rgba(201,151,58,0.3)'" onmouseout="this.style.borderColor=''">
+        <div class="card-header">
+          <div class="card-title" style="font-size:15px;color:var(--white);">${f['Team Name']||'—'}</div>
+          <span class="pill pill-slate">${f['Conference']||'—'}</span>
+        </div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;">
+            <div><div class="form-label" style="margin-bottom:2px;">Coach</div><div style="color:var(--white);">${f['Head Coach']||'—'}</div></div>
+            <div><div class="form-label" style="margin-bottom:2px;">Formation</div><div style="color:var(--gold2);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;">${f['Formation']||'—'}</div></div>
+            <div><div class="form-label" style="margin-bottom:2px;">Set Pieces</div><div><span class="pill ${riskColor(f['Set Piece Risk'])}">${f['Set Piece Risk']||'—'}</span></div></div>
+            <div><div class="form-label" style="margin-bottom:2px;">Hudl</div><div>${f['Hudl Playlist URL']?`<a href="${f['Hudl Playlist URL']}" target="_blank" style="color:var(--blue);font-size:11px;">View Playlist ↗</a>`:'<span style="color:var(--slate);">Not linked</span>'}</div></div>
+          </div>
+          ${f['Press Trigger']?`<div style="margin-top:10px;padding:8px;background:rgba(0,0,0,0.2);border-radius:7px;font-size:11px;color:var(--slate2);"><span style="color:var(--gold);font-family:'DM Mono',monospace;font-size:9px;">PRESS TRIGGER · </span>${f['Press Trigger']}</div>`:''}
+        </div>
+      </div>`;
+    }).join('') : '<div class="empty" style="grid-column:1/-1;"><div class="empty-icon">🔍</div><div class="empty-text">No opponents added yet</div></div>';
+  } catch(e) {
+    document.getElementById('opponentGrid').innerHTML = `<div style="color:var(--red);grid-column:1/-1;padding:20px;">Error: ${e.message}</div>`;
+  }
+}
+
+function openDetail(id) {
+  const o = opponents.find(x => x.id === id);
+  if (!o) return;
+  const f = o.fields;
+  document.getElementById('d-name').textContent = f['Team Name']||'—';
+  document.getElementById('d-conf').textContent = f['Conference']||'—';
+  document.getElementById('d-coach').textContent = f['Head Coach']||'—';
+  document.getElementById('d-form').innerHTML = `<span class="pill pill-gold">${f['Formation']||'—'}</span>`;
+  document.getElementById('d-risk').innerHTML = `<span class="pill ${riskColor(f['Set Piece Risk'])}">${f['Set Piece Risk']||'—'}</span>`;
+  document.getElementById('d-press').textContent = f['Press Trigger']||'Not logged';
+  document.getElementById('d-wyscout').textContent = f['Wyscout Team ID']||'Not linked';
+  document.getElementById('d-hudl').innerHTML = f['Hudl Playlist URL'] ? `<a href="${f['Hudl Playlist URL']}" target="_blank" class="btn btn-ghost" style="font-size:12px;">Open Hudl Playlist ↗</a>` : '<span style="color:var(--slate);font-size:13px;">No playlist linked</span>';
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function openAddModal() { document.getElementById('addModal').classList.add('open'); }
+
+async function addOpponent() {
+  const name = document.getElementById('o-name').value.trim();
+  if (!name) { showToast('Team name required'); return; }
+  try {
+    await airtableCreate(FIS_CONFIG.TABLES.OPPONENTS, {
+      'Team Name': name,
+      'Conference': document.getElementById('o-conf').value,
+      'Head Coach': document.getElementById('o-coach').value,
+      'Formation': document.getElementById('o-form').value,
+      'Set Piece Risk': document.getElementById('o-risk').value,
+      'Wyscout Team ID': document.getElementById('o-wyscout').value,
+      'Press Trigger': document.getElementById('o-press').value,
+      'Hudl Playlist URL': document.getElementById('o-hudl').value,
+    });
+    closeModal('addModal');
+    showToast(`${name} added ✓`);
+    loadOpponents();
+  } catch(e) { showToast(`Error: ${e.message}`); }
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
+loadOpponents();
+</script>
+</body>
+</html>

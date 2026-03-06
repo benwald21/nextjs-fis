@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIS — Schedule</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="logo-mark">FIS</div>
+    <div class="nav-section-label">MAIN</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">⬡</span><span class="nav-label">Dashboard</span></a>
+    <a href="readiness.html" class="nav-item"><span class="nav-icon">💚</span><span class="nav-label">Player Readiness</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">OPERATIONS</div>
+    <a href="roster.html" class="nav-item"><span class="nav-icon">👥</span><span class="nav-label">Roster</span></a>
+    <a href="recruiting.html" class="nav-item"><span class="nav-icon">🎯</span><span class="nav-label">Recruiting</span></a>
+    <a href="schedule.html" class="nav-item active"><span class="nav-icon">📅</span><span class="nav-label">Schedule</span></a>
+    <a href="tasks.html" class="nav-item"><span class="nav-icon">✅</span><span class="nav-label">Staff Tasks</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">SPORT SCIENCE</div>
+    <a href="training.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Training &amp; Load</span></a>
+    <a href="opponents.html" class="nav-item"><span class="nav-icon">🔍</span><span class="nav-label">Opponents</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">PROGRAM</div>
+    <a href="academics.html" class="nav-item"><span class="nav-icon">🎓</span><span class="nav-label">Academics</span></a>
+    <a href="budget.html" class="nav-item"><span class="nav-icon">💰</span><span class="nav-label">Budget</span></a>
+    <a href="marketing.html" class="nav-item"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
+    <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
+    <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+  </nav>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">SEASON <span>SCHEDULE</span></div>
+      <div class="topbar-actions">
+        <button class="btn btn-gold" onclick="openAddModal()">+ Add Event</button>
+        <div class="avatar">HC</div>
+      </div>
+    </header>
+    <div class="page">
+      <div class="stats-row" style="margin-bottom:20px;">
+        <div class="stat-card" style="--accent:var(--blue);"><div class="stat-icon">📅</div><div class="stat-label">Total Events</div><div class="stat-value" id="s-total" style="color:var(--blue);">—</div></div>
+        <div class="stat-card" style="--accent:var(--gold);"><div class="stat-icon">⚽</div><div class="stat-label">Matches</div><div class="stat-value" id="s-matches" style="color:var(--gold2);">—</div></div>
+        <div class="stat-card" style="--accent:var(--green);"><div class="stat-icon">🏆</div><div class="stat-label">Wins</div><div class="stat-value" id="s-wins" style="color:var(--green);">—</div></div>
+        <div class="stat-card" style="--accent:var(--red);"><div class="stat-icon">📊</div><div class="stat-label">Record</div><div class="stat-value" id="s-record" style="color:var(--white);font-size:20px;">—</div></div>
+      </div>
+
+      <div class="grid-2">
+        <!-- UPCOMING -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><div class="dot"></div>Upcoming</div>
+            <select class="form-select" id="typeFilter" onchange="loadSchedule()" style="width:140px;padding:5px 8px;">
+              <option value="">All Types</option>
+              <option value="Match">Matches Only</option>
+              <option value="Training">Training Only</option>
+            </select>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <table class="data-table">
+              <thead><tr><th>Date</th><th>Event</th><th>Type</th><th>Location</th><th>H/A</th><th>Conf</th></tr></thead>
+              <tbody id="upcomingBody"><tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- RESULTS -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><div class="dot" style="background:var(--green);"></div>Results</div>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <table class="data-table">
+              <thead><tr><th>Date</th><th>Opponent</th><th>H/A</th><th>Result</th><th>Score</th></tr></thead>
+              <tbody id="resultsBody"><tr><td colspan="5"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD EVENT MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-title">📅 Add Schedule Event</div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Event Name *</label><input class="form-input" id="e-name" placeholder="vs. Penn State"></div>
+      <div class="form-group"><label class="form-label">Type</label>
+        <select class="form-select" id="e-type">
+          <option>Match</option><option>Training</option><option>Team Meeting</option><option>Travel</option><option>Camp</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="e-date" type="date"></div>
+      <div class="form-group"><label class="form-label">Home / Away</label>
+        <select class="form-select" id="e-ha"><option>Home</option><option>Away</option><option>Neutral</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Location</label><input class="form-input" id="e-loc" placeholder="Ambrose Urbanic Field"></div>
+      <div class="form-group"><label class="form-label">Opponent</label><input class="form-input" id="e-opp" placeholder="Team name"></div>
+    </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:10px;">
+      <input type="checkbox" id="e-conf" style="width:16px;height:16px;accent-color:var(--gold);">
+      <label class="form-label" style="margin:0;">Conference Match</label>
+    </div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="e-notes" placeholder="Travel info, special instructions..."></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="addEvent()">Add to Schedule</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="config.js"></script>
+<script>
+function showToast(msg,dur=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+
+function typeStyle(type) {
+  const t = (type||'').toLowerCase();
+  if (t==='match') return 'pill-gold';
+  if (t==='training') return 'pill-blue';
+  if (t==='travel') return 'pill-slate';
+  return 'pill-slate';
+}
+
+async function loadSchedule() {
+  const typeFilter = document.getElementById('typeFilter').value;
+  const today = new Date().toISOString().split('T')[0];
+
+  try {
+    const all = await airtableFetch(FIS_CONFIG.TABLES.SCHEDULE, { sort:[{field:'Date',direction:'asc'}] });
+
+    // Stats
+    const matches = all.filter(e => e.fields['Type']==='Match');
+    const played = matches.filter(e => e.fields['Result']);
+    const wins = played.filter(e => (e.fields['Result']||'').toUpperCase().startsWith('W'));
+    const losses = played.filter(e => (e.fields['Result']||'').toUpperCase().startsWith('L'));
+    const draws = played.filter(e => (e.fields['Result']||'').toUpperCase().startsWith('D'));
+    document.getElementById('s-total').textContent = all.length;
+    document.getElementById('s-matches').textContent = matches.length;
+    document.getElementById('s-wins').textContent = wins.length;
+    document.getElementById('s-record').textContent = played.length ? `${wins.length}-${losses.length}-${draws.length}` : '—';
+
+    // Upcoming
+    let upcoming = all.filter(e => e.fields['Date'] >= today);
+    if (typeFilter) upcoming = upcoming.filter(e => e.fields['Type'] === typeFilter);
+    const upBody = document.getElementById('upcomingBody');
+    upBody.innerHTML = upcoming.length ? upcoming.map(e => {
+      const f = e.fields;
+      return `<tr>
+        <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);white-space:nowrap;">${f['Date']||'—'}</td>
+        <td style="font-weight:600;color:var(--white);">${f['Event Name']||'—'}</td>
+        <td><span class="pill ${typeStyle(f['Type'])}">${f['Type']||'—'}</span></td>
+        <td style="color:var(--slate);font-size:12px;">${f['Location']||'—'}</td>
+        <td><span class="pill pill-slate">${f['Home / Away']||'—'}</span></td>
+        <td>${f['Conference?']?'<span class="pill pill-gold">CONF</span>':''}</td>
+      </tr>`;
+    }).join('') : '<tr><td colspan="6"><div class="empty"><div class="empty-text">No upcoming events</div></div></td></tr>';
+
+    // Results
+    const past = matches.filter(e => e.fields['Date'] < today && e.fields['Result']).reverse();
+    const resBody = document.getElementById('resultsBody');
+    resBody.innerHTML = past.length ? past.map(e => {
+      const f = e.fields;
+      const result = (f['Result']||'').toUpperCase();
+      const rColor = result.startsWith('W') ? 'pill-green' : result.startsWith('L') ? 'pill-red' : 'pill-slate';
+      const score = (f['Goals For']!==undefined && f['Goals Against']!==undefined) ? `${f['Goals For']} – ${f['Goals Against']}` : '';
+      return `<tr>
+        <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);">${f['Date']||'—'}</td>
+        <td style="font-weight:600;color:var(--white);">${f['Opponent']||f['Event Name']||'—'}</td>
+        <td><span class="pill pill-slate">${f['Home / Away']||'—'}</span></td>
+        <td><span class="pill ${rColor}">${f['Result']||'—'}</span></td>
+        <td style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;color:var(--gold2);">${score}</td>
+      </tr>`;
+    }).join('') : '<tr><td colspan="5"><div class="empty"><div class="empty-text">No results yet</div></div></td></tr>';
+  } catch(e) {
+    document.getElementById('upcomingBody').innerHTML = `<tr><td colspan="6" style="color:var(--red);padding:16px;">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function openAddModal() {
+  document.getElementById('e-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('addModal').classList.add('open');
+}
+function closeModal() { document.getElementById('addModal').classList.remove('open'); }
+
+async function addEvent() {
+  const name = document.getElementById('e-name').value.trim();
+  if (!name) { showToast('Event name is required'); return; }
+  try {
+    await airtableCreate(FIS_CONFIG.TABLES.SCHEDULE, {
+      'Event Name': name,
+      'Type': document.getElementById('e-type').value,
+      'Date': document.getElementById('e-date').value,
+      'Home / Away': document.getElementById('e-ha').value,
+      'Location': document.getElementById('e-loc').value,
+      'Opponent': document.getElementById('e-opp').value,
+      'Conference?': document.getElementById('e-conf').checked,
+      'Notes': document.getElementById('e-notes').value,
+    });
+    closeModal();
+    showToast(`${name} added to schedule ✓`);
+    loadSchedule();
+  } catch(e) { showToast(`Error: ${e.message}`); }
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); });
+});
+
+loadSchedule();
+</script>
+</body>
+</html>

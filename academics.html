@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIS — Academics</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="logo-mark">FIS</div>
+    <div class="nav-section-label">MAIN</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">⬡</span><span class="nav-label">Dashboard</span></a>
+    <a href="readiness.html" class="nav-item"><span class="nav-icon">💚</span><span class="nav-label">Player Readiness</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">OPERATIONS</div>
+    <a href="roster.html" class="nav-item"><span class="nav-icon">👥</span><span class="nav-label">Roster</span></a>
+    <a href="recruiting.html" class="nav-item"><span class="nav-icon">🎯</span><span class="nav-label">Recruiting</span></a>
+    <a href="schedule.html" class="nav-item"><span class="nav-icon">📅</span><span class="nav-label">Schedule</span></a>
+    <a href="tasks.html" class="nav-item"><span class="nav-icon">✅</span><span class="nav-label">Staff Tasks</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">SPORT SCIENCE</div>
+    <a href="training.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Training & Load</span></a>
+    <a href="opponents.html" class="nav-item"><span class="nav-icon">🔍</span><span class="nav-label">Opponents</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">PROGRAM</div>
+    <a href="academics.html" class="nav-item active"><span class="nav-icon">🎓</span><span class="nav-label">Academics</span></a>
+    <a href="budget.html" class="nav-item"><span class="nav-icon">💰</span><span class="nav-label">Budget</span></a>
+    <a href="marketing.html" class="nav-item"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
+    <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
+    <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+  </nav>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">ACADEMICS <span>TRACKER</span></div>
+      <div class="topbar-actions">
+        <button class="btn btn-gold" onclick="openAddModal()">+ Add Record</button>
+        <div class="avatar">HC</div>
+      </div>
+    </header>
+    <div class="page">
+      <div class="stats-row" style="margin-bottom:20px;">
+        <div class="stat-card" style="--accent:var(--green);"><div class="stat-icon">📊</div><div class="stat-label">Team Avg GPA</div><div class="stat-value" id="a-gpa" style="color:var(--green);">—</div></div>
+        <div class="stat-card" style="--accent:var(--red);"><div class="stat-icon">⚠️</div><div class="stat-label">At-Risk Players</div><div class="stat-value" id="a-risk" style="color:var(--red);">—</div></div>
+        <div class="stat-card" style="--accent:var(--blue);"><div class="stat-icon">✅</div><div class="stat-label">Eligible</div><div class="stat-value" id="a-eligible" style="color:var(--blue);">—</div></div>
+        <div class="stat-card" style="--accent:var(--gold);"><div class="stat-icon">📋</div><div class="stat-label">Total Records</div><div class="stat-value" id="a-total" style="color:var(--gold2);">—</div></div>
+      </div>
+
+      <!-- AT RISK ALERT -->
+      <div id="atRiskAlert" style="display:none;background:var(--red-bg);border:1px solid rgba(255,82,82,0.3);border-radius:12px;padding:16px 20px;margin-bottom:20px;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;color:var(--red);margin-bottom:8px;">⚠️ At-Risk Players Flagged</div>
+        <div id="atRiskList"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="dot"></div>Academic Records</div>
+          <select class="form-select" id="semFilter" onchange="loadAcademics()" style="width:160px;padding:5px 8px;">
+            <option value="">All Semesters</option>
+            <option>Spring 2025</option><option>Fall 2024</option><option>Spring 2024</option>
+          </select>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <table class="data-table">
+            <thead><tr><th>Player</th><th>Semester</th><th>GPA</th><th>Credits</th><th>Eligibility</th><th>At-Risk</th><th>Notes</th></tr></thead>
+            <tbody id="academicsBody"><tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-title">🎓 Add Academic Record</div>
+    <div class="form-group"><label class="form-label">Player *</label><select class="form-select" id="ac-player"><option value="">Select player...</option></select></div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Semester</label>
+        <select class="form-select" id="ac-sem"><option>Spring 2025</option><option>Fall 2024</option><option>Spring 2024</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">GPA</label><input class="form-input" id="ac-gpa" type="number" step="0.01" min="0" max="4" placeholder="3.45"></div>
+      <div class="form-group"><label class="form-label">Credit Hours</label><input class="form-input" id="ac-credits" type="number" placeholder="15"></div>
+      <div class="form-group"><label class="form-label">Eligibility Status</label>
+        <select class="form-select" id="ac-elig"><option>Eligible</option><option>Probation</option><option>Ineligible</option><option>Pending</option></select>
+      </div>
+    </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:10px;">
+      <input type="checkbox" id="ac-risk" style="width:16px;height:16px;accent-color:var(--red);">
+      <label class="form-label" style="margin:0;color:var(--red);">Flag as At-Risk</label>
+    </div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="ac-notes" placeholder="Tutoring scheduled, advisor contacted, etc."></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="addRecord()">Save Record</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="config.js"></script>
+<script>
+function showToast(msg,dur=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function closeModal(){document.getElementById('addModal').classList.remove('open');}
+
+async function loadAcademics() {
+  const semFilter = document.getElementById('semFilter').value;
+  try {
+    const params = { sort:[{field:'Player Name',direction:'asc'}] };
+    if (semFilter) params.filterByFormula = `{Semester}="${semFilter}"`;
+    const records = await airtableFetch(FIS_CONFIG.TABLES.ACADEMICS, params);
+
+    const gpas = records.map(r => parseFloat(r.fields['GPA'])||0).filter(g => g > 0);
+    const avgGpa = gpas.length ? (gpas.reduce((a,b)=>a+b,0)/gpas.length).toFixed(2) : '—';
+    const atRisk = records.filter(r => r.fields['At-Risk Flag']);
+    const eligible = records.filter(r => r.fields['Eligibility Status']==='Eligible');
+    document.getElementById('a-gpa').textContent = avgGpa;
+    document.getElementById('a-risk').textContent = atRisk.length;
+    document.getElementById('a-eligible').textContent = eligible.length;
+    document.getElementById('a-total').textContent = records.length;
+
+    // At-risk alert
+    if (atRisk.length > 0) {
+      document.getElementById('atRiskAlert').style.display = 'block';
+      document.getElementById('atRiskList').innerHTML = atRisk.map(r => {
+        const player = Array.isArray(r.fields['Player']) ? r.fields['Player'][0] : (r.fields['Player']||'—');
+        return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:13px;color:var(--white);">⚠️ <strong>${player}</strong> — GPA: ${r.fields['GPA']||'?'} · ${r.fields['Notes']||''}</div>`;
+      }).join('');
+    } else {
+      document.getElementById('atRiskAlert').style.display = 'none';
+    }
+
+    const tbody = document.getElementById('academicsBody');
+    tbody.innerHTML = records.length ? records.map(r => {
+      const f = r.fields;
+      const player = Array.isArray(f['Player']) ? f['Player'][0] : (f['Player']||'—');
+      const gpa = parseFloat(f['GPA'])||0;
+      const gpaColor = gpa >= 3.5 ? 'var(--green)' : gpa >= 2.5 ? 'var(--yellow)' : 'var(--red)';
+      const eligClass = f['Eligibility Status']==='Eligible' ? 'pill-green' : f['Eligibility Status']==='Ineligible' ? 'pill-red' : 'pill-yellow';
+      return `<tr>
+        <td style="font-weight:600;color:var(--white);">${player}</td>
+        <td style="color:var(--slate);">${f['Semester']||'—'}</td>
+        <td style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:${gpaColor};">${f['GPA']||'—'}</td>
+        <td style="color:var(--slate2);">${f['Credit Hours']||'—'}</td>
+        <td><span class="pill ${eligClass}">${f['Eligibility Status']||'—'}</span></td>
+        <td style="text-align:center;">${f['At-Risk Flag']?'<span style="color:var(--red);font-size:16px;">⚠️</span>':'<span style="color:var(--green);">✓</span>'}</td>
+        <td style="font-size:11px;color:var(--slate);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f['Notes']||''}</td>
+      </tr>`;
+    }).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-text">No academic records yet</div></div></td></tr>';
+  } catch(e) {
+    document.getElementById('academicsBody').innerHTML = `<tr><td colspan="7" style="color:var(--red);padding:16px;">Error: ${e.message}</td></tr>`;
+  }
+}
+
+async function openAddModal() {
+  const players = await airtableFetch(FIS_CONFIG.TABLES.PLAYERS, { sort:[{field:'Player Name',direction:'asc'}] });
+  const sel = document.getElementById('ac-player');
+  sel.innerHTML = '<option value="">Select player...</option>' + players.map(p => `<option value="${p.fields['Player Name']}">${p.fields['Player Name']}</option>`).join('');
+  document.getElementById('addModal').classList.add('open');
+}
+
+async function addRecord() {
+  const player = document.getElementById('ac-player').value;
+  if (!player) { showToast('Please select a player'); return; }
+  try {
+    await airtableCreate(FIS_CONFIG.TABLES.ACADEMICS, {
+      'Player': player,
+      'Semester': document.getElementById('ac-sem').value,
+      'GPA': parseFloat(document.getElementById('ac-gpa').value)||null,
+      'Credit Hours': parseInt(document.getElementById('ac-credits').value)||null,
+      'Eligibility Status': document.getElementById('ac-elig').value,
+      'At-Risk Flag': document.getElementById('ac-risk').checked,
+      'Notes': document.getElementById('ac-notes').value,
+    });
+    closeModal();
+    showToast('Academic record saved ✓');
+    loadAcademics();
+  } catch(e) { showToast(`Error: ${e.message}`); }
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
+loadAcademics();
+</script>
+</body>
+</html>

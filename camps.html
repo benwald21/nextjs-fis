@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIS — Camps</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="logo-mark">FIS</div>
+    <div class="nav-section-label">MAIN</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">⬡</span><span class="nav-label">Dashboard</span></a>
+    <a href="readiness.html" class="nav-item"><span class="nav-icon">💚</span><span class="nav-label">Player Readiness</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">OPERATIONS</div>
+    <a href="roster.html" class="nav-item"><span class="nav-icon">👥</span><span class="nav-label">Roster</span></a>
+    <a href="recruiting.html" class="nav-item"><span class="nav-icon">🎯</span><span class="nav-label">Recruiting</span></a>
+    <a href="schedule.html" class="nav-item"><span class="nav-icon">📅</span><span class="nav-label">Schedule</span></a>
+    <a href="tasks.html" class="nav-item"><span class="nav-icon">✅</span><span class="nav-label">Staff Tasks</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">SPORT SCIENCE</div>
+    <a href="training.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Training & Load</span></a>
+    <a href="opponents.html" class="nav-item"><span class="nav-icon">🔍</span><span class="nav-label">Opponents</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">PROGRAM</div>
+    <a href="academics.html" class="nav-item"><span class="nav-icon">🎓</span><span class="nav-label">Academics</span></a>
+    <a href="budget.html" class="nav-item"><span class="nav-icon">💰</span><span class="nav-label">Budget</span></a>
+    <a href="marketing.html" class="nav-item"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
+    <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
+    <a href="camps.html" class="nav-item active"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+  </nav>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">CAMPS <span>&amp; CLINICS</span></div>
+      <div class="topbar-actions">
+        <button class="btn btn-gold" onclick="openAddModal()">+ Register Participant</button>
+        <div class="avatar">HC</div>
+      </div>
+    </header>
+    <div class="page">
+      <div class="stats-row" style="margin-bottom:20px;">
+        <div class="stat-card" style="--accent:var(--gold);"><div class="stat-icon">⛺</div><div class="stat-label">Total Participants</div><div class="stat-value" id="c-total" style="color:var(--gold2);">—</div></div>
+        <div class="stat-card" style="--accent:var(--green);"><div class="stat-icon">✅</div><div class="stat-label">Paid / Confirmed</div><div class="stat-value" id="c-paid" style="color:var(--green);">—</div></div>
+        <div class="stat-card" style="--accent:var(--blue);"><div class="stat-icon">🎯</div><div class="stat-label">Recruiting Flags</div><div class="stat-value" id="c-flags" style="color:var(--blue);">—</div></div>
+        <div class="stat-card" style="--accent:var(--slate);"><div class="stat-icon">💰</div><div class="stat-label">Revenue</div><div class="stat-value" id="c-revenue" style="color:var(--slate2);font-size:22px;">—</div></div>
+      </div>
+
+      <!-- FILTERS -->
+      <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+        <input class="form-input" id="campSearch" placeholder="Search participants..." style="width:220px;" oninput="filterCamps()">
+        <select class="form-select" id="campFilter" onchange="filterCamps()" style="width:160px;">
+          <option value="">All Camps</option>
+          <option>Summer ID Camp</option><option>Elite Showcase</option><option>Youth Clinic</option><option>Winter Camp</option>
+        </select>
+        <select class="form-select" id="recFilter" onchange="filterCamps()" style="width:170px;">
+          <option value="">All Participants</option>
+          <option value="yes">Recruiting Flags Only</option>
+        </select>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="dot"></div>Camp Participants</div>
+          <div id="campCount" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);"></div>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <table class="data-table" id="campsTable">
+            <thead><tr><th>Name</th><th>Age / Grad Year</th><th>Position</th><th>Camp</th><th>Payment</th><th>Recruiting Flag</th><th>Notes</th></tr></thead>
+            <tbody id="campsBody"><tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-title">⛺ Register Participant</div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Participant Name *</label><input class="form-input" id="cp-name" placeholder="Full name"></div>
+      <div class="form-group"><label class="form-label">Age</label><input class="form-input" id="cp-age" type="number" placeholder="16"></div>
+      <div class="form-group"><label class="form-label">Grad Year</label><input class="form-input" id="cp-grad" type="number" placeholder="2028"></div>
+      <div class="form-group"><label class="form-label">Position</label>
+        <select class="form-select" id="cp-pos"><option>GK</option><option>CB</option><option>RB</option><option>LB</option><option>CDM</option><option>CM</option><option>RW</option><option>LW</option><option>ST</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Camp / Clinic</label>
+        <select class="form-select" id="cp-camp">
+          <option>Summer ID Camp</option><option>Elite Showcase</option><option>Youth Clinic</option><option>Winter Camp</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Payment Status</label>
+        <select class="form-select" id="cp-pay"><option>Paid</option><option>Pending</option><option>Scholarship</option><option>Refunded</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Fee ($)</label><input class="form-input" id="cp-fee" type="number" placeholder="350"></div>
+      <div class="form-group"><label class="form-label">Hometown</label><input class="form-input" id="cp-home" placeholder="City, State"></div>
+    </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:10px;">
+      <input type="checkbox" id="cp-flag" style="width:16px;height:16px;accent-color:var(--blue);">
+      <label class="form-label" style="margin:0;color:var(--blue);">Flag for recruiting follow-up</label>
+    </div>
+    <div class="form-group"><label class="form-label">Scouting Notes</label><textarea class="form-textarea" id="cp-notes" placeholder="Observations, standout qualities..."></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="addParticipant()">Register</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="config.js"></script>
+<script>
+let allParticipants = [];
+function showToast(msg,dur=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function closeModal(){document.getElementById('addModal').classList.remove('open');}
+
+function renderParticipants(list) {
+  document.getElementById('campCount').textContent = `${list.length} participants`;
+  const tbody = document.getElementById('campsBody');
+  tbody.innerHTML = list.length ? list.map(p => {
+    const f = p.fields;
+    const payClass = f['Payment Status']==='Paid' ? 'pill-green' : f['Payment Status']==='Pending' ? 'pill-yellow' : 'pill-slate';
+    return `<tr>
+      <td style="font-weight:600;color:var(--white);">${f['Participant Name']||f['Name']||'—'}</td>
+      <td style="color:var(--slate2);">${f['Age'] ? 'Age '+f['Age'] : '—'}${f['Grad Year'] ? ' · Class of '+f['Grad Year'] : ''}</td>
+      <td><span class="pill pill-slate">${f['Position']||'—'}</span></td>
+      <td style="color:var(--slate2);">${f['Camp']||f['Camp / Clinic']||'—'}</td>
+      <td><span class="pill ${payClass}">${f['Payment Status']||'—'}</span></td>
+      <td style="text-align:center;">${f['Recruiting Flag']?'<span style="color:var(--blue);font-size:16px;">🎯</span>':'<span style="color:var(--slate);">—</span>'}</td>
+      <td style="font-size:11px;color:var(--slate);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${f['Scouting Notes']||f['Notes']||''}">${f['Scouting Notes']||f['Notes']||''}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-icon">⛺</div><div class="empty-text">No participants registered yet</div></div></td></tr>';
+}
+
+async function loadCamps() {
+  try {
+    allParticipants = await airtableFetch(FIS_CONFIG.TABLES.CAMPS, { sort:[{field:'Participant Name',direction:'asc'}] });
+    const paid = allParticipants.filter(p => p.fields['Payment Status']==='Paid');
+    const flags = allParticipants.filter(p => p.fields['Recruiting Flag']);
+    const revenue = allParticipants.filter(p => p.fields['Payment Status']==='Paid').reduce((sum,p) => sum + (parseFloat(p.fields['Fee'])||0), 0);
+    document.getElementById('c-total').textContent = allParticipants.length;
+    document.getElementById('c-paid').textContent = paid.length;
+    document.getElementById('c-flags').textContent = flags.length;
+    document.getElementById('c-revenue').textContent = revenue ? '$'+revenue.toLocaleString() : '—';
+    renderParticipants(allParticipants);
+  } catch(e) {
+    document.getElementById('campsBody').innerHTML = `<tr><td colspan="7" style="color:var(--red);padding:16px;">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function filterCamps() {
+  const search = document.getElementById('campSearch').value.toLowerCase();
+  const camp = document.getElementById('campFilter').value;
+  const recOnly = document.getElementById('recFilter').value === 'yes';
+  let filtered = allParticipants.filter(p => {
+    const f = p.fields;
+    const name = (f['Participant Name']||f['Name']||'').toLowerCase();
+    if (search && !name.includes(search)) return false;
+    if (camp && (f['Camp']||f['Camp / Clinic']||'') !== camp) return false;
+    if (recOnly && !f['Recruiting Flag']) return false;
+    return true;
+  });
+  renderParticipants(filtered);
+}
+
+function openAddModal(){document.getElementById('addModal').classList.add('open');}
+async function addParticipant(){
+  const name = document.getElementById('cp-name').value.trim();
+  if (!name){showToast('Name required');return;}
+  try {
+    await airtableCreate(FIS_CONFIG.TABLES.CAMPS,{
+      'Participant Name':name,
+      'Age':parseInt(document.getElementById('cp-age').value)||null,
+      'Grad Year':parseInt(document.getElementById('cp-grad').value)||null,
+      'Position':document.getElementById('cp-pos').value,
+      'Camp':document.getElementById('cp-camp').value,
+      'Payment Status':document.getElementById('cp-pay').value,
+      'Fee':parseFloat(document.getElementById('cp-fee').value)||null,
+      'Hometown':document.getElementById('cp-home').value,
+      'Recruiting Flag':document.getElementById('cp-flag').checked,
+      'Scouting Notes':document.getElementById('cp-notes').value,
+    });
+    closeModal();showToast(`${name} registered ✓`);loadCamps();
+  } catch(e){showToast(`Error: ${e.message}`);}
+}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+loadCamps();
+</script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIS — Budget</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="logo-mark">FIS</div>
+    <div class="nav-section-label">MAIN</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">⬡</span><span class="nav-label">Dashboard</span></a>
+    <a href="readiness.html" class="nav-item"><span class="nav-icon">💚</span><span class="nav-label">Player Readiness</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">OPERATIONS</div>
+    <a href="roster.html" class="nav-item"><span class="nav-icon">👥</span><span class="nav-label">Roster</span></a>
+    <a href="recruiting.html" class="nav-item"><span class="nav-icon">🎯</span><span class="nav-label">Recruiting</span></a>
+    <a href="schedule.html" class="nav-item"><span class="nav-icon">📅</span><span class="nav-label">Schedule</span></a>
+    <a href="tasks.html" class="nav-item"><span class="nav-icon">✅</span><span class="nav-label">Staff Tasks</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">SPORT SCIENCE</div>
+    <a href="training.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Training & Load</span></a>
+    <a href="opponents.html" class="nav-item"><span class="nav-icon">🔍</span><span class="nav-label">Opponents</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">PROGRAM</div>
+    <a href="academics.html" class="nav-item"><span class="nav-icon">🎓</span><span class="nav-label">Academics</span></a>
+    <a href="budget.html" class="nav-item active"><span class="nav-icon">💰</span><span class="nav-label">Budget</span></a>
+    <a href="marketing.html" class="nav-item"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
+    <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
+    <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+  </nav>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">PROGRAM <span>BUDGET</span></div>
+      <div class="topbar-actions">
+        <button class="btn btn-gold" onclick="openAddModal()">+ Add Line Item</button>
+        <div class="avatar">HC</div>
+      </div>
+    </header>
+    <div class="page">
+      <div class="stats-row" style="margin-bottom:20px;">
+        <div class="stat-card" style="--accent:var(--blue);"><div class="stat-icon">💰</div><div class="stat-label">Total Allocated</div><div class="stat-value" id="b-allocated" style="color:var(--blue);font-size:22px;">—</div></div>
+        <div class="stat-card" style="--accent:var(--red);"><div class="stat-icon">💸</div><div class="stat-label">Total Spent</div><div class="stat-value" id="b-spent" style="color:var(--red);font-size:22px;">—</div></div>
+        <div class="stat-card" style="--accent:var(--green);"><div class="stat-icon">✅</div><div class="stat-label">Remaining</div><div class="stat-value" id="b-remaining" style="color:var(--green);font-size:22px;">—</div></div>
+        <div class="stat-card" style="--accent:var(--gold);"><div class="stat-icon">📊</div><div class="stat-label">% Used</div><div class="stat-value" id="b-pct" style="color:var(--gold2);">—</div></div>
+      </div>
+
+      <!-- SCHOLARSHIP TRACKER -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header"><div class="card-title"><div class="dot" style="background:var(--gold);"></div>Scholarship Equivalencies</div></div>
+        <div class="card-body" style="padding:0;">
+          <table class="data-table">
+            <thead><tr><th>Year</th><th>Total Equiv.</th><th>Committed</th><th>Offered (Pending)</th><th>Available</th><th>Notes</th></tr></thead>
+            <tbody id="scholarshipBody"><tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- BUDGET LINE ITEMS -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="dot"></div>Budget Line Items</div>
+          <select class="form-select" id="catFilter" onchange="loadBudget()" style="width:150px;padding:5px 8px;">
+            <option value="">All Categories</option>
+            <option>Travel</option><option>Equipment</option><option>Recruiting</option>
+            <option>Facilities</option><option>Staff</option><option>Operations</option>
+          </select>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <table class="data-table">
+            <thead><tr><th>Item</th><th>Category</th><th>Semester</th><th>Allocated</th><th>Spent</th><th>Remaining</th><th>Notes</th></tr></thead>
+            <tbody id="budgetBody"><tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD ITEM MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-title">💰 Add Budget Item</div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Item Name *</label><input class="form-input" id="bi-name" placeholder="e.g. Away travel — Penn State"></div>
+      <div class="form-group"><label class="form-label">Category</label>
+        <select class="form-select" id="bi-cat"><option>Travel</option><option>Equipment</option><option>Recruiting</option><option>Facilities</option><option>Staff</option><option>Operations</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Semester</label>
+        <select class="form-select" id="bi-sem"><option>Spring 2025</option><option>Fall 2024</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Budget Allocated ($)</label><input class="form-input" id="bi-alloc" type="number" placeholder="5000"></div>
+      <div class="form-group"><label class="form-label">Amount Spent ($)</label><input class="form-input" id="bi-spent" type="number" placeholder="0"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="bi-notes"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="addBudgetItem()">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="config.js"></script>
+<script>
+function showToast(msg,dur=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function closeModal(){document.getElementById('addModal').classList.remove('open');}
+function fmt(n){return n!=null?'$'+parseFloat(n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}):'—';}
+
+async function loadScholarships() {
+  try {
+    const records = await airtableFetch(FIS_CONFIG.TABLES.SCHOLARSHIP);
+    const tbody = document.getElementById('scholarshipBody');
+    tbody.innerHTML = records.length ? records.map(r => {
+      const f = r.fields;
+      const avail = (f['Available'] ?? (parseFloat(f['Total Equivalencies']||0) - parseFloat(f['Committed']||0) - parseFloat(f['Offered (Pending)']||0)));
+      return `<tr>
+        <td style="font-weight:700;color:var(--gold2);">${f['Year']||'—'}</td>
+        <td style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:var(--white);">${f['Total Equivalencies']||'—'}</td>
+        <td style="color:var(--red);">${f['Committed']||0}</td>
+        <td style="color:var(--yellow);">${f['Offered (Pending)']||0}</td>
+        <td style="font-weight:700;color:${avail>0?'var(--green)':'var(--red)'};">${avail.toFixed(2)}</td>
+        <td style="font-size:11px;color:var(--slate);">${f['Notes']||''}</td>
+      </tr>`;
+    }).join('') : '<tr><td colspan="6"><div class="empty"><div class="empty-text">No scholarship data — add records in Airtable</div></div></td></tr>';
+  } catch(e) {}
+}
+
+async function loadBudget() {
+  const cat = document.getElementById('catFilter').value;
+  try {
+    const params = { sort:[{field:'Category',direction:'asc'}] };
+    if (cat) params.filterByFormula = `{Category}="${cat}"`;
+    const records = await airtableFetch(FIS_CONFIG.TABLES.BUDGET, params);
+
+    let totalAlloc = 0, totalSpent = 0;
+    records.forEach(r => {
+      totalAlloc += parseFloat(r.fields['Budget Allocated']||0);
+      totalSpent += parseFloat(r.fields['Spent']||0);
+    });
+    const remaining = totalAlloc - totalSpent;
+    const pct = totalAlloc > 0 ? Math.round((totalSpent/totalAlloc)*100) : 0;
+    document.getElementById('b-allocated').textContent = fmt(totalAlloc);
+    document.getElementById('b-spent').textContent = fmt(totalSpent);
+    document.getElementById('b-remaining').textContent = fmt(remaining);
+    document.getElementById('b-pct').textContent = pct + '%';
+
+    const tbody = document.getElementById('budgetBody');
+    tbody.innerHTML = records.length ? records.map(r => {
+      const f = r.fields;
+      const alloc = parseFloat(f['Budget Allocated']||0);
+      const spent = parseFloat(f['Spent']||0);
+      const rem = alloc - spent;
+      const remColor = rem >= 0 ? 'var(--green)' : 'var(--red)';
+      return `<tr>
+        <td style="font-weight:600;color:var(--white);">${f['Item Name']||'—'}</td>
+        <td><span class="pill pill-blue">${f['Category']||'—'}</span></td>
+        <td style="color:var(--slate);">${f['Semester']||'—'}</td>
+        <td style="color:var(--slate2);">${fmt(alloc)}</td>
+        <td style="color:var(--red);">${fmt(spent)}</td>
+        <td style="font-weight:700;color:${remColor};">${fmt(rem)}</td>
+        <td style="font-size:11px;color:var(--slate);">${f['Notes']||''}</td>
+      </tr>`;
+    }).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-text">No budget items yet</div></div></td></tr>';
+  } catch(e) {
+    document.getElementById('budgetBody').innerHTML = `<tr><td colspan="7" style="color:var(--red);padding:16px;">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function openAddModal(){document.getElementById('addModal').classList.add('open');}
+async function addBudgetItem(){
+  const name = document.getElementById('bi-name').value.trim();
+  if (!name){showToast('Item name required');return;}
+  try {
+    await airtableCreate(FIS_CONFIG.TABLES.BUDGET,{
+      'Item Name':name,'Category':document.getElementById('bi-cat').value,
+      'Semester':document.getElementById('bi-sem').value,
+      'Budget Allocated':parseFloat(document.getElementById('bi-alloc').value)||0,
+      'Spent':parseFloat(document.getElementById('bi-spent').value)||0,
+      'Notes':document.getElementById('bi-notes').value,
+    });
+    closeModal();showToast('Budget item saved ✓');loadBudget();
+  } catch(e){showToast(`Error: ${e.message}`);}
+}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+loadScholarships();loadBudget();
+</script>
+</body>
+</html>

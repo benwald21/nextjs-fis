@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIS — Dashboard</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="logo-mark">FIS</div>
+    <div class="nav-section-label">MAIN</div>
+    <a href="index.html" class="nav-item active"><span class="nav-icon">⬡</span><span class="nav-label">Dashboard</span></a>
+    <a href="readiness.html" class="nav-item"><span class="nav-icon">💚</span><span class="nav-label">Player Readiness</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">OPERATIONS</div>
+    <a href="roster.html" class="nav-item"><span class="nav-icon">👥</span><span class="nav-label">Roster</span></a>
+    <a href="recruiting.html" class="nav-item"><span class="nav-icon">🎯</span><span class="nav-label">Recruiting</span></a>
+    <a href="schedule.html" class="nav-item"><span class="nav-icon">📅</span><span class="nav-label">Schedule</span></a>
+    <a href="tasks.html" class="nav-item"><span class="nav-icon">✅</span><span class="nav-label">Staff Tasks</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">SPORT SCIENCE</div>
+    <a href="training.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Training &amp; Load</span></a>
+    <a href="opponents.html" class="nav-item"><span class="nav-icon">🔍</span><span class="nav-label">Opponents</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">PROGRAM</div>
+    <a href="academics.html" class="nav-item"><span class="nav-icon">🎓</span><span class="nav-label">Academics</span></a>
+    <a href="budget.html" class="nav-item"><span class="nav-icon">💰</span><span class="nav-label">Budget</span></a>
+    <a href="marketing.html" class="nav-item"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
+    <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
+    <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+  </nav>
+
+  <div class="main">
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-title">FORGED IN <span>STEEL</span></div>
+      <div class="topbar-actions">
+        <div id="currentDate" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);"></div>
+        <div class="avatar" title="Head Coach">HC</div>
+      </div>
+    </header>
+
+    <div class="page">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Program Command Center</div>
+          <div class="section-subtitle" id="seasonInfo">Loading...</div>
+        </div>
+        <button class="btn btn-ghost" onclick="refreshAll()">↻ Refresh</button>
+      </div>
+
+      <!-- STAT CARDS -->
+      <div class="stats-row">
+        <div class="stat-card" style="--accent:var(--green);">
+          <div class="stat-icon">👥</div>
+          <div class="stat-label">Active Players</div>
+          <div class="stat-value" id="stat-active" style="color:var(--green);">—</div>
+          <div class="stat-delta" id="stat-active-sub">Loading roster...</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--red);">
+          <div class="stat-icon">🚫</div>
+          <div class="stat-label">Injured / Limited</div>
+          <div class="stat-value" id="stat-injured" style="color:var(--red);">—</div>
+          <div class="stat-delta" id="stat-injured-sub">Loading...</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--blue);">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-label">Active Recruits</div>
+          <div class="stat-value" id="stat-recruits" style="color:var(--blue);">—</div>
+          <div class="stat-delta" id="stat-recruits-sub">Loading pipeline...</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--gold);">
+          <div class="stat-icon">✅</div>
+          <div class="stat-label">Open Tasks</div>
+          <div class="stat-value" id="stat-tasks" style="color:var(--gold2);">—</div>
+          <div class="stat-delta" id="stat-tasks-sub">Loading tasks...</div>
+        </div>
+      </div>
+
+      <!-- NEXT MATCH + SQUAD GRID -->
+      <div class="grid-2-1" style="margin-bottom:20px;">
+        <div>
+          <!-- SQUAD READINESS -->
+          <div class="card" style="margin-bottom:18px;">
+            <div class="card-header">
+              <div class="card-title"><div class="dot"></div>Squad Availability</div>
+              <div style="display:flex;gap:14px;font-size:11px;">
+                <span style="color:var(--green);">● Active</span>
+                <span style="color:var(--yellow);">● Limited</span>
+                <span style="color:var(--red);">● Injured</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="rosterGrid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:7px;">
+                <div class="loading"><div class="spinner"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ACTIVE INJURIES -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot" style="background:var(--red);"></div>Injury Flags</div>
+              <a href="readiness.html" style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--gold);text-decoration:none;letter-spacing:0.06em;">VIEW ALL →</a>
+            </div>
+            <div class="card-body" id="injuryList">
+              <div class="loading"><div class="spinner"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <!-- NEXT MATCH -->
+          <div id="nextMatchCard" style="margin-bottom:18px;">
+            <div class="loading"><div class="spinner"></div></div>
+          </div>
+
+          <!-- OPEN TASKS -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot" style="background:var(--blue);"></div>Staff Tasks</div>
+              <a href="tasks.html" style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--gold);text-decoration:none;letter-spacing:0.06em;">MANAGE →</a>
+            </div>
+            <div class="card-body" id="tasksList" style="padding:6px 14px 12px;">
+              <div class="loading"><div class="spinner"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<div id="toast"></div>
+
+<script src="config.js"></script>
+<script>
+// Set date
+const now = new Date();
+document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+document.getElementById('seasonInfo').textContent = `Spring Season ${now.getFullYear()} · Live Data`;
+
+function showToast(msg, dur=2800) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+function statusClass(status) {
+  if (!status) return 'status-default';
+  if (status.toLowerCase().includes('active')) return 'status-Active';
+  if (status.toLowerCase().includes('injur')) return 'status-Injured';
+  if (status.toLowerCase().includes('limit')) return 'status-Limited';
+  return 'status-default';
+}
+
+function statusPill(status) {
+  if (!status) return '<span class="pill pill-slate">Unknown</span>';
+  const s = status.toLowerCase();
+  if (s.includes('active')) return `<span class="pill pill-green">${status}</span>`;
+  if (s.includes('injur')) return `<span class="pill pill-red">${status}</span>`;
+  if (s.includes('limit')) return `<span class="pill pill-yellow">${status}</span>`;
+  if (s.includes('medical')) return `<span class="pill pill-slate">${status}</span>`;
+  return `<span class="pill pill-slate">${status}</span>`;
+}
+
+async function loadStats() {
+  try {
+    const players = await airtableFetch(FIS_CONFIG.TABLES.PLAYERS);
+    const active = players.filter(p => {
+      const s = (p.fields['Team Status'] || p.fields['Status'] || '').toLowerCase();
+      return s.includes('active');
+    });
+    const injured = players.filter(p => {
+      const s = (p.fields['Team Status'] || p.fields['Status'] || '').toLowerCase();
+      return s.includes('injur') || s.includes('limit');
+    });
+    document.getElementById('stat-active').textContent = active.length;
+    document.getElementById('stat-active-sub').textContent = `${players.length} total on roster`;
+    document.getElementById('stat-injured').textContent = injured.length;
+    document.getElementById('stat-injured-sub').textContent = injured.length > 0 ? `${injured.length} unavailable` : 'All healthy';
+  } catch(e) { console.error('Players error:', e); }
+
+  try {
+    const prospects = await airtableFetch(FIS_CONFIG.TABLES.PROSPECTS);
+    const active = prospects.filter(p => {
+      const s = (p.fields['Stage'] || '').toLowerCase();
+      return s !== 'not pursuing' && s !== 'signed' && s !== '';
+    });
+    document.getElementById('stat-recruits').textContent = active.length;
+    document.getElementById('stat-recruits-sub').textContent = `${prospects.length} total prospects`;
+  } catch(e) { document.getElementById('stat-recruits').textContent = '—'; }
+
+  try {
+    const tasks = await airtableFetch(FIS_CONFIG.TABLES.TASKS);
+    const open = tasks.filter(t => {
+      const s = (t.fields['Status'] || '').toLowerCase();
+      return s !== 'complete' && s !== 'completed' && s !== 'done';
+    });
+    document.getElementById('stat-tasks').textContent = open.length;
+    document.getElementById('stat-tasks-sub').textContent = open.length > 0 ? `${open.length} awaiting action` : 'All clear';
+  } catch(e) { document.getElementById('stat-tasks').textContent = '—'; }
+}
+
+async function loadRosterGrid() {
+  try {
+    const players = await airtableFetch(FIS_CONFIG.TABLES.PLAYERS, {
+      sort: [{ field: 'Jersey #', direction: 'asc' }]
+    });
+    const grid = document.getElementById('rosterGrid');
+    if (!players.length) { grid.innerHTML = '<div class="empty"><div class="empty-text">No players found</div></div>'; return; }
+    grid.innerHTML = players.map(p => {
+      const f = p.fields;
+      const status = f['Team Status'] || f['Status'] || 'Active';
+      const sc = statusClass(status);
+      const num = f['Jersey #'] || '?';
+      const name = (f['Player Name'] || '').split(',')[0].split(' ').pop() || '—';
+      const pos = f['Position'] || '—';
+      return `<div class="player-tile ${sc}" onclick="window.location='roster.html'" title="${f['Player Name'] || ''} · ${status}">
+        <div class="player-num">${num}</div>
+        <div class="player-name-sm">${name}</div>
+        <div class="player-pos-sm">${pos}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('rosterGrid').innerHTML = '<div class="empty"><div class="empty-text">Could not load roster</div></div>';
+  }
+}
+
+async function loadNextMatch() {
+  const container = document.getElementById('nextMatchCard');
+  try {
+    const matches = await airtableFetch(FIS_CONFIG.TABLES.SCHEDULE, {
+      filterByFormula: `AND({Type}="Match", IS_AFTER({Date}, TODAY()))`,
+      sort: [{ field: 'Date', direction: 'asc' }],
+      maxRecords: 1
+    });
+    if (!matches.length) {
+      container.innerHTML = `<div class="card"><div class="card-body" style="text-align:center;padding:28px;color:var(--slate);">No upcoming matches scheduled</div></div>`;
+      return;
+    }
+    const m = matches[0].fields;
+    const matchDate = new Date(m['Date']);
+    const daysUntil = Math.ceil((matchDate - new Date()) / (1000*60*60*24));
+    container.innerHTML = `
+      <div style="background:linear-gradient(135deg,var(--steel2),var(--steel));border:1px solid var(--gold-line);border-radius:13px;padding:20px;position:relative;overflow:hidden;">
+        <div style="position:absolute;right:-12px;bottom:-12px;font-size:72px;opacity:0.06;">⚽</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.12em;color:var(--gold);margin-bottom:8px;">▸ NEXT MATCH${m['Conference?'] ? ' — CONFERENCE' : ''}</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px;margin-bottom:4px;">vs. ${m['Opponent'] || m['Event Name'] || 'TBD'}</div>
+        <div style="font-size:12px;color:var(--slate2);margin-bottom:14px;">📍 ${m['Location'] || 'TBD'} · ${m['Home / Away'] || ''}</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;color:var(--slate2);margin-bottom:12px;">${matchDate.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div>
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(0,0,0,0.3);padding:8px 14px;border-radius:8px;">
+          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:28px;color:var(--gold2);">${daysUntil}</span>
+          <span style="font-size:12px;color:var(--slate);">days away</span>
+        </div>
+      </div>`;
+  } catch(e) {
+    container.innerHTML = `<div class="card"><div class="card-body" style="color:var(--slate);text-align:center;padding:28px;">Schedule data unavailable</div></div>`;
+  }
+}
+
+async function loadInjuries() {
+  const el = document.getElementById('injuryList');
+  try {
+    const injuries = await airtableFetch(FIS_CONFIG.TABLES.INJURIES, {
+      filterByFormula: `{Status}="Active"`,
+      maxRecords: 5
+    });
+    if (!injuries.length) {
+      el.innerHTML = `<div class="alert-item alert-green"><div class="alert-icon">✅</div><div><div class="alert-title">No active injuries</div><div class="alert-sub">Full squad available</div></div></div>`;
+      return;
+    }
+    el.innerHTML = injuries.map(inj => {
+      const f = inj.fields;
+      const player = Array.isArray(f['Player']) ? f['Player'][0] : (f['Player'] || 'Unknown');
+      return `<div class="alert-item alert-red">
+        <div class="alert-icon">🚫</div>
+        <div>
+          <div class="alert-title">${player} — ${f['Injury Type'] || 'Injury'}</div>
+          <div class="alert-sub">${f['Body Area'] || ''} · RTF: ${f['Expected RTF Date'] || 'TBD'}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = `<div style="color:var(--slate);font-size:13px;padding:12px;">Could not load injury data</div>`;
+  }
+}
+
+async function loadTasks() {
+  const el = document.getElementById('tasksList');
+  try {
+    const tasks = await airtableFetch(FIS_CONFIG.TABLES.TASKS, {
+      filterByFormula: `NOT({Status}="Complete")`,
+      sort: [{ field: 'Due Date', direction: 'asc' }],
+      maxRecords: 5
+    });
+    if (!tasks.length) {
+      el.innerHTML = `<div style="text-align:center;padding:16px;color:var(--slate);font-size:13px;">All tasks complete ✓</div>`;
+      return;
+    }
+    el.innerHTML = tasks.map(t => {
+      const f = t.fields;
+      const priority = f['Priority'] || 'Normal';
+      const pClass = priority === 'High' ? 'pill-red' : priority === 'Urgent' ? 'pill-red' : 'pill-blue';
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;color:var(--white);margin-bottom:2px;">${f['Task Name'] || 'Untitled'}</div>
+          <div style="font-size:11px;color:var(--slate);">${f['Assigned To'] || 'Unassigned'} · Due: ${f['Due Date'] || 'No date'}</div>
+        </div>
+        <span class="pill ${pClass}">${priority}</span>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = `<div style="color:var(--slate);font-size:13px;padding:12px;">Could not load tasks</div>`;
+  }
+}
+
+async function refreshAll() {
+  showToast('Refreshing data...');
+  await Promise.all([loadStats(), loadRosterGrid(), loadNextMatch(), loadInjuries(), loadTasks()]);
+  showToast('Data updated ✓');
+}
+
+// Initial load
+refreshAll();
+</script>
+</body>
+</html>

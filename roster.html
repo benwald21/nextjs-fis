@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIS — Roster</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="logo-mark">FIS</div>
+    <div class="nav-section-label">MAIN</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">⬡</span><span class="nav-label">Dashboard</span></a>
+    <a href="readiness.html" class="nav-item"><span class="nav-icon">💚</span><span class="nav-label">Player Readiness</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">OPERATIONS</div>
+    <a href="roster.html" class="nav-item active"><span class="nav-icon">👥</span><span class="nav-label">Roster</span></a>
+    <a href="recruiting.html" class="nav-item"><span class="nav-icon">🎯</span><span class="nav-label">Recruiting</span></a>
+    <a href="schedule.html" class="nav-item"><span class="nav-icon">📅</span><span class="nav-label">Schedule</span></a>
+    <a href="tasks.html" class="nav-item"><span class="nav-icon">✅</span><span class="nav-label">Staff Tasks</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">SPORT SCIENCE</div>
+    <a href="training.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Training &amp; Load</span></a>
+    <a href="opponents.html" class="nav-item"><span class="nav-icon">🔍</span><span class="nav-label">Opponents</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">PROGRAM</div>
+    <a href="academics.html" class="nav-item"><span class="nav-icon">🎓</span><span class="nav-label">Academics</span></a>
+    <a href="budget.html" class="nav-item"><span class="nav-icon">💰</span><span class="nav-label">Budget</span></a>
+    <a href="marketing.html" class="nav-item"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
+    <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
+    <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+  </nav>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">ROSTER <span>MANAGEMENT</span></div>
+      <div class="topbar-actions">
+        <button class="btn btn-gold" onclick="openAddModal()">+ Add Player</button>
+        <div class="avatar">HC</div>
+      </div>
+    </header>
+
+    <div class="page">
+      <!-- FILTERS -->
+      <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center;">
+        <input class="form-input" id="searchInput" placeholder="Search players..." style="width:220px;" oninput="filterPlayers()">
+        <select class="form-select" id="filterPosition" onchange="filterPlayers()" style="width:130px;">
+          <option value="">All Positions</option>
+          <option>GK</option><option>RB</option><option>CB</option><option>LB</option>
+          <option>CDM</option><option>CM</option><option>CMF</option><option>CAM</option>
+          <option>DCM</option><option>RW</option><option>LW</option><option>ST</option>
+        </select>
+        <select class="form-select" id="filterYear" onchange="filterPlayers()" style="width:140px;">
+          <option value="">All Years</option>
+          <option>Freshman</option><option>Sophomore</option><option>Junior</option>
+          <option>Senior</option><option>RS Senior</option><option>Grad</option>
+        </select>
+        <select class="form-select" id="filterStatus" onchange="filterPlayers()" style="width:140px;">
+          <option value="">All Status</option>
+          <option>Active</option><option>Injured</option><option>Limited</option>
+        </select>
+        <div style="margin-left:auto;font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);" id="rosterCount">Loading...</div>
+      </div>
+
+      <!-- ROSTER TABLE -->
+      <div class="card">
+        <div class="card-body" style="padding:0;">
+          <table class="data-table" id="rosterTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Player</th>
+                <th>Position</th>
+                <th>Year</th>
+                <th>Hometown</th>
+                <th>Nationality</th>
+                <th>Status</th>
+                <th>Scholarship</th>
+                <th>Medical</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="rosterBody">
+              <tr><td colspan="10"><div class="loading"><div class="spinner"></div> Loading roster...</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PLAYER DETAIL MODAL -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal" style="width:620px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:0.1em;margin-bottom:4px;" id="modalJersey">#</div>
+        <div class="modal-title" id="modalName">Player Name</div>
+        <div id="modalPosition" style="font-size:13px;color:var(--slate2);"></div>
+      </div>
+      <div id="modalPhoto" style="width:72px;height:72px;border-radius:12px;background:var(--steel);border:2px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:28px;">👤</div>
+    </div>
+    <div class="grid-2" style="gap:14px;margin-bottom:14px;">
+      <div><div class="form-label">Status</div><div id="modalStatus"></div></div>
+      <div><div class="form-label">Year</div><div id="modalYear" style="font-size:14px;color:var(--white);"></div></div>
+      <div><div class="form-label">Hometown</div><div id="modalHometown" style="font-size:14px;color:var(--white);"></div></div>
+      <div><div class="form-label">Nationality</div><div id="modalNationality" style="font-size:14px;color:var(--white);"></div></div>
+      <div><div class="form-label">Email</div><div id="modalEmail" style="font-size:13px;color:var(--blue);"></div></div>
+      <div><div class="form-label">Phone</div><div id="modalPhone" style="font-size:13px;color:var(--white);"></div></div>
+      <div><div class="form-label">Scholarship</div><div id="modalScholarship" style="font-size:13px;color:var(--white);"></div></div>
+      <div><div class="form-label">Medical Clearance</div><div id="modalMedical"></div></div>
+      <div><div class="form-label">Height</div><div id="modalHeight" style="font-size:14px;color:var(--white);"></div></div>
+      <div><div class="form-label">Weight</div><div id="modalWeight" style="font-size:14px;color:var(--white);"></div></div>
+      <div><div class="form-label">Dominant Foot</div><div id="modalFoot" style="font-size:14px;color:var(--white);"></div></div>
+      <div><div class="form-label">DOB</div><div id="modalDOB" style="font-size:14px;color:var(--white);"></div></div>
+    </div>
+    <div><div class="form-label">Coach Notes</div><div id="modalNotes" style="font-size:13px;color:var(--slate2);background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;min-height:40px;"></div></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('detailModal')">Close</button>
+      <button class="btn btn-gold" id="modalEditBtn">Edit in Airtable ↗</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD PLAYER MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-title">Add New Player</div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Player Name *</label><input class="form-input" id="add-name" placeholder="Last, First"></div>
+      <div class="form-group"><label class="form-label">Jersey #</label><input class="form-input" id="add-jersey" type="number" placeholder="00"></div>
+      <div class="form-group"><label class="form-label">Position</label>
+        <select class="form-select" id="add-position">
+          <option>GK</option><option>RB</option><option>CB</option><option>LB</option>
+          <option>CDM</option><option>CM</option><option>CMF</option><option>CAM</option>
+          <option>RW</option><option>LW</option><option>ST</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Year</label>
+        <select class="form-select" id="add-year">
+          <option>Freshman</option><option>Sophomore</option><option>Junior</option>
+          <option>Senior</option><option>RS Senior</option><option>Grad</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Hometown</label><input class="form-input" id="add-hometown" placeholder="City, State"></div>
+      <div class="form-group"><label class="form-label">Nationality</label><input class="form-input" id="add-nationality" placeholder="United States"></div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="add-email" placeholder="abc123@pitt.edu"></div>
+      <div class="form-group"><label class="form-label">Scholarship Status</label>
+        <select class="form-select" id="add-scholarship">
+          <option>Full Scholarship</option><option>Partial - Other</option>
+          <option>Walk-on</option><option>Walk-on (Need Aid)</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Status</label>
+      <select class="form-select" id="add-status">
+        <option>Active</option><option>Injured</option><option>Limited</option><option>Medical RS</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="addPlayer()">Add to Roster</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="config.js"></script>
+<script>
+let allPlayers = [];
+
+function showToast(msg, dur=2800) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+function statusPillHTML(status) {
+  if (!status) return '<span class="pill pill-slate">—</span>';
+  const s = status.toLowerCase();
+  if (s.includes('active')) return `<span class="pill pill-green">${status}</span>`;
+  if (s.includes('injur')) return `<span class="pill pill-red">${status}</span>`;
+  if (s.includes('limit')) return `<span class="pill pill-yellow">${status}</span>`;
+  return `<span class="pill pill-slate">${status}</span>`;
+}
+
+async function loadRoster() {
+  try {
+    allPlayers = await airtableFetch(FIS_CONFIG.TABLES.PLAYERS, {
+      sort: [{ field: 'Jersey #', direction: 'asc' }]
+    });
+    renderTable(allPlayers);
+  } catch(e) {
+    document.getElementById('rosterBody').innerHTML = `<tr><td colspan="10" style="color:var(--red);padding:20px;">Error loading roster: ${e.message}</td></tr>`;
+  }
+}
+
+function renderTable(players) {
+  document.getElementById('rosterCount').textContent = `${players.length} players`;
+  if (!players.length) {
+    document.getElementById('rosterBody').innerHTML = `<tr><td colspan="10"><div class="empty"><div class="empty-icon">👥</div><div class="empty-text">No players match filters</div></div></td></tr>`;
+    return;
+  }
+  document.getElementById('rosterBody').innerHTML = players.map(p => {
+    const f = p.fields;
+    const status = f['Team Status'] || f['Status'] || 'Active';
+    const medical = f['Medical Clearance'] ? '<span class="pill pill-green">Cleared</span>' : '<span class="pill pill-red">Not Cleared</span>';
+    return `<tr style="cursor:pointer;" onclick="openDetail('${p.id}')">
+      <td style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;color:var(--gold2);">${f['Jersey #'] || '—'}</td>
+      <td>
+        <div style="font-weight:600;color:var(--white);">${f['Player Name'] || '—'}</div>
+      </td>
+      <td><span class="pill pill-slate">${f['Position'] || '—'}</span></td>
+      <td style="color:var(--slate2);">${f['Year'] || '—'}</td>
+      <td style="color:var(--slate);">${f['Hometown'] || '—'}</td>
+      <td style="color:var(--slate);">${f['Nationality'] || '—'}</td>
+      <td>${statusPillHTML(status)}</td>
+      <td style="color:var(--slate);font-size:12px;">${f['Scholarship Status'] || '—'}</td>
+      <td>${medical}</td>
+      <td><button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;" onclick="event.stopPropagation();openDetail('${p.id}')">View</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function filterPlayers() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const pos = document.getElementById('filterPosition').value;
+  const year = document.getElementById('filterYear').value;
+  const status = document.getElementById('filterStatus').value;
+  const filtered = allPlayers.filter(p => {
+    const f = p.fields;
+    const name = (f['Player Name'] || '').toLowerCase();
+    const playerStatus = f['Team Status'] || f['Status'] || '';
+    if (search && !name.includes(search)) return false;
+    if (pos && f['Position'] !== pos) return false;
+    if (year && f['Year'] !== year) return false;
+    if (status && !playerStatus.toLowerCase().includes(status.toLowerCase())) return false;
+    return true;
+  });
+  renderTable(filtered);
+}
+
+function openDetail(id) {
+  const player = allPlayers.find(p => p.id === id);
+  if (!player) return;
+  const f = player.fields;
+  const status = f['Team Status'] || f['Status'] || '—';
+  document.getElementById('modalJersey').textContent = `#${f['Jersey #'] || '—'} · ${f['Position'] || '—'}`;
+  document.getElementById('modalName').textContent = f['Player Name'] || '—';
+  document.getElementById('modalPosition').textContent = `${f['Year'] || ''} · ${f['Dominant Foot'] || ''} footed`;
+  document.getElementById('modalStatus').innerHTML = statusPillHTML(status);
+  document.getElementById('modalYear').textContent = f['Year'] || '—';
+  document.getElementById('modalHometown').textContent = f['Hometown'] || '—';
+  document.getElementById('modalNationality').textContent = f['Nationality'] || '—';
+  document.getElementById('modalEmail').textContent = f['Email'] || '—';
+  document.getElementById('modalPhone').textContent = f['Phone'] || '—';
+  document.getElementById('modalScholarship').textContent = f['Scholarship Status'] || '—';
+  document.getElementById('modalMedical').innerHTML = f['Medical Clearance'] ? '<span class="pill pill-green">Cleared</span>' : '<span class="pill pill-red">Not Cleared</span>';
+  document.getElementById('modalHeight').textContent = f['Height'] || '—';
+  document.getElementById('modalWeight').textContent = f['Weight (lbs)'] ? `${f['Weight (lbs)']} lbs` : '—';
+  document.getElementById('modalFoot').textContent = f['Dominant Foot'] || '—';
+  document.getElementById('modalDOB').textContent = f['Date of Birth'] || '—';
+  document.getElementById('modalNotes').textContent = f['Coaches Notes'] || f['Coach Notes'] || 'No notes';
+  if (f['Photo'] && f['Photo'][0]) {
+    document.getElementById('modalPhoto').innerHTML = `<img src="${f['Photo'][0].url}" style="width:100%;height:100%;object-fit:cover;">`;
+  }
+  document.getElementById('modalEditBtn').onclick = () => window.open(`https://airtable.com/${FIS_CONFIG.BASE_ID}`, '_blank');
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function openAddModal() { document.getElementById('addModal').classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+async function addPlayer() {
+  const name = document.getElementById('add-name').value.trim();
+  if (!name) { showToast('Player name is required'); return; }
+  try {
+    await airtableCreate(FIS_CONFIG.TABLES.PLAYERS, {
+      'Player Name': name,
+      'Jersey #': parseInt(document.getElementById('add-jersey').value) || null,
+      'Position': document.getElementById('add-position').value,
+      'Year': document.getElementById('add-year').value,
+      'Hometown': document.getElementById('add-hometown').value,
+      'Nationality': document.getElementById('add-nationality').value,
+      'Email': document.getElementById('add-email').value,
+      'Scholarship Status': document.getElementById('add-scholarship').value,
+      'Team Status': document.getElementById('add-status').value,
+    });
+    closeModal('addModal');
+    showToast(`${name} added to roster ✓`);
+    loadRoster();
+  } catch(e) { showToast(`Error: ${e.message}`); }
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+loadRoster();
+</script>
+</body>
+</html>
