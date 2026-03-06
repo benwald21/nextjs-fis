@@ -1,5 +1,5 @@
 const FIS_CONFIG = {
-  AIRTABLE_TOKEN: 'patoSUOqDsefI3Fab.a6e9c5cb2ee88bf0365a43ba00984bd8fe70f78c2952a08c28a6825110f9d3aa',
+  AIRTABLE_TOKEN: 'patdursXQTMkI2jjH.42d70dce8a27b8d1292e260443d7820e99a2982a98a0e1961842258ad32d581e',
   BASE_ID: 'appcwgO0x00bccESC',
   TABLES: {
     PLAYERS: 'Players',
@@ -35,7 +35,7 @@ async function airtableFetch(table, params = {}) {
   const res = await fetch(url.toString(), {
     headers: { 'Authorization': `Bearer ${FIS_CONFIG.AIRTABLE_TOKEN}` }
   });
-  if (!res.ok) throw new Error(`Airtable error: ${res.status}`);
+  if (!res.ok) throw new Error(`Airtable error: ${res.status} — Table: ${table}`);
   const data = await res.json();
   return data.records || [];
 }
