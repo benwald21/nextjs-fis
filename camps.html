@@ -137,7 +137,7 @@ function renderParticipants(list) {
 
 async function loadCamps() {
   try {
-    allParticipants = await airtableFetch(FIS_CONFIG.TABLES.CAMPS, { sort:[{field:'Participant Name',direction:'asc'}] });
+    allParticipants = await airtableFetch(FIS_CONFIG.TABLES.CAMPS, {});
     const paid = allParticipants.filter(p => p.fields['Payment Status']==='Paid');
     const flags = allParticipants.filter(p => p.fields['Recruiting Flag']);
     const revenue = allParticipants.filter(p => p.fields['Payment Status']==='Paid').reduce((sum,p) => sum + (parseFloat(p.fields['Fee'])||0), 0);

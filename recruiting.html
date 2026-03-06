@@ -160,9 +160,7 @@ async function loadPipeline() {
   const posFilter = document.getElementById('posFilter').value;
 
   try {
-    allProspects = await airtableFetch(FIS_CONFIG.TABLES.PROSPECTS, {
-      sort: [{ field: 'Prospect Name', direction: 'asc' }]
-    });
+    allProspects = await airtableFetch(FIS_CONFIG.TABLES.PROSPECTS, {});
 
     let filtered = allProspects.filter(p => p.fields['Stage'] !== 'Not Pursuing');
     if (classFilter) filtered = filtered.filter(p => String(p.fields['Class Year']) === classFilter);

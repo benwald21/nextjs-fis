@@ -136,7 +136,7 @@ function renderAlumni(list) {
 
 async function loadAlumni() {
   try {
-    allAlumni = await airtableFetch(FIS_CONFIG.TABLES.ALUMNI, { sort:[{field:'Grad Year',direction:'desc'}] });
+    allAlumni = await airtableFetch(FIS_CONFIG.TABLES.ALUMNI, {});
     const pro = allAlumni.filter(a => (a.fields['Current Status']||'').includes('Pro'));
     const mentors = allAlumni.filter(a => a.fields['Mentor Available']);
     const classes = [...new Set(allAlumni.map(a => a.fields['Grad Year']).filter(Boolean))];
