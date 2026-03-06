@@ -108,7 +108,7 @@ function riskColor(r) {
 
 async function loadOpponents() {
   try {
-    opponents = await airtableFetch(FIS_CONFIG.TABLES.OPPONENTS, { sort:[{field:'Team Name',direction:'asc'}] });
+    opponents = await airtableFetch(FIS_CONFIG.TABLES.OPPONENTS, {});
     const grid = document.getElementById('opponentGrid');
     grid.innerHTML = opponents.length ? opponents.map(o => {
       const f = o.fields;
