@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIS — Depth Chart</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.dc-budget-bar {
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:14px 20px; margin-bottom:20px; display:flex; align-items:center; gap:24px; flex-wrap:wrap;
+}
+.dc-budget-item { display:flex; flex-direction:column; gap:2px; }
+.dc-budget-label { font-family:'DM Mono',monospace; font-size:10px; color:var(--slate); letter-spacing:0.1em; text-transform:uppercase; }
+.dc-budget-value { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:22px; }
+.dc-budget-bar-track { flex:1; min-width:180px; height:8px; background:var(--steel); border-radius:99px; overflow:hidden; }
+.dc-budget-bar-fill { height:100%; border-radius:99px; background:linear-gradient(90deg,var(--green),var(--gold2)); transition:width 0.5s cubic-bezier(0.4,0,0.2,1); }
+.dc-budget-bar-fill.over { background:linear-gradient(90deg,var(--gold2),var(--red)); }
+
+/* LAYOUT */
+.dc-layout { display:flex; gap:16px; align-items:flex-start; }
+.dc-field-col { flex:1; min-width:0; }
+.dc-bench-col { width:230px; flex-shrink:0; }
+
+/* FORMATION TOOLBAR */
+.dc-toolbar { display:flex; align-items:center; gap:8px; padding:0 0 16px; flex-wrap:wrap; }
+.formation-btn {
+  padding:5px 12px; border-radius:6px; font-family:'DM Mono',monospace; font-size:11px;
+  background:var(--steel); border:1px solid var(--border); color:var(--slate2); cursor:pointer; transition:all 0.15s;
+}
+.formation-btn:hover { border-color:var(--gold-line); color:var(--white); }
+.formation-btn.active { background:var(--gold-bg); border-color:var(--gold); color:var(--gold2); }
+
+/* FIELD */
+.field-container {
+  position:relative; border-radius:12px; overflow:hidden;
+  background:#1b4d20;
+  border:2px solid rgba(255,255,255,0.07);
+  box-shadow:0 0 40px rgba(0,0,0,0.5) inset;
+}
+.field-markings {
+  position:absolute; inset:0; pointer-events:none; z-index:1;
+  border:4px solid rgba(255,255,255,0); /* outer handled by container */
+}
+/* Grass stripes */
+.field-container::after {
+  content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background: repeating-linear-gradient(180deg, rgba(0,0,0,0.07) 0px, rgba(0,0,0,0.07) 48px, transparent 48px, transparent 96px);
+}
+/* Field lines via SVG overlay */
+.field-svg { position:absolute; inset:0; width:100%; height:100%; z-index:1; pointer-events:none; }
+
+/* POSITION GRID */
+.field-rows {
+  position:relative; z-index:2;
+  display:flex; flex-direction:column; gap:0;
+  padding:16px 10px;
+}
+.field-row {
+  display:flex; align-items:center; justify-content:center;
+  gap:8px; padding:6px 0;
+}
+.field-row-label {
+  font-family:'DM Mono',monospace; font-size:9px; color:rgba(255,255,255,0.25);
+  letter-spacing:0.1em; width:28px; text-align:right; flex-shrink:0;
+}
+
+/* POSITION SLOT — 3 deep stack */
+.pos-slot { display:flex; flex-direction:column; align-items:center; gap:3px; }
+.pos-tag {
+  font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:10px;
+  color:rgba(255,255,255,0.4); letter-spacing:0.06em;
+  background:rgba(0,0,0,0.3); border-radius:3px; padding:1px 5px;
+}
+.depth-stack { display:flex; flex-direction:column; align-items:center; gap:3px; }
+.depth-stack-sub { display:flex; flex-direction:row; gap:3px; }
+.depth-stack-sub .depth-circle { width:48px; height:48px; font-size:15px; }
+.depth-stack-sub .slot-name { font-size:10px; max-width:44px; }
+.depth-stack-sub .slot-schol { font-size:7px; }
+.depth-stack-sub .depth-num { font-size:7px; }
+
+/* INDIVIDUAL DEPTH CIRCLE */
+.depth-circle {
+  width:58px; height:58px; border-radius:50%;
+  border:2px dashed rgba(255,255,255,0.18);
+  background:rgba(0,0,0,0.2);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  transition:all 0.18s; cursor:pointer; position:relative;
+  font-size:18px; color:rgba(255,255,255,0.2);
+}
+.depth-circle:hover { border-color:var(--gold); background:rgba(201,151,58,0.12); }
+.depth-circle.drag-over { border-color:var(--gold2); background:rgba(201,151,58,0.22); transform:scale(1.1); box-shadow:0 0 16px rgba(201,151,58,0.4); border-style:solid; }
+.depth-circle.filled { border-style:solid; cursor:default; }
+.depth-circle.filled.recruit { border-color:rgba(77,166,255,0.55); background:rgba(15,35,75,0.9); }
+.depth-circle.filled.current { border-color:rgba(34,201,139,0.55); background:rgba(10,38,28,0.9); }
+.depth-num {
+  position:absolute; top:1px; left:5px;
+  font-family:'DM Mono',monospace; font-size:8px; color:rgba(255,255,255,0.25);
+}
+.slot-name {
+  font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:11px;
+  color:var(--white); text-align:center; line-height:1.1;
+  max-width:52px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:0 2px;
+}
+.slot-schol {
+  font-family:'DM Mono',monospace; font-size:8px; color:var(--gold2);
+  white-space:nowrap;
+}
+.slot-dot { width:5px; height:5px; border-radius:50%; margin-bottom:1px; flex-shrink:0; }
+.slot-dot.recruit { background:var(--blue); }
+.slot-dot.current { background:var(--green); }
+.slot-remove {
+  position:absolute; top:-3px; right:-3px;
+  width:14px; height:14px; border-radius:50%;
+  background:var(--red); color:white; font-size:9px; font-weight:700;
+  border:none; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  opacity:0; transition:opacity 0.15s; line-height:1; padding:0;
+}
+.depth-circle:hover .slot-remove { opacity:1; }
+
+/* BENCH */
+.bench-panel { display:flex; flex-direction:column; gap:8px; }
+.bench-title {
+  font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:13px;
+  letter-spacing:0.06em; color:var(--gold2); text-transform:uppercase;
+  padding-bottom:8px; border-bottom:1px solid var(--border);
+}
+.bench-section {
+  font-family:'DM Mono',monospace; font-size:9px; color:var(--slate);
+  letter-spacing:0.1em; text-transform:uppercase; margin-top:4px;
+}
+.bench-list { display:flex; flex-direction:column; gap:4px; overflow-y:auto; max-height:480px; }
+.bench-card {
+  background:var(--card); border:1px solid var(--border); border-radius:7px;
+  padding:7px 9px; cursor:grab; transition:all 0.15s;
+  display:flex; align-items:center; gap:7px;
+}
+.bench-card:active { cursor:grabbing; opacity:0.6; }
+.bench-card:hover { border-color:var(--gold-line); }
+.bench-card.dragging { opacity:0.35; }
+.bench-card.recruit-card { border-left:3px solid var(--blue); }
+.bench-card.current-card { border-left:3px solid var(--green); }
+.bench-pos {
+  font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:11px;
+  color:var(--gold2); width:26px; text-align:center;
+  background:rgba(201,151,58,0.1); border-radius:3px; padding:1px 0; flex-shrink:0;
+}
+.bench-info { flex:1; min-width:0; }
+.bench-name {
+  font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:12px;
+  color:var(--white); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.bench-schol { font-family:'DM Mono',monospace; font-size:9px; color:var(--slate); }
+.bench-schol.set { color:var(--gold2); }
+
+/* SCHOL INPUT */
+.schol-input {
+  background:var(--steel); border:1px solid var(--border); border-radius:6px;
+  color:var(--white); padding:6px 10px; font-family:'DM Mono',monospace; font-size:12px; width:120px;
+}
+.schol-input:focus { outline:none; border-color:var(--gold); }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="logo-mark">FIS</div>
+    <div class="nav-section-label">MAIN</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">⬡</span><span class="nav-label">Dashboard</span></a>
+    <a href="readiness.html" class="nav-item"><span class="nav-icon">💚</span><span class="nav-label">Player Readiness</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">OPERATIONS</div>
+    <a href="roster.html" class="nav-item"><span class="nav-icon">👥</span><span class="nav-label">Roster</span></a>
+    <a href="recruiting.html" class="nav-item"><span class="nav-icon">🎯</span><span class="nav-label">Recruiting</span></a>
+    <a href="depthchart.html" class="nav-item active"><span class="nav-icon">⚽</span><span class="nav-label">Depth Chart</span></a>
+    <a href="schedule.html" class="nav-item"><span class="nav-icon">📅</span><span class="nav-label">Schedule</span></a>
+    <a href="tasks.html" class="nav-item"><span class="nav-icon">✅</span><span class="nav-label">Staff Tasks</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">SPORT SCIENCE</div>
+    <a href="training.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Training &amp; Load</span></a>
+    <a href="opponents.html" class="nav-item"><span class="nav-icon">🔍</span><span class="nav-label">Opponents</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">PROGRAM</div>
+    <a href="academics.html" class="nav-item"><span class="nav-icon">🎓</span><span class="nav-label">Academics</span></a>
+    <a href="budget.html" class="nav-item"><span class="nav-icon">💰</span><span class="nav-label">Budget</span></a>
+    <a href="marketing.html" class="nav-item"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
+    <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
+    <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+  </nav>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">DEPTH <span>CHART</span></div>
+      <div class="topbar-actions">
+        <select class="form-select" id="classFilter" onchange="loadData()" style="width:130px;">
+          <option value="2026">Class 2026</option>
+          <option value="2027">Class 2027</option>
+          <option value="2028">Class 2028</option>
+          <option value="2029">Class 2029</option>
+        </select>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);">BUDGET $</span>
+        <input class="schol-input" type="number" id="totalBudget" placeholder="500000" value="500000" oninput="saveBudget();updateBudgetBar()">
+        <div class="avatar">HC</div>
+      </div>
+    </header>
+    <div class="page">
+
+      <!-- BUDGET BAR -->
+      <div class="dc-budget-bar">
+        <div class="dc-budget-item">
+          <div class="dc-budget-label">Total Budget</div>
+          <div class="dc-budget-value" id="bTotal" style="color:var(--white);">—</div>
+        </div>
+        <div class="dc-budget-item">
+          <div class="dc-budget-label">Committed</div>
+          <div class="dc-budget-value" id="bCommitted" style="color:var(--gold2);">$0</div>
+        </div>
+        <div class="dc-budget-item">
+          <div class="dc-budget-label">Remaining</div>
+          <div class="dc-budget-value" id="bRemaining" style="color:var(--green);">—</div>
+        </div>
+        <div class="dc-budget-item">
+          <div class="dc-budget-label">Players Placed</div>
+          <div class="dc-budget-value" id="bSlots" style="color:var(--slate2);">0</div>
+        </div>
+        <div class="dc-budget-bar-track">
+          <div class="dc-budget-bar-fill" id="bFill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- TOOLBAR -->
+      <div class="dc-toolbar">
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);letter-spacing:0.1em;">FORMATION</span>
+        <button class="formation-btn active" onclick="setFormation('4-3-3',this)">4-3-3</button>
+        <button class="formation-btn" onclick="setFormation('4-2-3-1',this)">4-2-3-1</button>
+        <button class="formation-btn" onclick="setFormation('4-4-2',this)">4-4-2</button>
+        <button class="formation-btn" onclick="setFormation('3-5-2',this)">3-5-2</button>
+        <button class="formation-btn" onclick="setFormation('5-3-2',this)">5-3-2</button>
+        <div style="margin-left:auto;display:flex;gap:8px;">
+          <button class="btn btn-ghost" style="font-size:11px;" onclick="clearChart()">Clear Chart</button>
+          <button class="btn btn-gold" style="font-size:11px;" onclick="saveChart()">💾 Save</button>
+        </div>
+      </div>
+
+      <!-- FIELD + BENCH -->
+      <div class="dc-layout">
+        <div class="dc-field-col">
+          <div class="field-container">
+            <svg class="field-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <!-- Field outline -->
+              <rect x="5" y="3" width="90" height="94" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="0.4"/>
+              <!-- Center line -->
+              <line x1="5" y1="50" x2="95" y2="50" stroke="rgba(255,255,255,0.18)" stroke-width="0.4"/>
+              <!-- Center circle -->
+              <circle cx="50" cy="50" r="9" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="0.4"/>
+              <circle cx="50" cy="50" r="0.6" fill="rgba(255,255,255,0.3)"/>
+              <!-- Top penalty box -->
+              <rect x="27" y="3" width="46" height="17" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="0.4"/>
+              <!-- Top goal box -->
+              <rect x="37" y="3" width="26" height="7" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="0.4"/>
+              <!-- Bottom penalty box -->
+              <rect x="27" y="80" width="46" height="17" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="0.4"/>
+              <!-- Bottom goal box -->
+              <rect x="37" y="90" width="26" height="7" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="0.4"/>
+              <!-- Penalty spots -->
+              <circle cx="50" cy="14" r="0.6" fill="rgba(255,255,255,0.3)"/>
+              <circle cx="50" cy="86" r="0.6" fill="rgba(255,255,255,0.3)"/>
+            </svg>
+            <div class="field-rows" id="fieldRows"></div>
+          </div>
+        </div>
+
+        <!-- BENCH -->
+        <div class="dc-bench-col">
+          <div class="bench-panel">
+            <div class="bench-title">⚽ Available Players</div>
+            <div class="bench-section">🔵 Recruits (Committed/Signed)</div>
+            <div class="bench-list" id="recruitBench"></div>
+            <div class="bench-section" style="margin-top:10px;">🟢 Current Roster</div>
+            <div class="bench-list" id="rosterBench"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- SLOT PICKER MODAL -->
+<div class="modal-overlay" id="pickerModal">
+  <div class="modal" style="width:400px;max-height:80vh;display:flex;flex-direction:column;">
+    <div class="modal-title" id="pickerTitle">Select Player</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);margin-bottom:10px;" id="pickerSub"></div>
+    <div id="pickerList" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:5px;margin-bottom:12px;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closePickerModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCHOLARSHIP EDIT MODAL -->
+<div class="modal-overlay" id="scholModal">
+  <div class="modal" style="width:360px;">
+    <div class="modal-title">💰 Set Scholarship Amount</div>
+    <div id="scholPlayerName" style="color:var(--slate2);font-size:14px;margin-bottom:16px;"></div>
+    <div class="form-group">
+      <label class="form-label">Scholarship Amount ($)</label>
+      <input class="form-input" type="number" id="scholAmount" placeholder="e.g. 25000">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeScholModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveScholAmount()">Save Amount</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="config.js"></script>
+<script>
+// ── FORMATIONS (3 slots per position = starter, 2nd, 3rd) ──
+const FORMATIONS = {
+  '4-3-3':   [['LW','ST','RW'], ['LCM','CM','RCM'], ['LB','LCB','RCB','RB'], ['GK']],
+  '4-2-3-1': [['ST'], ['LW','CAM','RW'], ['LDM','RDM'], ['LB','LCB','RCB','RB'], ['GK']],
+  '4-4-2':   [['LST','RST'], ['LM','LCM','RCM','RM'], ['LB','LCB','RCB','RB'], ['GK']],
+  '3-5-2':   [['LST','RST'], ['LM','LCM','CM','RCM','RM'], ['LCB','CB','RCB'], ['GK']],
+  '5-3-2':   [['LST','RST'], ['LCM','CM','RCM'], ['LWB','LCB','CB','RCB','RWB'], ['GK']]
+};
+const ROW_LABELS = ['ATT','MID','DEF','GK'];
+const DEPTH = 3; // 3 deep per position
+
+let currentFormation = '4-3-3';
+// chartData: { slotKey: { id, name, scholarship, type } }[]  — array of DEPTH per slot
+// slotKey = `${rowIdx}_${posIdx}`
+let chartData = {};
+let allRecruits = [];
+let allPlayers = [];
+let dragPayload = null;
+let pendingSlotKey = null;
+let pendingDepthIdx = null;
+
+function showToast(msg) {
+  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+function fmt(n) { return n ? '$' + Number(n).toLocaleString() : '—'; }
+function parseMoney(s) { return parseFloat(String(s||'').replace(/[$,]/g,'')) || 0; }
+function shortName(n) {
+  if (!n) return '?';
+  const p = n.trim().split(/[\s,]+/);
+  return (p[0].length > 8 ? p[0].substring(0,8) : p[0]);
+}
+
+// ── STORAGE ──
+function chartKey() { return `fis_dc_${document.getElementById('classFilter').value}_${currentFormation}`; }
+function budgetKey() { return 'fis_dc_budget'; }
+function scholKey(playerId) { return `fis_schol_${playerId}`; }
+
+function saveChart() {
+  localStorage.setItem(chartKey(), JSON.stringify(chartData));
+  showToast('Chart saved ✓');
+}
+function loadChart() {
+  const s = localStorage.getItem(chartKey());
+  chartData = s ? JSON.parse(s) : {};
+}
+function saveBudget() {
+  localStorage.setItem(budgetKey(), document.getElementById('totalBudget').value);
+}
+function loadBudget() {
+  const v = localStorage.getItem(budgetKey());
+  if (v) document.getElementById('totalBudget').value = v;
+}
+function getSchol(playerId) {
+  return parseMoney(localStorage.getItem(scholKey(playerId)) || 0);
+}
+function setSchol(playerId, amount) {
+  localStorage.setItem(scholKey(playerId), amount);
+}
+function clearChart() {
+  chartData = {};
+  renderField(); renderBench(); updateBudgetBar();
+  showToast('Chart cleared');
+}
+
+// ── FORMATION ──
+function setFormation(f, btn) {
+  currentFormation = f;
+  document.querySelectorAll('.formation-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadChart();
+  renderField(); renderBench(); updateBudgetBar();
+}
+
+// ── LOAD DATA ──
+async function loadData() {
+  const classYear = document.getElementById('classFilter').value;
+  try {
+    const prospects = await airtableFetch(FIS_CONFIG.TABLES.PROSPECTS, {});
+    allRecruits = prospects.filter(p => {
+      const stage = p.fields['Stage'] || '';
+      const cy = String(p.fields['Class Year'] || '');
+      return (stage === 'Committed' || stage === 'Signed') && cy === classYear;
+    });
+    const players = await airtableFetch(FIS_CONFIG.TABLES.PLAYERS, {});
+    allPlayers = players;
+    loadChart();
+    renderField(); renderBench(); updateBudgetBar();
+  } catch(e) {
+    showToast('Error loading: ' + e.message);
+    loadChart();
+    renderField(); renderBench(); updateBudgetBar();
+  }
+}
+
+// ── RENDER FIELD ──
+function renderField() {
+  const rows = FORMATIONS[currentFormation];
+  const container = document.getElementById('fieldRows');
+  container.innerHTML = '';
+  rows.forEach((positions, rowIdx) => {
+    const rowEl = document.createElement('div');
+    rowEl.className = 'field-row';
+    const label = document.createElement('div');
+    label.className = 'field-row-label';
+    label.textContent = ROW_LABELS[Math.min(rowIdx, ROW_LABELS.length-1)];
+    rowEl.appendChild(label);
+
+    positions.forEach((pos, posIdx) => {
+      const slotKey = `${rowIdx}_${posIdx}`;
+      const slotEl = document.createElement('div');
+      slotEl.className = 'pos-slot';
+
+      const tag = document.createElement('div');
+      tag.className = 'pos-tag';
+      tag.textContent = pos;
+      slotEl.appendChild(tag);
+
+      const stack = document.createElement('div');
+      stack.className = 'depth-stack';
+
+      // Sub-row for 2nd and 3rd string
+      const subRow = document.createElement('div');
+      subRow.className = 'depth-stack-sub';
+
+      for (let d = 0; d < DEPTH; d++) {
+        const key = slotKey + '_' + d;
+        const filled = chartData[key];
+        const schol = filled ? getSchol(filled.id) : 0;
+
+        const circle = document.createElement('div');
+        circle.className = 'depth-circle' + (filled ? ' filled ' + filled.type : '');
+        circle.dataset.key = key;
+        circle.dataset.slotKey = slotKey;
+        circle.dataset.depth = d;
+        circle.dataset.pos = pos;
+
+        const numEl = document.createElement('div');
+        numEl.className = 'depth-num';
+        numEl.textContent = d === 0 ? '1st' : d === 1 ? '2nd' : '3rd';
+        circle.appendChild(numEl);
+
+        if (filled) {
+          const dot = document.createElement('div');
+          dot.className = `slot-dot ${filled.type}`;
+          circle.appendChild(dot);
+
+          const nameEl = document.createElement('div');
+          nameEl.className = 'slot-name';
+          nameEl.textContent = shortName(filled.name);
+          circle.appendChild(nameEl);
+
+          const scholEl = document.createElement('div');
+          scholEl.className = 'slot-schol';
+          scholEl.textContent = schol ? fmt(schol) : '+ $';
+          scholEl.title = 'Click to set scholarship';
+          scholEl.style.cursor = 'pointer';
+          scholEl.addEventListener('click', (e) => { e.stopPropagation(); openScholModal(filled.id, filled.name, key); });
+          circle.appendChild(scholEl);
+
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'slot-remove';
+          removeBtn.textContent = '×';
+          removeBtn.onclick = (e) => { e.stopPropagation(); removeFromSlot(key); };
+          circle.appendChild(removeBtn);
+        } else {
+          circle.textContent = '+';
+          circle.querySelector && null;
+          circle.addEventListener('click', () => openPickerModal(slotKey, d, pos));
+        }
+
+        // Drag events
+        circle.addEventListener('dragover', e => { e.preventDefault(); circle.classList.add('drag-over'); });
+        circle.addEventListener('dragleave', () => circle.classList.remove('drag-over'));
+        circle.addEventListener('drop', e => { e.preventDefault(); circle.classList.remove('drag-over'); handleDrop(key); });
+
+        if (d === 0) {
+          stack.appendChild(circle);
+        } else {
+          subRow.appendChild(circle);
+        }
+      }
+      stack.appendChild(subRow);
+
+      slotEl.appendChild(stack);
+      rowEl.appendChild(slotEl);
+    });
+
+    container.appendChild(rowEl);
+  });
+}
+
+// ── RENDER BENCH ──
+function renderBench() {
+  const placedIds = new Set(Object.values(chartData).map(d => d.id));
+
+  const rb = document.getElementById('recruitBench');
+  const avRec = allRecruits.filter(r => !placedIds.has(r.id));
+  rb.innerHTML = avRec.length
+    ? avRec.map(r => benchCardHTML(r.id, r.fields['Prospect Name']||'', r.fields['Position']||'?', 'recruit')).join('')
+    : '<div style="color:var(--slate);font-size:11px;padding:6px;">No committed/signed recruits for this class</div>';
+
+  const pb = document.getElementById('rosterBench');
+  const avPl = allPlayers.filter(p => !placedIds.has(p.id));
+  pb.innerHTML = avPl.length
+    ? avPl.map(p => benchCardHTML(p.id, p.fields['Player Name']||'', p.fields['Position']||'?', 'current')).join('')
+    : '<div style="color:var(--slate);font-size:11px;padding:6px;">No roster players loaded</div>';
+
+  // Re-attach drag listeners
+  document.querySelectorAll('.bench-card').forEach(card => {
+    card.addEventListener('dragstart', e => startDrag(e, card));
+    card.addEventListener('dragend', () => card.classList.remove('dragging'));
+  });
+}
+
+function benchCardHTML(id, name, pos, type) {
+  const schol = getSchol(id);
+  return `<div class="bench-card ${type}-card" draggable="true"
+    data-id="${id}" data-name="${name}" data-type="${type}" data-pos="${pos}">
+    <div class="bench-pos">${pos}</div>
+    <div class="bench-info">
+      <div class="bench-name">${name||'—'}</div>
+      <div class="bench-schol ${schol?'set':''}">${schol ? fmt(schol) : 'No scholarship set'}</div>
+    </div>
+  </div>`;
+}
+
+// ── DRAG ──
+function startDrag(e, card) {
+  dragPayload = { id: card.dataset.id, name: card.dataset.name, type: card.dataset.type, pos: card.dataset.pos };
+  card.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function handleDrop(key) {
+  if (!dragPayload) return;
+  // Remove from any existing slot
+  for (const k of Object.keys(chartData)) {
+    if (chartData[k].id === dragPayload.id) delete chartData[k];
+  }
+  chartData[key] = { id: dragPayload.id, name: dragPayload.name, type: dragPayload.type };
+  dragPayload = null;
+  renderField(); renderBench(); updateBudgetBar();
+}
+
+function removeFromSlot(key) {
+  delete chartData[key];
+  renderField(); renderBench(); updateBudgetBar();
+}
+
+// ── CLICK PICKER ──
+function openPickerModal(slotKey, depthIdx, pos) {
+  pendingSlotKey = slotKey;
+  pendingDepthIdx = depthIdx;
+  const placedIds = new Set(Object.values(chartData).map(d => d.id));
+  const depthLabel = depthIdx === 0 ? '1st' : depthIdx === 1 ? '2nd' : '3rd';
+  document.getElementById('pickerTitle').textContent = `Place ${pos} — ${depthLabel} String`;
+  document.getElementById('pickerSub').textContent = 'Position matches highlighted in green';
+
+  const all = [
+    ...allRecruits.filter(r => !placedIds.has(r.id)).map(r => ({ id: r.id, name: r.fields['Prospect Name']||'', pos: r.fields['Position']||'', type:'recruit' })),
+    ...allPlayers.filter(p => !placedIds.has(p.id)).map(p => ({ id: p.id, name: p.fields['Player Name']||'', pos: p.fields['Position']||'', type:'current' }))
+  ].sort((a,b) => (a.pos===pos?0:1) - (b.pos===pos?0:1));
+
+  const list = document.getElementById('pickerList');
+  list.innerHTML = all.length ? all.map(pl => {
+    const schol = getSchol(pl.id);
+    const match = pl.pos === pos;
+    return `<div class="bench-card ${pl.type}-card" style="cursor:pointer;${match?'border-color:var(--green);':''}" onclick="placePlayer('${pl.id}')">
+      <div class="bench-pos" style="${match?'background:rgba(34,201,139,0.15);color:var(--green);':''}">${pl.pos||'?'}</div>
+      <div class="bench-info">
+        <div class="bench-name">${pl.name}</div>
+        <div class="bench-schol ${schol?'set':''}">${schol ? fmt(schol) : 'No scholarship set'}</div>
+      </div>
+    </div>`;
+  }).join('') : '<div style="color:var(--slate);padding:10px;font-size:12px;">No available players</div>';
+
+  document.getElementById('pickerModal').classList.add('open');
+}
+
+function placePlayer(playerId) {
+  const key = pendingSlotKey + '_' + pendingDepthIdx;
+  const recruit = allRecruits.find(r => r.id === playerId);
+  const player = allPlayers.find(p => p.id === playerId);
+  const src = recruit || player;
+  if (!src) return;
+  const name = src.fields['Prospect Name'] || src.fields['Player Name'] || '';
+  const type = recruit ? 'recruit' : 'current';
+  // Remove from existing slot if placed elsewhere
+  for (const k of Object.keys(chartData)) {
+    if (chartData[k].id === playerId) delete chartData[k];
+  }
+  chartData[key] = { id: playerId, name, type };
+  closePickerModal();
+  renderField(); renderBench(); updateBudgetBar();
+}
+
+function closePickerModal() {
+  document.getElementById('pickerModal').classList.remove('open');
+  pendingSlotKey = null; pendingDepthIdx = null;
+}
+
+// ── SCHOLARSHIP MODAL ──
+let editingScholKey = null;
+let editingScholId = null;
+
+function openScholModal(playerId, name, slotKey) {
+  editingScholId = playerId;
+  editingScholKey = slotKey;
+  document.getElementById('scholPlayerName').textContent = name;
+  document.getElementById('scholAmount').value = getSchol(playerId) || '';
+  document.getElementById('scholModal').classList.add('open');
+}
+
+function saveScholAmount() {
+  const amt = parseFloat(document.getElementById('scholAmount').value) || 0;
+  setSchol(editingScholId, amt);
+  closeScholModal();
+  renderField(); renderBench(); updateBudgetBar();
+  showToast('Scholarship saved ✓');
+}
+
+function closeScholModal() {
+  document.getElementById('scholModal').classList.remove('open');
+  editingScholId = null; editingScholKey = null;
+}
+
+// ── BUDGET BAR ──
+function updateBudgetBar() {
+  const total = parseFloat(document.getElementById('totalBudget').value) || 0;
+  const committed = Object.values(chartData).reduce((sum, d) => sum + getSchol(d.id), 0);
+  const remaining = total - committed;
+  const pct = total ? Math.min(100, (committed / total) * 100) : 0;
+  const placed = Object.keys(chartData).length;
+
+  document.getElementById('bTotal').textContent = fmt(total);
+  document.getElementById('bCommitted').textContent = fmt(committed);
+  document.getElementById('bRemaining').textContent = fmt(remaining);
+  document.getElementById('bRemaining').style.color = remaining < 0 ? 'var(--red)' : 'var(--green)';
+  document.getElementById('bSlots').textContent = placed;
+  document.getElementById('bFill').style.width = pct + '%';
+  document.getElementById('bFill').className = 'dc-budget-bar-fill' + (pct > 90 ? ' over' : '');
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => {
+    if (e.target === o) {
+      o.classList.remove('open');
+      pendingSlotKey = null; pendingDepthIdx = null;
+    }
+  });
+});
+
+loadBudget();
+loadData();
+</script>
+</body>
+</html>
