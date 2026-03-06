@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIS — Player Readiness</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+/* ── UPLOAD ZONE ── */
+.upload-zone {
+  border: 2px dashed var(--border); border-radius: 12px;
+  padding: 28px 20px; text-align: center; cursor: pointer;
+  transition: all 0.2s; background: var(--card); margin-bottom: 20px;
+}
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: var(--gold); background: rgba(201,151,58,0.06);
+}
+.upload-zone-icon { font-size: 28px; margin-bottom: 8px; }
+.upload-zone-title { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:15px; color:var(--white); }
+.upload-zone-sub { font-size:11px; color:var(--slate); margin-top:4px; }
+
+/* ── PARSED PREVIEW TABLE ── */
+.parse-preview { background:var(--card); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:16px; }
+.parse-preview-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 16px; background:var(--steel); border-bottom:1px solid var(--border);
+}
+.parse-preview-title { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:14px; color:var(--gold2); letter-spacing:0.05em; }
+.parse-preview-sub { font-size:11px; color:var(--slate); }
+.preview-table { width:100%; border-collapse:collapse; font-size:12px; }
+.preview-table th {
+  background:rgba(0,0,0,0.2); font-family:'DM Mono',monospace; font-size:9px;
+  letter-spacing:0.1em; text-transform:uppercase; color:var(--slate2);
+  padding:8px 10px; text-align:left; white-space:nowrap;
+}
+.preview-table td { padding:7px 10px; border-bottom:1px solid rgba(77,106,156,0.1); vertical-align:middle; }
+.preview-table tr:last-child td { border-bottom:none; }
+.preview-table tr.flag-red td { background:rgba(220,50,50,0.06); }
+.score-chip {
+  display:inline-block; font-family:'Barlow Condensed',sans-serif; font-weight:800;
+  font-size:14px; border-radius:6px; padding:2px 8px; min-width:32px; text-align:center;
+}
+.flag-icon { font-size:13px; }
+
+/* ── METRIC BADGES ── */
+.metric-val { font-family:'DM Mono',monospace; font-size:11px; }
+.metric-val.alert { color:var(--red); font-weight:700; }
+.metric-val.warn { color:var(--gold2); }
+.metric-val.ok { color:var(--green); }
+
+/* ── STATUS STEPS ── */
+.import-steps {
+  display:flex; align-items:center; gap:8px; font-size:11px;
+  font-family:'DM Mono',monospace; color:var(--slate); margin-bottom:16px;
+}
+.import-step { display:flex; align-items:center; gap:4px; }
+.import-step.done { color:var(--green); }
+.import-step.active { color:var(--gold2); }
+.import-step-dot { width:8px; height:8px; border-radius:50%; background:currentColor; }
+.import-divider { color:var(--border); }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="logo-mark">FIS</div>
+    <div class="nav-section-label">MAIN</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">⬡</span><span class="nav-label">Dashboard</span></a>
+    <a href="readiness.html" class="nav-item active"><span class="nav-icon">💚</span><span class="nav-label">Player Readiness</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">OPERATIONS</div>
+    <a href="roster.html" class="nav-item"><span class="nav-icon">👥</span><span class="nav-label">Roster</span></a>
+    <a href="recruiting.html" class="nav-item"><span class="nav-icon">🎯</span><span class="nav-label">Recruiting</span></a>
+    <a href="depthchart.html" class="nav-item"><span class="nav-icon">⚽</span><span class="nav-label">Depth Chart</span></a>
+    <a href="scholarship.html" class="nav-item"><span class="nav-icon">💵</span><span class="nav-label">Scholarship</span></a>
+    <a href="schedule.html" class="nav-item"><span class="nav-icon">📅</span><span class="nav-label">Schedule</span></a>
+    <a href="tasks.html" class="nav-item"><span class="nav-icon">✅</span><span class="nav-label">Staff Tasks</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">SPORT SCIENCE</div>
+    <a href="training.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Training &amp; Load</span></a>
+    <a href="opponents.html" class="nav-item"><span class="nav-icon">🔍</span><span class="nav-label">Opponents</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">PROGRAM</div>
+    <a href="academics.html" class="nav-item"><span class="nav-icon">🎓</span><span class="nav-label">Academics</span></a>
+    <a href="budget.html" class="nav-item"><span class="nav-icon">💰</span><span class="nav-label">Budget</span></a>
+    <a href="marketing.html" class="nav-item"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
+    <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
+    <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+  </nav>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">PLAYER <span>READINESS</span></div>
+      <div class="topbar-actions">
+        <button class="btn btn-gold" onclick="showImportPanel()">⬆ Import Wellness CSV</button>
+        <button class="btn btn-ghost" onclick="openWellnessModal()">+ Manual Check-in</button>
+        <button class="btn btn-ghost" onclick="openInjuryModal()">+ Log Injury</button>
+        <div class="avatar">HC</div>
+      </div>
+    </header>
+    <div class="page">
+
+      <!-- STAT CARDS -->
+      <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
+        <div class="stat-card" style="--accent:var(--green);">
+          <div class="stat-icon">✅</div>
+          <div class="stat-label">Available Today</div>
+          <div class="stat-value" id="stat-avail" style="color:var(--green);">—</div>
+          <div class="stat-delta" id="stat-avail-sub">Loading...</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--red);">
+          <div class="stat-icon">🚫</div>
+          <div class="stat-label">Active Injuries</div>
+          <div class="stat-value" id="stat-inj" style="color:var(--red);">—</div>
+          <div class="stat-delta">Currently injured</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--yellow);">
+          <div class="stat-icon">⚡</div>
+          <div class="stat-label">Limited</div>
+          <div class="stat-value" id="stat-limit" style="color:var(--yellow);">—</div>
+          <div class="stat-delta">Modified training</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--blue);">
+          <div class="stat-icon">💚</div>
+          <div class="stat-label">Check-ins Today</div>
+          <div class="stat-value" id="stat-checkins" style="color:var(--blue);">—</div>
+          <div class="stat-delta" id="stat-checkins-sub">Wellness submissions</div>
+        </div>
+      </div>
+
+      <!-- IMPORT PANEL (hidden by default) -->
+      <div id="importPanel" style="display:none; margin-bottom:20px;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><div class="dot" style="background:var(--gold);"></div>Import Morning Wellness Form</div>
+            <button class="btn btn-ghost" style="font-size:11px;" onclick="hideImportPanel()">✕ Close</button>
+          </div>
+          <div class="card-body">
+            <!-- STEP INDICATOR -->
+            <div class="import-steps" id="importSteps">
+              <div class="import-step active" id="step1"><div class="import-step-dot"></div>1. Upload CSV</div>
+              <div class="import-divider">→</div>
+              <div class="import-step" id="step2"><div class="import-step-dot"></div>2. Review</div>
+              <div class="import-divider">→</div>
+              <div class="import-step" id="step3"><div class="import-step-dot"></div>3. Import to Airtable</div>
+            </div>
+
+            <!-- DROP ZONE -->
+            <div class="upload-zone" id="dropZone"
+              onclick="document.getElementById('csvFileInput').click()"
+              ondragover="handleDragOver(event)"
+              ondragleave="handleDragLeave(event)"
+              ondrop="handleDrop(event)">
+              <div class="upload-zone-icon">📋</div>
+              <div class="upload-zone-title">Drop your wellness CSV here</div>
+              <div class="upload-zone-sub">or click to browse — supports the morning wellness form export format</div>
+              <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleFileSelect(event)">
+            </div>
+
+            <!-- PREVIEW AREA -->
+            <div id="previewArea" style="display:none;">
+              <div class="parse-preview">
+                <div class="parse-preview-header">
+                  <div>
+                    <div class="parse-preview-title" id="previewTitle">Parsed Wellness Data</div>
+                    <div class="parse-preview-sub" id="previewSub"></div>
+                  </div>
+                  <div style="display:flex;gap:8px;align-items:center;">
+                    <span id="flagCount" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--red);"></span>
+                    <button class="btn btn-ghost" style="font-size:11px;" onclick="clearImport()">← Re-upload</button>
+                    <button class="btn btn-gold" id="importBtn" onclick="importToAirtable()">⬆ Import All to Airtable</button>
+                  </div>
+                </div>
+                <div style="overflow-x:auto;">
+                  <table class="preview-table" id="previewTable">
+                    <thead id="previewHead"></thead>
+                    <tbody id="previewBody"></tbody>
+                  </table>
+                </div>
+              </div>
+              <div id="importProgress" style="display:none; padding:12px; text-align:center; font-family:'DM Mono',monospace; font-size:12px; color:var(--slate2);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN CONTENT GRID -->
+      <div class="grid-2" style="margin-bottom:20px;">
+        <!-- WELLNESS TABLE -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><div class="dot" style="background:var(--green);"></div>Wellness Check-ins</div>
+            <select class="form-select" id="wellnessDateFilter" style="width:140px;padding:5px 8px;" onchange="loadWellness()">
+              <option value="today">Today</option>
+              <option value="yesterday">Yesterday</option>
+              <option value="week">This Week</option>
+              <option value="all">All Time</option>
+            </select>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <table class="data-table">
+              <thead><tr>
+                <th>Player</th><th>Sleep</th><th>Soreness</th><th>Fatigue</th>
+                <th>Stress</th><th>Hydration</th><th>Score</th><th>Flags</th>
+              </tr></thead>
+              <tbody id="wellnessBody"><tr><td colspan="8"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- INJURY LOG -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><div class="dot" style="background:var(--red);"></div>Injury Log</div>
+            <select class="form-select" id="injuryFilter" style="width:130px;padding:5px 8px;" onchange="loadInjuries()">
+              <option value="Active">Active Only</option>
+              <option value="all">All Injuries</option>
+            </select>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <table class="data-table">
+              <thead><tr><th>Player</th><th>Injury</th><th>Area</th><th>Date</th><th>RTF Day</th><th>Expected RTF</th><th>Status</th></tr></thead>
+              <tbody id="injuryBody"><tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SORENESS & PAIN SUMMARY -->
+      <div class="card" id="sorenessSummary" style="display:none; margin-bottom:20px;">
+        <div class="card-header">
+          <div class="card-title"><div class="dot" style="background:var(--red);"></div>Soreness & Pain Summary — Today</div>
+        </div>
+        <div class="card-body">
+          <div class="grid-2">
+            <div>
+              <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">Sore Areas</div>
+              <table class="data-table" id="soreTable">
+                <thead><tr><th>Player</th><th>Sorest Area</th><th>Score</th></tr></thead>
+                <tbody id="soreBody"></tbody>
+              </table>
+            </div>
+            <div>
+              <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">Menstruation</div>
+              <table class="data-table" id="menTable">
+                <thead><tr><th>Player</th><th>Reported</th></tr></thead>
+                <tbody id="menBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- WELLNESS MANUAL MODAL -->
+<div class="modal-overlay" id="wellnessModal">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-title">💚 Manual Wellness Check-in</div>
+    <div class="form-group">
+      <label class="form-label">Player *</label>
+      <select class="form-select" id="w-player"><option value="">Select player...</option></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Date</label>
+      <input class="form-input" id="w-date" type="date">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group">
+        <label class="form-label">Sleep (1-10, less=worse)</label>
+        <input class="form-input" id="w-sleep" type="number" min="1" max="10" placeholder="7">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Soreness (1-10, >5=flag)</label>
+        <input class="form-input" id="w-soreness" type="number" min="1" max="10" placeholder="3">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fatigue Physical (1-10)</label>
+        <input class="form-input" id="w-fatigue" type="number" min="1" max="10" placeholder="3">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Stress (1-10, >5=flag)</label>
+        <input class="form-input" id="w-stress" type="number" min="1" max="10" placeholder="3">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Hydration (1-5, <3=flag)</label>
+        <input class="form-input" id="w-hydration" type="number" min="1" max="5" placeholder="3">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Meals (1-5, <3=flag)</label>
+        <input class="form-input" id="w-meals" type="number" min="1" max="5" placeholder="3">
+      </div>
+      <div class="form-group">
+        <label class="form-label">RPE Physical (1-10)</label>
+        <input class="form-input" id="w-rpe-phys" type="number" min="1" max="10" placeholder="5">
+      </div>
+      <div class="form-group">
+        <label class="form-label">RPE Mental (1-10)</label>
+        <input class="form-input" id="w-rpe-ment" type="number" min="1" max="10" placeholder="5">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Sore Area</label>
+      <input class="form-input" id="w-sore-area" type="text" placeholder="e.g. Left Posterior Thigh">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Menstruation</label>
+      <select class="form-select" id="w-men"><option value="">—</option><option value="Yes">Yes</option><option value="No">No</option></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes</label>
+      <textarea class="form-textarea" id="w-notes" placeholder="Any concerns, pain locations, etc."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('wellnessModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="submitWellness()">Submit Check-in</button>
+    </div>
+  </div>
+</div>
+
+<!-- INJURY MODAL -->
+<div class="modal-overlay" id="injuryModal">
+  <div class="modal">
+    <div class="modal-title">🚑 Log Injury</div>
+    <div class="form-group">
+      <label class="form-label">Player *</label>
+      <select class="form-select" id="inj-player"><option value="">Select player...</option></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Date of Injury</label>
+      <input class="form-input" id="inj-date" type="date">
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Injury Type</label>
+        <input class="form-input" id="inj-type" type="text" placeholder="e.g. Hamstring Strain">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Body Area</label>
+        <input class="form-input" id="inj-area" type="text" placeholder="e.g. Left Thigh">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Expected Return to Full Training</label>
+      <input class="form-input" id="inj-rtf" type="date">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Medical Notes</label>
+      <textarea class="form-textarea" id="inj-notes" placeholder="Details about the injury..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('injuryModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="submitInjury()">Log Injury</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="config.js"></script>
+<script>
+let players = [];
+let parsedRows = []; // holds the parsed CSV wellness rows
+
+// ─── FIELD MAPPING ───────────────────────────────────────────────
+// Maps possible CSV column headers → our internal key names
+const FIELD_MAP = {
+  // Player name variants
+  'about': 'name', 'player': 'name', 'athlete': 'name', 'name': 'name',
+  // Date
+  'date': 'date', 'timestamp': 'date',
+  // Soreness
+  'soreness': 'soreness', 'body soreness': 'soreness', 'muscle soreness': 'soreness',
+  // Fatigue Physical
+  'fatigue - physical': 'fatigue_phys', 'fatigue physical': 'fatigue_phys',
+  'physical fatigue': 'fatigue_phys', 'fatigue': 'fatigue_phys',
+  // Stress
+  'stress': 'stress',
+  // Sleep
+  'sleep': 'sleep', 'sleep quality': 'sleep', 'sleep hours': 'sleep',
+  // RPE Physical
+  'rpe - physical': 'rpe_phys', 'rpe physical': 'rpe_phys', 'rpe_physical': 'rpe_phys',
+  'physical rpe': 'rpe_phys',
+  // RPE Mental
+  'rpe - mental': 'rpe_ment', 'rpe mental': 'rpe_ment', 'rpe_mental': 'rpe_ment',
+  'mental rpe': 'rpe_ment',
+  // Hydration
+  'hydration': 'hydration',
+  // Meals
+  'meals': 'meals',
+  // Snacks
+  'snacks': 'snacks',
+  // Fatigue Decision Making
+  'fatigue - decision making': 'fatigue_dm', 'fatigue decision making': 'fatigue_dm',
+  'decision making fatigue': 'fatigue_dm',
+  // Sore Area
+  'sore area list': 'sore_area', 'sore area': 'sore_area', 'sorest area': 'sore_area',
+  'body area': 'sore_area', 'pain area': 'sore_area',
+  // Menstruation
+  'menstration': 'menstruation', 'menstruation': 'menstruation',
+  'menstrual': 'menstruation', 'period': 'menstruation',
+};
+
+// Thresholds for flagging
+const FLAGS = {
+  soreness:    { dir: 'gt', val: 5 },
+  fatigue_phys:{ dir: 'gt', val: 5 },
+  stress:      { dir: 'gt', val: 5 },
+  sleep:       { dir: 'lt', val: 7 },
+  hydration:   { dir: 'lt', val: 3 },
+  meals:       { dir: 'lt', val: 3 },
+  rpe_phys:    { dir: 'gt', val: 5 },
+  fatigue_dm:  { dir: 'gt', val: 5 },
+};
+
+// ─── DRAG & DROP ─────────────────────────────────────────────────
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.add('dragover');
+}
+function handleDragLeave(e) {
+  document.getElementById('dropZone').classList.remove('dragover');
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) processFile(file);
+}
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) processFile(file);
+}
+
+// ─── CSV PARSING ─────────────────────────────────────────────────
+function processFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const rows = parseCSV(e.target.result);
+      if (!rows.length) { showToast('Could not parse CSV — check file format'); return; }
+      parsedRows = rows;
+      renderPreview(rows);
+      setStep(2);
+    } catch(err) {
+      showToast('Error parsing CSV: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function parseCSV(text) {
+  // Handle both \r\n and \n line endings, and quoted fields
+  const lines = text.trim().replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
+  if (lines.length < 2) return [];
+
+  const headers = splitCSVLine(lines[0]);
+  const results = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const vals = splitCSVLine(lines[i]);
+    if (vals.every(v => !v.trim())) continue; // skip empty rows
+    const raw = {};
+    headers.forEach((h, idx) => {
+      raw[h.trim()] = (vals[idx] || '').trim();
+    });
+    // Map to internal keys
+    const row = {};
+    headers.forEach((h) => {
+      const key = FIELD_MAP[h.trim().toLowerCase()];
+      if (key) row[key] = raw[h.trim()];
+    });
+    // Only include rows that have at least a name
+    if (row.name) results.push(row);
+  }
+  return results;
+}
+
+function splitCSVLine(line) {
+  // Handles quoted CSV fields
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      inQuotes = !inQuotes;
+    } else if (ch === ',' && !inQuotes) {
+      result.push(current);
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  result.push(current);
+  return result;
+}
+
+// ─── SCORING ─────────────────────────────────────────────────────
+function calcReadinessScore(row) {
+  // Weighted composite: higher = better
+  // Invert high-bad metrics, keep low-bad as-is
+  const metrics = [];
+  const add = (val, invert, weight) => {
+    const n = parseFloat(val);
+    if (!isNaN(n)) metrics.push({ v: invert ? (11 - n) : n, w: weight });
+  };
+  add(row.sleep,        false, 2.0); // higher sleep = better
+  add(row.soreness,     true,  1.5); // lower soreness = better
+  add(row.fatigue_phys, true,  1.5);
+  add(row.stress,       true,  1.0);
+  add(row.hydration,    false, 1.0);
+  add(row.meals,        false, 1.0);
+  add(row.rpe_phys,     true,  0.5);
+  if (!metrics.length) return null;
+  const total = metrics.reduce((s, m) => s + m.v * m.w, 0);
+  const maxPossible = metrics.reduce((s, m) => s + 10 * m.w, 0);
+  return Math.round((total / maxPossible) * 100);
+}
+
+function getFlags(row) {
+  const flags = [];
+  Object.entries(FLAGS).forEach(([key, rule]) => {
+    const v = parseFloat(row[key]);
+    if (isNaN(v)) return;
+    if (rule.dir === 'gt' && v > rule.val) flags.push(key.replace('_',' '));
+    if (rule.dir === 'lt' && v < rule.val) flags.push(key.replace('_',' '));
+  });
+  if (row.menstruation && row.menstruation.toLowerCase() === 'yes') flags.push('menstruation');
+  return flags;
+}
+
+function scoreColor(pct) {
+  if (pct >= 75) return 'var(--green)';
+  if (pct >= 50) return 'var(--gold2)';
+  return 'var(--red)';
+}
+
+function metricClass(key, val) {
+  const n = parseFloat(val);
+  if (isNaN(n)) return '';
+  const rule = FLAGS[key];
+  if (!rule) return 'ok';
+  if (rule.dir === 'gt' && n > rule.val) return 'alert';
+  if (rule.dir === 'lt' && n < rule.val) return 'alert';
+  if (rule.dir === 'gt' && n > rule.val - 1) return 'warn';
+  if (rule.dir === 'lt' && n < rule.val + 1) return 'warn';
+  return 'ok';
+}
+
+// ─── PREVIEW RENDER ──────────────────────────────────────────────
+function renderPreview(rows) {
+  // Determine date
+  const dateVal = rows[0]?.date || new Date().toISOString().split('T')[0];
+  document.getElementById('previewTitle').textContent = `Wellness Import — ${dateVal}`;
+  document.getElementById('previewSub').textContent = `${rows.length} players parsed`;
+
+  let flagTotal = 0;
+  rows.forEach(r => flagTotal += getFlags(r).length);
+  document.getElementById('flagCount').textContent = flagTotal > 0 ? `⚠ ${flagTotal} flags across ${rows.length} players` : '';
+
+  // Headers
+  document.getElementById('previewHead').innerHTML = `<tr>
+    <th>Player</th>
+    <th>Sleep</th><th>Soreness</th><th>Fatigue</th><th>Stress</th>
+    <th>Hydration</th><th>Meals</th><th>RPE Phys</th><th>RPE Ment</th>
+    <th>Sore Area</th><th>Menstr.</th><th>Score</th><th>Flags</th>
+  </tr>`;
+
+  document.getElementById('previewBody').innerHTML = rows.map((row, i) => {
+    const score = calcReadinessScore(row);
+    const flags = getFlags(row);
+    const hasFlag = flags.length > 0;
+
+    const m = (key) => {
+      const v = row[key];
+      if (!v) return '<span style="color:var(--slate)">—</span>';
+      return `<span class="metric-val ${metricClass(key,v)}">${v}</span>`;
+    };
+
+    return `<tr class="${hasFlag ? 'flag-red' : ''}" data-i="${i}">
+      <td style="font-weight:600;color:var(--white);white-space:nowrap;">${row.name}</td>
+      <td>${m('sleep')}</td>
+      <td>${m('soreness')}</td>
+      <td>${m('fatigue_phys')}</td>
+      <td>${m('stress')}</td>
+      <td>${m('hydration')}</td>
+      <td>${m('meals')}</td>
+      <td>${m('rpe_phys')}</td>
+      <td>${m('rpe_ment')}</td>
+      <td style="font-size:11px;color:var(--slate);max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${row.sore_area||'—'}</td>
+      <td style="text-align:center;">${row.menstruation==='Yes'?'<span style="color:var(--gold2)">✓</span>':'—'}</td>
+      <td>${score !== null ? `<span class="score-chip" style="background:${scoreColor(score)}22;color:${scoreColor(score)};">${score}</span>` : '—'}</td>
+      <td style="font-size:10px;color:var(--red);">${flags.map(f=>`<span title="${f}">⚑</span>`).join('')}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('previewArea').style.display = '';
+  document.getElementById('dropZone').style.display = 'none';
+}
+
+// ─── IMPORT TO AIRTABLE ──────────────────────────────────────────
+async function importToAirtable() {
+  if (!parsedRows.length) return;
+  const btn = document.getElementById('importBtn');
+  btn.disabled = true; btn.textContent = 'Importing...';
+  const prog = document.getElementById('importProgress');
+  prog.style.display = '';
+  setStep(3);
+
+  let success = 0, errors = 0;
+  for (let i = 0; i < parsedRows.length; i++) {
+    const row = parsedRows[i];
+    prog.textContent = `Importing ${i+1} of ${parsedRows.length}: ${row.name}...`;
+    const score = calcReadinessScore(row);
+    try {
+      await airtableCreate(FIS_CONFIG.TABLES.WELLNESS, {
+        'Player': row.name,
+        'Date': row.date || new Date().toISOString().split('T')[0],
+        'Sleep (1-10)':         toNum(row.sleep),
+        'Soreness (1-10)':      toNum(row.soreness),
+        'Fatigue Physical':     toNum(row.fatigue_phys),
+        'Stress (1-10)':        toNum(row.stress),
+        'Hydration (1-5)':      toNum(row.hydration),
+        'Meals (1-5)':          toNum(row.meals),
+        'Snacks (1-5)':         toNum(row.snacks),
+        'RPE Physical':         toNum(row.rpe_phys),
+        'RPE Mental':           toNum(row.rpe_ment),
+        'Fatigue Decision Making': toNum(row.fatigue_dm),
+        'Sore Area':            row.sore_area || '',
+        'Menstruation':         row.menstruation || '',
+        'Readiness Score':      score,
+      });
+      success++;
+    } catch(e) {
+      errors++;
+      console.warn(`Error importing ${row.name}:`, e.message);
+    }
+  }
+
+  prog.textContent = '';
+  btn.textContent = '✓ Import Complete';
+  showToast(`Imported ${success} players${errors ? ` (${errors} errors)` : ''} ✓`);
+  setTimeout(() => {
+    hideImportPanel();
+    loadWellness(); loadStats();
+  }, 1500);
+}
+
+function toNum(v) {
+  const n = parseFloat(v);
+  return isNaN(n) ? null : n;
+}
+
+// ─── PANEL / STEP CONTROLS ───────────────────────────────────────
+function showImportPanel() {
+  document.getElementById('importPanel').style.display = '';
+  clearImport();
+  document.getElementById('importPanel').scrollIntoView({behavior:'smooth'});
+}
+function hideImportPanel() {
+  document.getElementById('importPanel').style.display = 'none';
+  clearImport();
+}
+function clearImport() {
+  parsedRows = [];
+  document.getElementById('previewArea').style.display = 'none';
+  document.getElementById('dropZone').style.display = '';
+  document.getElementById('csvFileInput').value = '';
+  document.getElementById('importProgress').style.display = 'none';
+  document.getElementById('importBtn').disabled = false;
+  document.getElementById('importBtn').textContent = '⬆ Import All to Airtable';
+  setStep(1);
+}
+function setStep(n) {
+  [1,2,3].forEach(i => {
+    const el = document.getElementById('step'+i);
+    el.className = 'import-step' + (i < n ? ' done' : i === n ? ' active' : '');
+  });
+}
+
+// ─── WELLNESS TABLE ──────────────────────────────────────────────
+function readinessScore(f) {
+  return f['Readiness Score'] || calcReadinessScore({
+    sleep: f['Sleep (1-10)'], soreness: f['Soreness (1-10)'],
+    fatigue_phys: f['Fatigue Physical'], stress: f['Stress (1-10)'],
+    hydration: f['Hydration (1-5)'], meals: f['Meals (1-5)']
+  });
+}
+
+async function loadStats() {
+  try {
+    const ps = await airtableFetch(FIS_CONFIG.TABLES.PLAYERS);
+    const avail = ps.filter(p => (p.fields['Team Status']||p.fields['Status']||'').toLowerCase().includes('active'));
+    const inj = ps.filter(p => (p.fields['Team Status']||p.fields['Status']||'').toLowerCase().includes('injur'));
+    const lim = ps.filter(p => (p.fields['Team Status']||p.fields['Status']||'').toLowerCase().includes('limit'));
+    document.getElementById('stat-avail').textContent = avail.length;
+    document.getElementById('stat-avail-sub').textContent = `of ${ps.length} total players`;
+    document.getElementById('stat-inj').textContent = inj.length;
+    document.getElementById('stat-limit').textContent = lim.length;
+  } catch(e) {}
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const checks = await airtableFetch(FIS_CONFIG.TABLES.WELLNESS, { maxRecords: 200 });
+    const todayChecks = checks.filter(r => (r.fields['Date']||r.fields['date']||'').includes(today));
+    document.getElementById('stat-checkins').textContent = todayChecks.length;
+    document.getElementById('stat-checkins-sub').textContent = todayChecks.length ? 'submitted today' : `${checks.length} total on file`;
+  } catch(e) {}
+}
+
+async function loadWellness() {
+  const tbody = document.getElementById('wellnessBody');
+  tbody.innerHTML = `<tr><td colspan="8"><div class="loading"><div class="spinner"></div></div></td></tr>`;
+  const filter = document.getElementById('wellnessDateFilter').value;
+  const today = new Date().toISOString().split('T')[0];
+  const yesterday = new Date(Date.now()-86400000).toISOString().split('T')[0];
+
+  try {
+    // Always fetch all recent records (max 200), then filter client-side
+    // This avoids date format mismatches between Airtable field types
+    const params = { maxRecords: 200 };
+    const allRecords = await airtableFetch(FIS_CONFIG.TABLES.WELLNESS, params);
+
+    // Client-side date filtering — handles any date format stored in Airtable
+    let records = allRecords;
+    if (filter === 'today') {
+      records = allRecords.filter(r => {
+        const d = r.fields['Date'] || r.fields['date'] || '';
+        return d.includes(today) || d === today;
+      });
+    } else if (filter === 'yesterday') {
+      records = allRecords.filter(r => {
+        const d = r.fields['Date'] || r.fields['date'] || '';
+        return d.includes(yesterday) || d === yesterday;
+      });
+    } else if (filter === 'week') {
+      const weekAgo = new Date(Date.now()-7*86400000).toISOString().split('T')[0];
+      records = allRecords.filter(r => {
+        const d = r.fields['Date'] || r.fields['date'] || '';
+        return d >= weekAgo;
+      });
+    }
+
+    if (!records.length) {
+      tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="empty-text">No check-ins for this period</div></div></td></tr>`;
+      // If today is empty but we have records, show a hint
+      if (filter === 'today' && allRecords.length > 0) {
+        const latestDate = allRecords[0].fields['Date'] || allRecords[0].fields['date'] || '';
+        tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="empty-text">No check-ins for today — latest entry: ${latestDate}<br><small style="color:var(--slate);font-size:10px;">Try "All Time" to see all records</small></div></div></td></tr>`;
+      }
+      return;
+    }
+
+    // Build soreness / menstruation side panels
+    if (filter === 'today' || filter === 'yesterday') buildSorePanel(records);
+
+    tbody.innerHTML = records.map(r => {
+      const f = r.fields;
+      const playerName = Array.isArray(f['Player']) ? f['Player'][0] : (f['Player Name'] || f['Player'] || f['Name'] || f['Athlete'] || '—');
+      const score = f['Readiness Score'] || readinessScore(f);
+      const scoreHTML = score ? `<span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;color:${scoreColor(parseFloat(score))};">${score}</span>` : '—';
+      // Field name fallbacks for every metric
+      const sleep = f['Sleep (1-10)']||f['Sleep']||f['sleep']||'';
+      const sor   = f['Soreness (1-10)']||f['Soreness']||f['soreness']||'';
+      const fat   = f['Fatigue Physical']||f['Fatigue - Physical']||f['Physical Fatigue']||f['Energy (1-10)']||f['Energy']||'';
+      const str   = f['Stress (1-10)']||f['Stress']||f['Mood (1-10)']||f['Mood']||'';
+      const hyd   = f['Hydration (1-5)']||f['Hydration']||f['hydration']||'';
+      const flags = [];
+      if (parseFloat(sor)>5) flags.push('⚑');
+      if (parseFloat(fat)>5) flags.push('⚑');
+      if (parseFloat(str)>5) flags.push('⚑');
+      if (parseFloat(sleep)<7) flags.push('⚑');
+      if (parseFloat(hyd)<3) flags.push('⚑');
+      return `<tr>
+        <td style="font-weight:600;color:var(--white);">${playerName}</td>
+        <td style="text-align:center;color:${parseFloat(sleep)<7?'var(--red)':'var(--slate2)'};">${sleep||'—'}</td>
+        <td style="text-align:center;color:${parseFloat(sor)>5?'var(--red)':parseFloat(sor)>3?'var(--gold2)':'var(--slate2)'};">${sor||'—'}</td>
+        <td style="text-align:center;color:${parseFloat(fat)>5?'var(--red)':'var(--slate2)'};">${fat||'—'}</td>
+        <td style="text-align:center;color:${parseFloat(str)>5?'var(--red)':'var(--slate2)'};">${str||'—'}</td>
+        <td style="text-align:center;color:${parseFloat(hyd)<3?'var(--red)':'var(--slate2)'};">${hyd||'—'}</td>
+        <td style="text-align:center;">${scoreHTML}</td>
+        <td style="color:var(--red);font-size:13px;">${flags.join('')}</td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="8" style="color:var(--red);padding:16px;">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function buildSorePanel(records) {
+  const getField = (f, ...keys) => { for (const k of keys) if (f[k]) return f[k]; return ''; };
+  const getName = (f) => Array.isArray(f['Player']) ? f['Player'][0] : (f['Player Name']||f['Player']||f['Name']||f['Athlete']||'—');
+  const soreRows = records.filter(r => getField(r.fields,'Sore Area','Sore Area List','sore_area','Body Area','Sorest Area'));
+  const menRows  = records.filter(r => (getField(r.fields,'Menstruation','Menstration','menstruation','Menstrual')||'').toLowerCase() === 'yes');
+  if (!soreRows.length && !menRows.length) { document.getElementById('sorenessSummary').style.display='none'; return; }
+  document.getElementById('sorenessSummary').style.display = '';
+  document.getElementById('soreBody').innerHTML = soreRows.map(r => {
+    const f = r.fields;
+    const area = getField(f,'Sore Area','Sore Area List','sore_area','Body Area','Sorest Area');
+    const sor  = getField(f,'Soreness (1-10)','Soreness','soreness');
+    return `<tr><td style="font-weight:600;">${getName(f)}</td><td>${area}</td><td style="text-align:center;">${sor||'—'}</td></tr>`;
+  }).join('') || '<tr><td colspan="3" style="color:var(--slate);">None reported</td></tr>';
+  document.getElementById('menBody').innerHTML = menRows.map(r => {
+    return `<tr><td style="font-weight:600;">${getName(r.fields)}</td><td style="color:var(--gold2);">Yes</td></tr>`;
+  }).join('') || '<tr><td colspan="2" style="color:var(--slate);">None reported</td></tr>';
+}
+
+async function loadInjuries() {
+  const tbody = document.getElementById('injuryBody');
+  tbody.innerHTML = `<tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr>`;
+  const filterVal = document.getElementById('injuryFilter').value;
+  try {
+    const params = {};
+    if (filterVal === 'Active') params.filterByFormula = `{Status}="Active"`;
+    const records = await airtableFetch(FIS_CONFIG.TABLES.INJURIES, params);
+    if (!records.length) {
+      tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon">✅</div><div class="empty-text">No injuries logged</div></div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = records.map(r => {
+      const f = r.fields;
+      const player = Array.isArray(f['Player']) ? f['Player'][0] : (f['Player'] || '—');
+      const status = f['Status'] || 'Active';
+      const statusClass = status === 'Active' ? 'pill-red' : status === 'Resolved' ? 'pill-green' : 'pill-yellow';
+      return `<tr>
+        <td style="font-weight:600;color:var(--white);">${player}</td>
+        <td>${f['Injury Type']||'—'}</td>
+        <td><span class="pill pill-slate">${f['Body Area']||'—'}</span></td>
+        <td style="color:var(--slate);">${f['Date of Injury']||'—'}</td>
+        <td style="text-align:center;color:var(--gold2);">Day ${f['RTF Protocol Day']||'1'}</td>
+        <td style="color:var(--slate);">${f['Expected RTF Date']||'TBD'}</td>
+        <td><span class="pill ${statusClass}">${status}</span></td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="7" style="color:var(--red);padding:16px;">Error: ${e.message}</td></tr>`;
+  }
+}
+
+async function openWellnessModal() {
+  if (!players.length) players = await airtableFetch(FIS_CONFIG.TABLES.PLAYERS, {});
+  const sel = document.getElementById('w-player');
+  sel.innerHTML = '<option value="">Select player...</option>' + players.map(p => `<option value="${p.fields['Player Name']}">${p.fields['Player Name']}</option>`).join('');
+  document.getElementById('w-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('wellnessModal').classList.add('open');
+}
+
+async function openInjuryModal() {
+  if (!players.length) players = await airtableFetch(FIS_CONFIG.TABLES.PLAYERS, {});
+  const sel = document.getElementById('inj-player');
+  sel.innerHTML = '<option value="">Select player...</option>' + players.map(p => `<option value="${p.fields['Player Name']}">${p.fields['Player Name']}</option>`).join('');
+  document.getElementById('inj-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('injuryModal').classList.add('open');
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+async function submitWellness() {
+  const player = document.getElementById('w-player').value;
+  if (!player) { showToast('Please select a player'); return; }
+  const row = {
+    sleep: document.getElementById('w-sleep').value,
+    soreness: document.getElementById('w-soreness').value,
+    fatigue_phys: document.getElementById('w-fatigue').value,
+    stress: document.getElementById('w-stress').value,
+    hydration: document.getElementById('w-hydration').value,
+    meals: document.getElementById('w-meals').value,
+    rpe_phys: document.getElementById('w-rpe-phys').value,
+    rpe_ment: document.getElementById('w-rpe-ment').value,
+  };
+  const score = calcReadinessScore(row);
+  try {
+    await airtableCreate(FIS_CONFIG.TABLES.WELLNESS, {
+      'Player': player,
+      'Date': document.getElementById('w-date').value,
+      'Sleep (1-10)': toNum(row.sleep),
+      'Soreness (1-10)': toNum(row.soreness),
+      'Fatigue Physical': toNum(row.fatigue_phys),
+      'Stress (1-10)': toNum(row.stress),
+      'Hydration (1-5)': toNum(row.hydration),
+      'Meals (1-5)': toNum(row.meals),
+      'RPE Physical': toNum(row.rpe_phys),
+      'RPE Mental': toNum(row.rpe_ment),
+      'Sore Area': document.getElementById('w-sore-area').value,
+      'Menstruation': document.getElementById('w-men').value,
+      'Notes': document.getElementById('w-notes').value,
+      'Readiness Score': score,
+    });
+    closeModal('wellnessModal');
+    showToast(`Wellness check-in submitted for ${player} ✓`);
+    loadWellness(); loadStats();
+  } catch(e) { showToast(`Error: ${e.message}`); }
+}
+
+async function submitInjury() {
+  const player = document.getElementById('inj-player').value;
+  if (!player) { showToast('Please select a player'); return; }
+  try {
+    await airtableCreate(FIS_CONFIG.TABLES.INJURIES, {
+      'Player': player,
+      'Injury Type': document.getElementById('inj-type').value,
+      'Body Area': document.getElementById('inj-area').value,
+      'Date of Injury': document.getElementById('inj-date').value,
+      'Expected RTF Date': document.getElementById('inj-rtf').value,
+      'Medical Notes': document.getElementById('inj-notes').value,
+      'Status': 'Active',
+      'RTF Protocol Day': 1,
+    });
+    closeModal('injuryModal');
+    showToast(`Injury logged for ${player} ✓`);
+    loadInjuries(); loadStats();
+  } catch(e) { showToast(`Error: ${e.message}`); }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast'); t.textContent = msg;
+  t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+loadStats(); loadWellness(); loadInjuries();
+</script>
+</body>
+</html>
