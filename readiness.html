@@ -79,6 +79,7 @@
     <div class="nav-section-label">SPORT SCIENCE</div>
     <a href="training.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Training &amp; Load</span></a>
     <a href="opponents.html" class="nav-item"><span class="nav-icon">🔍</span><span class="nav-label">Opponents</span></a>
+    <a href="tactical.html" class="nav-item"><span class="nav-icon">📊</span><span class="nav-label">Tactical Analysis</span></a>
     <div class="nav-divider"></div>
     <div class="nav-section-label">PROGRAM</div>
     <a href="academics.html" class="nav-item"><span class="nav-icon">🎓</span><span class="nav-label">Academics</span></a>
@@ -701,8 +702,10 @@ async function loadStats() {
   } catch(e) {}
   try {
     const today = new Date().toISOString().split('T')[0];
-    const checks = await airtableFetch(FIS_CONFIG.TABLES.WELLNESS, { filterByFormula: `{Date}="${today}"` });
-    document.getElementById('stat-checkins').textContent = checks.length;
+    const checks = await airtableFetch(FIS_CONFIG.TABLES.WELLNESS, { maxRecords: 200 });
+    const todayChecks = checks.filter(r => (r.fields['Date']||r.fields['date']||'').includes(today));
+    document.getElementById('stat-checkins').textContent = todayChecks.length;
+    document.getElementById('stat-checkins-sub').textContent = todayChecks.length ? 'submitted today' : `${checks.length} total on file`;
   } catch(e) {}
 }
 
@@ -712,32 +715,57 @@ async function loadWellness() {
   const filter = document.getElementById('wellnessDateFilter').value;
   const today = new Date().toISOString().split('T')[0];
   const yesterday = new Date(Date.now()-86400000).toISOString().split('T')[0];
-  let formula = '';
-  if (filter === 'today') formula = `{Date}="${today}"`;
-  else if (filter === 'yesterday') formula = `{Date}="${yesterday}"`;
 
   try {
-    const params = { maxRecords: 100 };
-    if (formula) params.filterByFormula = formula;
-    const records = await airtableFetch(FIS_CONFIG.TABLES.WELLNESS, params);
+    // Always fetch all recent records (max 200), then filter client-side
+    // This avoids date format mismatches between Airtable field types
+    const params = { maxRecords: 200 };
+    const allRecords = await airtableFetch(FIS_CONFIG.TABLES.WELLNESS, params);
+
+    // Client-side date filtering — handles any date format stored in Airtable
+    let records = allRecords;
+    if (filter === 'today') {
+      records = allRecords.filter(r => {
+        const d = r.fields['Date'] || r.fields['date'] || '';
+        return d.includes(today) || d === today;
+      });
+    } else if (filter === 'yesterday') {
+      records = allRecords.filter(r => {
+        const d = r.fields['Date'] || r.fields['date'] || '';
+        return d.includes(yesterday) || d === yesterday;
+      });
+    } else if (filter === 'week') {
+      const weekAgo = new Date(Date.now()-7*86400000).toISOString().split('T')[0];
+      records = allRecords.filter(r => {
+        const d = r.fields['Date'] || r.fields['date'] || '';
+        return d >= weekAgo;
+      });
+    }
+
     if (!records.length) {
       tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="empty-text">No check-ins for this period</div></div></td></tr>`;
+      // If today is empty but we have records, show a hint
+      if (filter === 'today' && allRecords.length > 0) {
+        const latestDate = allRecords[0].fields['Date'] || allRecords[0].fields['date'] || '';
+        tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="empty-text">No check-ins for today — latest entry: ${latestDate}<br><small style="color:var(--slate);font-size:10px;">Try "All Time" to see all records</small></div></div></td></tr>`;
+      }
       return;
     }
 
-    // Build soreness / menstruation side panels from today's data
+    // Build soreness / menstruation side panels
     if (filter === 'today' || filter === 'yesterday') buildSorePanel(records);
 
     tbody.innerHTML = records.map(r => {
       const f = r.fields;
-      const playerName = Array.isArray(f['Player']) ? f['Player'][0] : (f['Player'] || '—');
+      const playerName = Array.isArray(f['Player']) ? f['Player'][0] : (f['Player Name'] || f['Player'] || f['Name'] || f['Athlete'] || '—');
       const score = f['Readiness Score'] || readinessScore(f);
       const scoreHTML = score ? `<span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;color:${scoreColor(parseFloat(score))};">${score}</span>` : '—';
-      const sleep = f['Sleep (1-10)']||f['Sleep']||'';
-      const sor = f['Soreness (1-10)']||f['Soreness']||'';
-      const fat = f['Fatigue Physical']||f['Energy (1-10)']||f['Energy']||'';
-      const str = f['Stress (1-10)']||f['Mood (1-10)']||f['Mood']||'';
-      const hyd = f['Hydration (1-5)']||'';
+      // Field name fallbacks for every metric
+      const sleep = f['Sleep (1-10)']||f['Sleep']||f['sleep']||'';
+      const sor   = f['Soreness (1-10)']||f['Soreness']||f['soreness']||'';
+      const fat   = f['Fatigue Physical']||f['Fatigue - Physical']||f['Physical Fatigue']||f['Energy (1-10)']||f['Energy']||'';
+      const str   = f['Stress (1-10)']||f['Stress']||f['Mood (1-10)']||f['Mood']||'';
+      const hyd   = f['Hydration (1-5)']||f['Hydration']||f['hydration']||'';
       const flags = [];
       if (parseFloat(sor)>5) flags.push('⚑');
       if (parseFloat(fat)>5) flags.push('⚑');
@@ -761,19 +789,20 @@ async function loadWellness() {
 }
 
 function buildSorePanel(records) {
-  const soreRows = records.filter(r => r.fields['Sore Area']);
-  const menRows = records.filter(r => (r.fields['Menstruation']||'').toLowerCase() === 'yes');
+  const getField = (f, ...keys) => { for (const k of keys) if (f[k]) return f[k]; return ''; };
+  const getName = (f) => Array.isArray(f['Player']) ? f['Player'][0] : (f['Player Name']||f['Player']||f['Name']||f['Athlete']||'—');
+  const soreRows = records.filter(r => getField(r.fields,'Sore Area','Sore Area List','sore_area','Body Area','Sorest Area'));
+  const menRows  = records.filter(r => (getField(r.fields,'Menstruation','Menstration','menstruation','Menstrual')||'').toLowerCase() === 'yes');
   if (!soreRows.length && !menRows.length) { document.getElementById('sorenessSummary').style.display='none'; return; }
   document.getElementById('sorenessSummary').style.display = '';
   document.getElementById('soreBody').innerHTML = soreRows.map(r => {
     const f = r.fields;
-    const name = Array.isArray(f['Player']) ? f['Player'][0] : f['Player'];
-    return `<tr><td style="font-weight:600;">${name}</td><td>${f['Sore Area']}</td><td style="text-align:center;">${f['Soreness (1-10)']||'—'}</td></tr>`;
+    const area = getField(f,'Sore Area','Sore Area List','sore_area','Body Area','Sorest Area');
+    const sor  = getField(f,'Soreness (1-10)','Soreness','soreness');
+    return `<tr><td style="font-weight:600;">${getName(f)}</td><td>${area}</td><td style="text-align:center;">${sor||'—'}</td></tr>`;
   }).join('') || '<tr><td colspan="3" style="color:var(--slate);">None reported</td></tr>';
   document.getElementById('menBody').innerHTML = menRows.map(r => {
-    const f = r.fields;
-    const name = Array.isArray(f['Player']) ? f['Player'][0] : f['Player'];
-    return `<tr><td style="font-weight:600;">${name}</td><td style="color:var(--gold2);">Yes</td></tr>`;
+    return `<tr><td style="font-weight:600;">${getName(r.fields)}</td><td style="color:var(--gold2);">Yes</td></tr>`;
   }).join('') || '<tr><td colspan="2" style="color:var(--slate);">None reported</td></tr>';
 }
 

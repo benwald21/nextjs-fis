@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIS — Tactical Analysis</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+/* ── TACTICAL PAGE STYLES ── */
+.tac-tabs { display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:20px; }
+.tac-tab {
+  padding:9px 20px; font-family:'Barlow Condensed',sans-serif; font-weight:700;
+  font-size:13px; letter-spacing:0.05em; text-transform:uppercase;
+  color:var(--slate); border-bottom:2px solid transparent;
+  cursor:pointer; background:none; border-top:none; border-left:none; border-right:none; transition:all 0.18s;
+}
+.tac-tab:hover { color:var(--white); }
+.tac-tab.active { color:var(--gold2); border-bottom-color:var(--gold); }
+
+/* STAT TABLE */
+.stat-table-wrap { background:var(--card); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+.stat-table { width:100%; border-collapse:collapse; font-size:12px; }
+.stat-table th {
+  background:var(--steel); font-family:'DM Mono',monospace; font-size:9px;
+  letter-spacing:0.1em; text-transform:uppercase; color:var(--slate2);
+  padding:9px 10px; text-align:right; border-bottom:1px solid var(--border);
+  white-space:nowrap; cursor:pointer; user-select:none;
+}
+.stat-table th:first-child { text-align:left; }
+.stat-table th:hover { color:var(--gold2); }
+.stat-table th.sort-asc::after { content:' ↑'; color:var(--gold2); }
+.stat-table th.sort-desc::after { content:' ↓'; color:var(--gold2); }
+.stat-table td { padding:8px 10px; border-bottom:1px solid rgba(77,106,156,0.1); text-align:right; vertical-align:middle; }
+.stat-table td:first-child { text-align:left; font-weight:600; color:var(--white); white-space:nowrap; }
+.stat-table tr:last-child td { border-bottom:none; }
+.stat-table tr:hover td { background:rgba(201,151,58,0.04); }
+
+/* HEAT BARS */
+.heat-bar-cell { position:relative; }
+.heat-bar-bg { position:absolute; left:0; top:0; bottom:0; border-radius:2px; opacity:0.18; pointer-events:none; }
+.heat-val { position:relative; z-index:1; font-family:'DM Mono',monospace; font-size:11px; }
+.heat-val.pos { color:var(--green); }
+.heat-val.neg { color:var(--red); }
+.heat-val.neu { color:var(--slate2); }
+
+/* PLAYER CARD */
+.player-card-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; }
+.player-card {
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:16px; cursor:pointer; transition:all 0.2s;
+}
+.player-card:hover { border-color:var(--gold); background:rgba(201,151,58,0.04); }
+.player-card-name { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:17px; color:var(--white); margin-bottom:4px; }
+.player-card-mins { font-family:'DM Mono',monospace; font-size:10px; color:var(--slate); }
+.player-card-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:12px; }
+.player-card-stat { display:flex; flex-direction:column; gap:2px; }
+.player-card-stat-label { font-family:'DM Mono',monospace; font-size:8px; color:var(--slate); letter-spacing:0.08em; text-transform:uppercase; }
+.player-card-stat-val { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:16px; }
+
+/* RADAR CHART */
+.radar-wrap { display:flex; align-items:center; justify-content:center; }
+
+/* SCOUTING REPORT */
+.scout-form { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:20px; margin-bottom:20px; }
+.scout-form-title { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:16px; color:var(--gold2); letter-spacing:0.05em; margin-bottom:16px; }
+.scout-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.scout-report-out {
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:24px; min-height:200px; line-height:1.7; font-size:13px; color:var(--slate2);
+}
+.scout-report-out h3 { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:18px; color:var(--gold2); margin:18px 0 6px; letter-spacing:0.04em; }
+.scout-report-out h4 { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:14px; color:var(--white); margin:12px 0 4px; }
+.scout-report-out p { margin:0 0 10px; }
+.scout-report-out ul { margin:4px 0 10px 18px; }
+.scout-report-out li { margin-bottom:4px; }
+.scout-report-out strong { color:var(--white); }
+.typing-cursor::after { content:'▋'; animation:blink 0.7s infinite; color:var(--gold2); }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* STRENGTHS / WEAKNESSES CHIPS */
+.sw-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+.sw-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px; }
+.sw-card-title { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:14px; letter-spacing:0.05em; margin-bottom:10px; }
+.sw-card-title.str { color:var(--green); }
+.sw-card-title.wk { color:var(--red); }
+.sw-chip {
+  display:inline-block; font-size:11px; font-family:'DM Mono',monospace;
+  border-radius:4px; padding:3px 8px; margin:3px;
+}
+.sw-chip.str { background:rgba(34,201,139,0.1); color:var(--green); border:1px solid rgba(34,201,139,0.2); }
+.sw-chip.wk { background:rgba(220,50,50,0.1); color:var(--red); border:1px solid rgba(220,50,50,0.2); }
+
+/* UPLOAD ZONE */
+.upload-zone {
+  border:2px dashed var(--border); border-radius:10px; padding:24px;
+  text-align:center; cursor:pointer; transition:all 0.2s; background:var(--card);
+}
+.upload-zone:hover { border-color:var(--gold); background:rgba(201,151,58,0.05); }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="logo-mark">FIS</div>
+    <div class="nav-section-label">MAIN</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">⬡</span><span class="nav-label">Dashboard</span></a>
+    <a href="readiness.html" class="nav-item"><span class="nav-icon">💚</span><span class="nav-label">Player Readiness</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">OPERATIONS</div>
+    <a href="roster.html" class="nav-item"><span class="nav-icon">👥</span><span class="nav-label">Roster</span></a>
+    <a href="recruiting.html" class="nav-item"><span class="nav-icon">🎯</span><span class="nav-label">Recruiting</span></a>
+    <a href="depthchart.html" class="nav-item"><span class="nav-icon">⚽</span><span class="nav-label">Depth Chart</span></a>
+    <a href="scholarship.html" class="nav-item"><span class="nav-icon">💵</span><span class="nav-label">Scholarship</span></a>
+    <a href="schedule.html" class="nav-item"><span class="nav-icon">📅</span><span class="nav-label">Schedule</span></a>
+    <a href="tasks.html" class="nav-item"><span class="nav-icon">✅</span><span class="nav-label">Staff Tasks</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">SPORT SCIENCE</div>
+    <a href="training.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Training &amp; Load</span></a>
+    <a href="opponents.html" class="nav-item"><span class="nav-icon">🔍</span><span class="nav-label">Opponents</span></a>
+    <a href="tactical.html" class="nav-item active"><span class="nav-icon">📊</span><span class="nav-label">Tactical Analysis</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">PROGRAM</div>
+    <a href="academics.html" class="nav-item"><span class="nav-icon">🎓</span><span class="nav-label">Academics</span></a>
+    <a href="budget.html" class="nav-item"><span class="nav-icon">💰</span><span class="nav-label">Budget</span></a>
+    <a href="marketing.html" class="nav-item"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
+    <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
+    <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+  </nav>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">TACTICAL <span>ANALYSIS</span></div>
+      <div class="topbar-actions">
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);" id="datasetLabel">2025 Fall Season</span>
+        <button class="btn btn-ghost" style="font-size:11px;" onclick="document.getElementById('csvUpload').click()">⬆ Load New Season CSV</button>
+        <input type="file" id="csvUpload" accept=".csv" style="display:none" onchange="loadCSV(event)">
+        <div class="avatar">HC</div>
+      </div>
+    </header>
+    <div class="page">
+
+      <!-- TEAM OVERVIEW STATS -->
+      <div class="stats-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:20px;" id="teamOverview"></div>
+
+      <!-- TABS -->
+      <div class="tac-tabs">
+        <button class="tac-tab active" onclick="switchTab('squad',this)">Squad Stats</button>
+        <button class="tac-tab" onclick="switchTab('players',this)">Player Profiles</button>
+        <button class="tac-tab" onclick="switchTab('strengths',this)">Team Strengths</button>
+        <button class="tac-tab" onclick="switchTab('scouting',this)">🤖 AI Scouting Report</button>
+      </div>
+
+      <!-- SQUAD STATS TAB -->
+      <div id="tab-squad">
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);">SHOW METRICS:</span>
+          <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px;" onclick="setMetricGroup('attacking')" id="mg-attacking">⚡ Attacking</button>
+          <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px;" onclick="setMetricGroup('possession')" id="mg-possession">🔄 Possession</button>
+          <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px;" onclick="setMetricGroup('defensive')" id="mg-defensive">🛡 Defensive</button>
+          <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px;" onclick="setMetricGroup('obv')" id="mg-obv">📈 OBV</button>
+          <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px;" onclick="setMetricGroup('all')" id="mg-all">All</button>
+          <span style="margin-left:auto;font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">Click column headers to sort · Values per 90 min</span>
+        </div>
+        <div class="stat-table-wrap" style="overflow-x:auto;">
+          <table class="stat-table" id="squadTable">
+            <thead id="squadHead"></thead>
+            <tbody id="squadBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PLAYER PROFILES TAB -->
+      <div id="tab-players" style="display:none;">
+        <div id="playerGrid" class="player-card-grid"></div>
+        <!-- Player detail modal -->
+        <div id="playerDetail" style="display:none;margin-top:20px;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title" id="detailName"></div>
+              <button class="btn btn-ghost" style="font-size:11px;" onclick="closeDetail()">✕ Close</button>
+            </div>
+            <div class="card-body">
+              <div style="display:grid;grid-template-columns:1fr 2fr;gap:20px;align-items:start;">
+                <div>
+                  <canvas id="radarCanvas" width="240" height="240"></canvas>
+                </div>
+                <div id="detailStats"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STRENGTHS TAB -->
+      <div id="tab-strengths" style="display:none;">
+        <div class="sw-grid" id="swGrid"></div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="dot" style="background:var(--blue);"></div>Top Performers by Category</div></div>
+          <div class="card-body" id="topPerformers"></div>
+        </div>
+      </div>
+
+      <!-- AI SCOUTING TAB -->
+      <div id="tab-scouting" style="display:none;">
+        <div class="scout-form">
+          <div class="scout-form-title">🤖 Generate AI Scouting Report</div>
+          <p style="font-size:12px;color:var(--slate);margin-bottom:16px;">Powered by Claude AI — analyzes your 2025 squad data against your upcoming opponent to generate a tailored tactical scouting report.</p>
+          <div class="scout-form-grid">
+            <div class="form-group">
+              <label class="form-label">Opponent Name *</label>
+              <input class="form-input" id="sc-opponent" placeholder="e.g. Duke Blue Devils" type="text">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Match Date</label>
+              <input class="form-input" id="sc-date" type="date">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Opponent's Typical Formation</label>
+              <select class="form-select" id="sc-formation">
+                <option value="">Unknown</option>
+                <option>4-3-3</option><option>4-2-3-1</option><option>4-4-2</option>
+                <option>3-5-2</option><option>5-3-2</option><option>4-1-4-1</option>
+                <option>3-4-3</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Opponent's Playing Style</label>
+              <select class="form-select" id="sc-style">
+                <option value="">Unknown</option>
+                <option>High Press / Gegenpressing</option>
+                <option>Possession-based / Tiki-taka</option>
+                <option>Counter-attacking / Direct</option>
+                <option>Low Block / Defensive</option>
+                <option>High Line / Offside Trap</option>
+                <option>Physical / Long Ball</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:8px;">
+            <label class="form-label">Additional Intel (recent results, key players, weaknesses you've observed)</label>
+            <textarea class="form-textarea" id="sc-intel" rows="3" placeholder="e.g. They lost 2-0 last week, strong left winger #11, vulnerable to high press in their defensive third..."></textarea>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:12px;align-items:center;">
+            <button class="btn btn-gold" onclick="generateScoutReport()" id="scoutBtn">⚡ Generate Scouting Report</button>
+            <button class="btn btn-ghost" style="font-size:11px;" onclick="saveReport()" id="saveBtn" style="display:none;">💾 Save Report</button>
+            <span id="scoutStatus" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);"></span>
+          </div>
+        </div>
+
+        <!-- Report Output -->
+        <div id="reportOut" class="scout-report-out" style="display:none;"></div>
+
+        <!-- Saved Reports -->
+        <div id="savedReports" style="margin-top:20px;"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="config.js"></script>
+<script>
+// ── 2025 SEASON DATA (pre-loaded from CSV) ────────────────────────
+const SEASON_DATA = [
+  {Player:"Abigail Reisz",Minutes:986.39,Age:22,Height:175,"Non Penalty xG":0,"Non Penalty xG/Shot":0,"Open Play xG Assisted":0.0008,Shots:0,OBV:-0.2057,"Shot OBV":0,"Dribble & Carry OBV":0.0518,"Defensive Action OBV":-0.001,"Pass OBV":0.0478,"Deep Progressions":0.1824,"Touches in box":0,"Line Breaking Passes":0,"Line Breaking Passes Completed":0,"Line Breaking Passes Completed%":0,"Line Breaking Passes On Ball Value":0,"Ball Receipts in Space 10m%":0,Turnovers:0,Fouls:0,"Fouls Won":0,"Aerial Win%":0,"Aerial Wins":0,Pressures:0.2737,"Tackles & Interceptions":0,"Dribbled Past":0},
+  {Player:"Olivia Lee",Minutes:982.33,Age:null,Height:170,"Non Penalty xG":0.0188,"Non Penalty xG/Shot":0.1027,"Open Play xG Assisted":0.0019,Shots:0.1832,OBV:0.1806,"Shot OBV":0.0132,"Dribble & Carry OBV":0.0451,"Defensive Action OBV":0.0585,"Pass OBV":0.0591,"Deep Progressions":1.191,"Touches in box":0.5497,"Line Breaking Passes":0,"Line Breaking Passes Completed":0,"Line Breaking Passes Completed%":0,"Line Breaking Passes On Ball Value":0,"Ball Receipts in Space 10m%":0,Turnovers:0.5497,Fouls:0.2748,"Fouls Won":0.2748,"Aerial Win%":0.6296,"Aerial Wins":1.5575,Pressures:7.2378,"Tackles & Interceptions":2.4737,"Dribbled Past":0.0916},
+  {Player:"Sophie Rourke",Minutes:979.32,Age:null,Height:185,"Non Penalty xG":0.0404,"Non Penalty xG/Shot":0.1101,"Open Play xG Assisted":0,Shots:0.3676,OBV:0.1756,"Shot OBV":0.0183,"Dribble & Carry OBV":0.044,"Defensive Action OBV":0.0659,"Pass OBV":0.0207,"Deep Progressions":1.838,"Touches in box":0.8271,"Line Breaking Passes":0,"Line Breaking Passes Completed":0,"Line Breaking Passes Completed%":0,"Line Breaking Passes On Ball Value":0,"Ball Receipts in Space 10m%":0,Turnovers:0.0919,Fouls:0.3676,"Fouls Won":0.3676,"Aerial Win%":0.9047,"Aerial Wins":1.7461,Pressures:10.4766,"Tackles & Interceptions":2.0218,"Dribbled Past":0.919},
+  {Player:"Katie Ellermeyer",Minutes:974.34,Age:null,Height:162,"Non Penalty xG":0.112,"Non Penalty xG/Shot":0.0577,"Open Play xG Assisted":0.0763,Shots:2.0321,OBV:0.0987,"Shot OBV":-0.0234,"Dribble & Carry OBV":0.0824,"Defensive Action OBV":0.0642,"Pass OBV":0.0073,"Deep Progressions":3.4177,"Touches in box":1.9397,"Line Breaking Passes":0,"Line Breaking Passes Completed":0,"Line Breaking Passes Completed%":0,"Line Breaking Passes On Ball Value":0,"Ball Receipts in Space 10m%":0,Turnovers:3.0482,Fouls:1.1084,"Fouls Won":1.2008,"Aerial Win%":0.3636,"Aerial Wins":0.7389,Pressures:42.9522,"Tackles & Interceptions":7.7591,"Dribbled Past":2.2168},
+  {Player:"Lola Abraham",Minutes:896.63,Age:20,Height:162,"Non Penalty xG":0.126,"Non Penalty xG/Shot":0.0523,"Open Play xG Assisted":0.1569,Shots:2.409,OBV:0.0856,"Shot OBV":-0.1112,"Dribble & Carry OBV":0.0814,"Defensive Action OBV":0.0418,"Pass OBV":0.0743,"Deep Progressions":3.4127,"Touches in box":3.0112,"Line Breaking Passes":0,"Line Breaking Passes Completed":0,"Line Breaking Passes Completed%":0,"Line Breaking Passes On Ball Value":0,"Ball Receipts in Space 10m%":0,Turnovers:3.5131,Fouls:0.7026,"Fouls Won":0.6022,"Aerial Win%":0.4285,"Aerial Wins":0.6022,Pressures:22.0826,"Tackles & Interceptions":4.1153,"Dribbled Past":1.5056},
+  {Player:"Mya Archibald",Minutes:883.63,Age:20,Height:173,"Non Penalty xG":0.1032,"Non Penalty xG/Shot":0.2027,"Open Play xG Assisted":0,Shots:0.5092,OBV:0.0968,"Shot OBV":-0.0177,"Dribble & Carry OBV":0.0189,"Defensive Action OBV":-0.0007,"Pass OBV":0.1024,"Deep Progressions":5.8055,"Touches in box":1.1203,"Line Breaking Passes":0,"Line Breaking Passes Completed":0,"Line Breaking Passes Completed%":0,"Line Breaking Passes On Ball Value":0,"Ball Receipts in Space 10m%":0,Turnovers:2.1389,Fouls:0.7129,"Fouls Won":0.3055,"Aerial Win%":0.5238,"Aerial Wins":1.1203,Pressures:18.0278,"Tackles & Interceptions":5.8055,"Dribbled Past":1.324},
+  {Player:"Lucia Wells",Minutes:872.96,Age:null,Height:162,"Non Penalty xG":0.1141,"Non Penalty xG/Shot":0.1006,"Open Play xG Assisted":0.0264,Shots:1.134,OBV:0.0833,"Shot OBV":-0.0105,"Dribble & Carry OBV":0.068,"Defensive Action OBV":-0.065,"Pass OBV":0.062,"Deep Progressions":4.9486,"Touches in box":2.4743,"Line Breaking Passes":0,"Line Breaking Passes Completed":0,"Line Breaking Passes Completed%":0,"Line Breaking Passes On Ball Value":0,"Ball Receipts in Space 10m%":0,Turnovers:3.7115,Fouls:0.3092,"Fouls Won":1.2371,"Aerial Win%":0.5,"Aerial Wins":1.3402,Pressures:21.238,"Tackles & Interceptions":4.2269,"Dribbled Past":2.2681},
+  {Player:"Margaret Wilde",Minutes:854.87,Age:null,Height:165,"Non Penalty xG":0.1842,"Non Penalty xG/Shot":0.0648,"Open Play xG Assisted":0.1125,Shots:2.8425,OBV:0.1261,"Shot OBV":-0.0647,"Dribble & Carry OBV":0.07,"Defensive Action OBV":0.0052,"Pass OBV":0.1112,"Deep Progressions":2.5267,"Touches in box":5.1586,"Line Breaking Passes":0,"Line Breaking Passes Completed":0,"Line Breaking Passes Completed%":0,"Line Breaking Passes On Ball Value":0,"Ball Receipts in Space 10m%":0,Turnovers:4.0006,Fouls:1.895,"Fouls Won":0.4211,"Aerial Win%":0.4722,"Aerial Wins":1.7897,Pressures:33.3735,"Tackles & Interceptions":2.3161,"Dribbled Past":0.8422},
+  {Player:"Sage Stelzer",Minutes:832.27,Age:null,Height:162,"Non Penalty xG":0.0114,"Non Penalty xG/Shot":0.0176,"Open Play xG Assisted":0.0585,Shots:0.6488,OBV:0.2316,"Shot OBV":-0.0184,"Dribble & Carry OBV":0.0607,"Defensive Action OBV":0.0065,"Pass OBV":0.1949,"Deep Progressions":4.9743,"Touches in box":1.1895,"Line Breaking Passes":0,"Line Breaking Passes Completed":0,"Line Breaking Passes Completed%":0,"Line Breaking Passes On Ball Value":0,"Ball Receipts in Space 10m%":0,Turnovers:2.2709,Fouls:0.4325,"Fouls Won":0.5406,"Aerial Win%":0.2666,"Aerial Wins":0.4325,Pressures:22.709,"Tackles & Interceptions":2.1627,"Dribbled Past":1.4057},
+  {Player:"Mariama Dabo",Minutes:682.59,Age:20,Height:165,"Non Penalty xG":0.0061,"Non Penalty xG/Shot":0.0465,"Open Play xG Assisted":0.0102,Shots:0.1318,OBV:0.13,"Shot OBV":-0.0085,"Dribble & Carry OBV":0.0852,"Defensive Action OBV":0.0584,"Pass OBV":-0.0225,"Deep Progressions":2.637,"Touches in box":0,"Line Breaking Passes":0,"Line Breaking Passes Completed":0,"Line Breaking Passes Completed%":0,"Line Breaking Passes On Ball Value":0,"Ball Receipts in Space 10m%":0,Turnovers:0.6592,Fouls:1.9777,"Fouls Won":1.4503,"Aerial Win%":0.4074,"Aerial Wins":1.4503,Pressures:26.3701,"Tackles & Interceptions":6.0651,"Dribbled Past":1.3185},
+  {Player:"Magali Gagne",Minutes:597.06,Age:22,Height:167,"Non Penalty xG":0.0522,"Non Penalty xG/Shot":0.0433,"Open Play xG Assisted":0.0284,Shots:1.2059,OBV:-0.0201,"Shot OBV":-0.0484,"Dribble & Carry OBV":0.0427,"Defensive Action OBV":0.0246,"Pass OBV":-0.0444,"Deep Progressions":3.4669,"Touches in box":2.7132,"Line Breaking Passes":0,"Line Breaking Passes Completed":0,"Line Breaking Passes Completed%":0,"Line Breaking Passes On Ball Value":0,"Ball Receipts in Space 10m%":0,Turnovers:4.8236,Fouls:0.7536,"Fouls Won":0.4522,"Aerial Win%":0.2173,"Aerial Wins":0.7536,Pressures:32.5593,"Tackles & Interceptions":2.4118,"Dribbled Past":1.9595},
+  {Player:"Hannah Minogue",Minutes:405.78,Age:null,Height:162,"Non Penalty xG":0.029,"Non Penalty xG/Shot":0.0436,"Open Play xG Assisted":0.0319,Shots:0.6653,OBV:0.1437,"Shot OBV":-0.0146,"Dribble & Carry OBV":0.079,"Defensive Action OBV":0.0385,"Pass OBV":-0.0203,"Deep Progressions":1.1089,"Touches in box":1.3307,"Line Breaking Passes":0,"Line Breaking Passes Completed":0,"Line Breaking Passes Completed%":0,"Line Breaking Passes On Ball Value":0,"Ball Receipts in Space 10m%":0,Turnovers:1.9961,Fouls:1.1089,"Fouls Won":1.5525,"Aerial Win%":0.1818,"Aerial Wins":0.4435,Pressures:30.8297,"Tackles & Interceptions":3.1051,"Dribbled Past":0.6653},
+  {Player:"Ellie Rowlands",Minutes:382.83,Age:null,Height:167,"Non Penalty xG":0.0493,"Non Penalty xG/Shot":0.0349,"Open Play xG Assisted":0.0028,Shots:1.4105,OBV:0.0302,"Shot OBV":-0.0633,"Dribble & Carry OBV":0.0318,"Defensive Action OBV":0.0842,"Pass OBV":-0.0179,"Deep Progressions":2.5859,"Touches in box":0.7052,"Line Breaking Passes":0,"Line Breaking Passes Completed":0,"Line Breaking Passes Completed%":0,"Line Breaking Passes On Ball Value":0,"Ball Receipts in Space 10m%":0,Turnovers:1.1754,Fouls:1.4105,"Fouls Won":1.4105,"Aerial Win%":0.75,"Aerial Wins":2.1158,Pressures:24.9195,"Tackles & Interceptions":3.0561,"Dribbled Past":1.4105},
+  {Player:"Alia Jaidi",Minutes:190.39,Age:null,Height:168,"Non Penalty xG":0.2214,"Non Penalty xG/Shot":0.0937,"Open Play xG Assisted":0.0518,Shots:2.3636,OBV:0.0261,"Shot OBV":0.027,"Dribble & Carry OBV":0.0628,"Defensive Action OBV":-0.0004,"Pass OBV":-0.0519,"Deep Progressions":1.8908,"Touches in box":5.1999,"Line Breaking Passes":0,"Line Breaking Passes Completed":0,"Line Breaking Passes Completed%":0,"Line Breaking Passes On Ball Value":0,"Ball Receipts in Space 10m%":0,Turnovers:3.309,Fouls:1.8908,"Fouls Won":2.3636,"Aerial Win%":0.5384,"Aerial Wins":3.309,Pressures:20.7997,"Tackles & Interceptions":3.7817,"Dribbled Past":0.4727},
+  {Player:"Sofia Doheny",Minutes:149.76,Age:null,Height:172,"Non Penalty xG":0.1704,"Non Penalty xG/Shot":0.0945,"Open Play xG Assisted":0,Shots:1.8028,OBV:-0.1687,"Shot OBV":-0.0901,"Dribble & Carry OBV":0.0377,"Defensive Action OBV":-0.0037,"Pass OBV":-0.1095,"Deep Progressions":0.6009,"Touches in box":7.8122,"Line Breaking Passes":0,"Line Breaking Passes Completed":0,"Line Breaking Passes Completed%":0,"Line Breaking Passes On Ball Value":0,"Ball Receipts in Space 10m%":0,Turnovers:4.8075,Fouls:1.2018,"Fouls Won":0.6009,"Aerial Win%":0.5,"Aerial Wins":4.8075,Pressures:27.0424,"Tackles & Interceptions":0.6009,"Dribbled Past":0.6009},
+  {Player:"Celine Ottah",Minutes:102.32,Age:null,Height:160,"Non Penalty xG":0.0774,"Non Penalty xG/Shot":0.044,"Open Play xG Assisted":0,Shots:1.7592,OBV:-0.1719,"Shot OBV":-0.1007,"Dribble & Carry OBV":0.0194,"Defensive Action OBV":-0.0001,"Pass OBV":-0.0904,"Deep Progressions":3.5185,"Touches in box":1.7592,"Line Breaking Passes":0,"Line Breaking Passes Completed":0,"Line Breaking Passes Completed%":0,"Line Breaking Passes On Ball Value":0,"Ball Receipts in Space 10m%":0,Turnovers:3.5185,Fouls:1.7592,"Fouls Won":1.7592,"Aerial Win%":0.4,"Aerial Wins":1.7592,Pressures:20.2315,"Tackles & Interceptions":3.5185,"Dribbled Past":0.8796},
+  {Player:"Adi Bianchin",Minutes:59.75,Age:null,Height:null,"Non Penalty xG":0,"Non Penalty xG/Shot":0,"Open Play xG Assisted":0,Shots:0,OBV:-0.2127,"Shot OBV":0,"Dribble & Carry OBV":-0.1235,"Defensive Action OBV":-0.0032,"Pass OBV":-0.0858,"Deep Progressions":0,"Touches in box":1.5062,"Line Breaking Passes":0,"Line Breaking Passes Completed":0,"Line Breaking Passes Completed%":0,"Line Breaking Passes On Ball Value":0,"Ball Receipts in Space 10m%":0,Turnovers:6.025,Fouls:0,"Fouls Won":1.5062,"Aerial Win%":0.3333,"Aerial Wins":1.5062,Pressures:16.5689,"Tackles & Interceptions":3.0125,"Dribbled Past":0},
+  {Player:"Emily Cooper",Minutes:11.62,Age:22,Height:177,"Non Penalty xG":0,"Non Penalty xG/Shot":0,"Open Play xG Assisted":0,Shots:0,OBV:0.0113,"Shot OBV":0,"Dribble & Carry OBV":0.0014,"Defensive Action OBV":-0.0136,"Pass OBV":0.0235,"Deep Progressions":0,"Touches in box":0,"Line Breaking Passes":0,"Line Breaking Passes Completed":0,"Line Breaking Passes Completed%":0,"Line Breaking Passes On Ball Value":0,"Ball Receipts in Space 10m%":0,Turnovers:7.7484,Fouls:7.7484,"Fouls Won":0,"Aerial Win%":0,"Aerial Wins":0,Pressures:85.2324,"Tackles & Interceptions":0,"Dribbled Past":0},
+  {Player:"Maya Bright",Minutes:5.47,Age:18,Height:null,"Non Penalty xG":0,"Non Penalty xG/Shot":0,"Open Play xG Assisted":0,Shots:0,OBV:-0.1062,"Shot OBV":0,"Dribble & Carry OBV":0.049,"Defensive Action OBV":-0.0106,"Pass OBV":-0.1445,"Deep Progressions":0,"Touches in box":0,"Line Breaking Passes":0,"Line Breaking Passes Completed":0,"Line Breaking Passes Completed%":0,"Line Breaking Passes On Ball Value":0,"Ball Receipts in Space 10m%":0,Turnovers:0,Fouls:0,"Fouls Won":0,"Aerial Win%":0,"Aerial Wins":0,Pressures:16.45,"Tackles & Interceptions":0,"Dribbled Past":0}
+];
+
+// Filter to players with meaningful minutes
+const QUALIFIED = SEASON_DATA.filter(p => p.Minutes >= 90);
+
+// ── METRIC GROUPS ─────────────────────────────────────────────────
+const METRIC_GROUPS = {
+  attacking: ['Non Penalty xG','Non Penalty xG/Shot','Open Play xG Assisted','Shots','Touches in box','Deep Progressions'],
+  possession: ['Deep Progressions','Turnovers','Dribble & Carry OBV','Pass OBV','Ball Receipts in Space 10m%'],
+  defensive: ['Pressures','Tackles & Interceptions','Defensive Action OBV','Aerial Win%','Aerial Wins','Dribbled Past'],
+  obv: ['OBV','Shot OBV','Dribble & Carry OBV','Defensive Action OBV','Pass OBV'],
+  all: ['Minutes','Non Penalty xG','Shots','Touches in box','Deep Progressions','Pressures','Tackles & Interceptions','OBV','Pass OBV']
+};
+
+let currentGroup = 'all';
+let sortCol = 'Minutes';
+let sortDir = 'desc';
+let currentTab = 'squad';
+
+// ── INIT ──────────────────────────────────────────────────────────
+function init() {
+  renderTeamOverview();
+  renderSquadTable();
+  renderPlayerGrid();
+  renderStrengths();
+  loadSavedReports();
+  setMetricGroup('all');
+}
+
+// ── TEAM OVERVIEW CARDS ───────────────────────────────────────────
+function renderTeamOverview() {
+  const q = QUALIFIED;
+  const avgOBV = avg(q.map(p=>p.OBV)).toFixed(3);
+  const totalxG = sum(q.map(p=>p['Non Penalty xG']*p.Minutes/90)).toFixed(1);
+  const avgPress = avg(q.map(p=>p.Pressures)).toFixed(1);
+  const avgTI = avg(q.map(p=>p['Tackles & Interceptions'])).toFixed(1);
+  const topScorer = q.reduce((a,b) => b['Non Penalty xG']>a['Non Penalty xG']?b:a);
+  document.getElementById('teamOverview').innerHTML = `
+    <div class="stat-card" style="--accent:var(--gold);">
+      <div class="stat-icon">👥</div>
+      <div class="stat-label">Qualified Players</div>
+      <div class="stat-value" style="color:var(--gold2);">${q.length}</div>
+      <div class="stat-delta">90+ min played</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--green);">
+      <div class="stat-icon">⚽</div>
+      <div class="stat-label">Season npxG</div>
+      <div class="stat-value" style="color:var(--green);">${totalxG}</div>
+      <div class="stat-delta">Non-penalty expected goals</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--blue);">
+      <div class="stat-icon">📈</div>
+      <div class="stat-label">Avg OBV</div>
+      <div class="stat-value" style="color:var(--blue);">${avgOBV}</div>
+      <div class="stat-delta">On-ball value per 90</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--red);">
+      <div class="stat-icon">🛡</div>
+      <div class="stat-label">Avg Pressures</div>
+      <div class="stat-value" style="color:var(--red);">${avgPress}</div>
+      <div class="stat-delta">Per 90 minutes</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--yellow);">
+      <div class="stat-icon">⭐</div>
+      <div class="stat-label">Top xG Player</div>
+      <div class="stat-value" style="color:var(--yellow);font-size:16px;">${topScorer.Player.split(' ')[1]}</div>
+      <div class="stat-delta">${topScorer['Non Penalty xG'].toFixed(3)} npxG/90</div>
+    </div>`;
+}
+
+// ── SQUAD TABLE ───────────────────────────────────────────────────
+function setMetricGroup(g) {
+  currentGroup = g;
+  document.querySelectorAll('[id^="mg-"]').forEach(b => b.classList.remove('btn-gold'));
+  document.getElementById('mg-'+g)?.classList.add('btn-gold');
+  renderSquadTable();
+}
+
+function renderSquadTable() {
+  const cols = ['Player','Minutes',...METRIC_GROUPS[currentGroup]];
+  const data = [...QUALIFIED].sort((a,b) => {
+    const av = a[sortCol]??-999, bv = b[sortCol]??-999;
+    return sortDir==='desc' ? bv-av : av-bv;
+  });
+
+  // Calculate column ranges for heat bars
+  const ranges = {};
+  cols.forEach(c => {
+    if (c==='Player') return;
+    const vals = data.map(r=>r[c]).filter(v=>v!=null&&!isNaN(v));
+    ranges[c] = {min:Math.min(...vals), max:Math.max(...vals)};
+  });
+
+  document.getElementById('squadHead').innerHTML = `<tr>${cols.map(c=>`
+    <th onclick="sortBy('${c}')" class="${sortCol===c?(sortDir==='desc'?'sort-desc':'sort-asc'):''}">${c}</th>`).join('')}</tr>`;
+
+  document.getElementById('squadBody').innerHTML = data.map(row => `
+    <tr>${cols.map(c => {
+      if (c==='Player') return `<td>${row[c]}</td>`;
+      const v = row[c];
+      if (v==null||isNaN(v)) return `<td style="color:var(--slate);">—</td>`;
+      const r = ranges[c];
+      const pct = r.max!==r.min ? (v-r.min)/(r.max-r.min) : 0.5;
+      const isNegGood = ['Turnovers','Dribbled Past'].includes(c);
+      const hue = isNegGood ? (pct<0.5?'var(--green)':'var(--red)') : (pct>0.5?'var(--green)':pct>0.25?'var(--gold2)':'var(--red)');
+      const width = Math.abs(pct-0.5)*2*100;
+      const display = Math.abs(v)<0.01&&v!==0 ? v.toFixed(4) : (Math.abs(v)>=100?Math.round(v):v.toFixed(2));
+      return `<td class="heat-bar-cell" style="position:relative;min-width:60px;">
+        <div class="heat-bar-bg" style="background:${hue};width:${Math.max(4,width)}%;left:${pct>=0.5?'50%':'auto'};right:${pct<0.5?'50%':'auto'}"></div>
+        <span class="heat-val ${v>0?'pos':v<0?'neg':'neu'}">${display}</span>
+      </td>`;
+    }).join('')}</tr>`).join('');
+}
+
+function sortBy(col) {
+  if (sortCol===col) sortDir = sortDir==='desc'?'asc':'desc';
+  else { sortCol=col; sortDir='desc'; }
+  renderSquadTable();
+}
+
+// ── PLAYER GRID ───────────────────────────────────────────────────
+function renderPlayerGrid() {
+  document.getElementById('playerGrid').innerHTML = QUALIFIED.map((p,i) => {
+    const obvColor = p.OBV>0.1?'var(--green)':p.OBV>0?'var(--gold2)':'var(--red)';
+    return `<div class="player-card" onclick="showPlayerDetail(${i})">
+      <div class="player-card-name">${p.Player}</div>
+      <div class="player-card-mins">${Math.round(p.Minutes)} min · ${p.Height?p.Height+'cm':''}${p.Age?' · Age '+p.Age:''}</div>
+      <div class="player-card-stats">
+        <div class="player-card-stat">
+          <div class="player-card-stat-label">npxG/90</div>
+          <div class="player-card-stat-val" style="color:var(--gold2);">${p['Non Penalty xG'].toFixed(3)}</div>
+        </div>
+        <div class="player-card-stat">
+          <div class="player-card-stat-label">OBV</div>
+          <div class="player-card-stat-val" style="color:${obvColor};">${p.OBV.toFixed(3)}</div>
+        </div>
+        <div class="player-card-stat">
+          <div class="player-card-stat-label">Press/90</div>
+          <div class="player-card-stat-val" style="color:var(--blue);">${p.Pressures.toFixed(1)}</div>
+        </div>
+        <div class="player-card-stat">
+          <div class="player-card-stat-label">T&I/90</div>
+          <div class="player-card-stat-val" style="color:var(--slate2);">${p['Tackles & Interceptions'].toFixed(2)}</div>
+        </div>
+        <div class="player-card-stat">
+          <div class="player-card-stat-label">Touches Box</div>
+          <div class="player-card-stat-val" style="color:var(--slate2);">${p['Touches in box'].toFixed(2)}</div>
+        </div>
+        <div class="player-card-stat">
+          <div class="player-card-stat-label">Deep Prog</div>
+          <div class="player-card-stat-val" style="color:var(--slate2);">${p['Deep Progressions'].toFixed(2)}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showPlayerDetail(i) {
+  const p = QUALIFIED[i];
+  document.getElementById('playerDetail').style.display = '';
+  document.getElementById('detailName').innerHTML = `<div class="dot" style="background:var(--gold);"></div>${p.Player} — ${Math.round(p.Minutes)} min`;
+  
+  // Radar chart
+  drawRadar(p);
+
+  // Stat breakdown
+  const statGroups = [
+    { label:'Attacking', stats:['Non Penalty xG','Non Penalty xG/Shot','Open Play xG Assisted','Shots','Touches in box'] },
+    { label:'Progression', stats:['Deep Progressions','Pass OBV','Dribble & Carry OBV'] },
+    { label:'Defensive', stats:['Pressures','Tackles & Interceptions','Defensive Action OBV','Aerial Win%','Dribbled Past'] },
+    { label:'Overall Value', stats:['OBV','Shot OBV'] },
+  ];
+  document.getElementById('detailStats').innerHTML = statGroups.map(g => `
+    <div style="margin-bottom:14px;">
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">${g.label}</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+        ${g.stats.map(s => {
+          const v = p[s];
+          const c = v>0?'var(--green)':v<0?'var(--red)':'var(--slate2)';
+          return `<div style="background:var(--steel);border-radius:6px;padding:8px;">
+            <div style="font-size:9px;color:var(--slate);font-family:'DM Mono',monospace;margin-bottom:2px;">${s}</div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;color:${c};">${v!=null?v.toFixed(3):'—'}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+  
+  document.getElementById('playerDetail').scrollIntoView({behavior:'smooth'});
+}
+
+function closeDetail() { document.getElementById('playerDetail').style.display='none'; }
+
+function drawRadar(p) {
+  const canvas = document.getElementById('radarCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+  
+  // Normalize metrics 0-1 across all qualified players
+  const metrics = [
+    { label:'xG', key:'Non Penalty xG', invert:false },
+    { label:'Shots', key:'Shots', invert:false },
+    { label:'Pressing', key:'Pressures', invert:false },
+    { label:'Tackles', key:'Tackles & Interceptions', invert:false },
+    { label:'Prog', key:'Deep Progressions', invert:false },
+    { label:'OBV', key:'OBV', invert:false },
+  ];
+  
+  const normalized = metrics.map(m => {
+    const vals = QUALIFIED.map(q=>q[m.key]??0);
+    const min=Math.min(...vals), max=Math.max(...vals);
+    const raw = p[m.key]??0;
+    return max!==min ? (raw-min)/(max-min) : 0.5;
+  });
+
+  const cx=W/2, cy=H/2, r=90, n=metrics.length;
+  const step = (2*Math.PI)/n;
+
+  // Grid rings
+  ctx.strokeStyle='rgba(77,106,156,0.25)';
+  ctx.lineWidth=1;
+  [0.25,0.5,0.75,1].forEach(ring => {
+    ctx.beginPath();
+    for(let i=0;i<n;i++){
+      const a=-Math.PI/2+i*step;
+      const x=cx+Math.cos(a)*r*ring, y=cy+Math.sin(a)*r*ring;
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.closePath(); ctx.stroke();
+  });
+  // Spokes
+  for(let i=0;i<n;i++){
+    const a=-Math.PI/2+i*step;
+    ctx.beginPath(); ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+Math.cos(a)*r, cy+Math.sin(a)*r);
+    ctx.stroke();
+  }
+  // Filled polygon
+  ctx.beginPath();
+  normalized.forEach((v,i) => {
+    const a=-Math.PI/2+i*step;
+    const x=cx+Math.cos(a)*r*v, y=cy+Math.sin(a)*r*v;
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.closePath();
+  ctx.fillStyle='rgba(201,151,58,0.25)';
+  ctx.fill();
+  ctx.strokeStyle='rgba(201,151,58,0.8)'; ctx.lineWidth=2; ctx.stroke();
+  
+  // Labels
+  ctx.fillStyle='#8a9dc0'; ctx.font='bold 10px DM Mono,monospace'; ctx.textAlign='center';
+  metrics.forEach((m,i) => {
+    const a=-Math.PI/2+i*step;
+    const x=cx+Math.cos(a)*(r+16), y=cy+Math.sin(a)*(r+16)+4;
+    ctx.fillText(m.label, x, y);
+  });
+}
+
+// ── STRENGTHS ─────────────────────────────────────────────────────
+function renderStrengths() {
+  const q = QUALIFIED;
+  // Determine team strengths vs weaknesses based on metric averages
+  const strengths = [], weaknesses = [];
+  const avgPress = avg(q.map(p=>p.Pressures));
+  const avgTI = avg(q.map(p=>p['Tackles & Interceptions']));
+  const avgxG = avg(q.map(p=>p['Non Penalty xG']));
+  const avgOBV = avg(q.map(p=>p.OBV));
+  const avgDeepProg = avg(q.map(p=>p['Deep Progressions']));
+  const avgTouches = avg(q.map(p=>p['Touches in box']));
+  const avgTurnovers = avg(q.map(p=>p.Turnovers));
+  const avgDribbledPast = avg(q.map(p=>p['Dribbled Past']));
+  const avgPassOBV = avg(q.map(p=>p['Pass OBV']));
+  const avgAerialWin = avg(q.filter(p=>p['Aerial Win%']>0).map(p=>p['Aerial Win%']));
+
+  if (avgPress > 20) strengths.push('High Pressing Intensity');
+  else weaknesses.push('Low Press Volume');
+  if (avgTI > 3) strengths.push('Strong Ball Recovery');
+  else weaknesses.push('Defensive Recoveries');
+  if (avgxG > 0.08) strengths.push('Consistent xG Generation');
+  else weaknesses.push('Low xG Output');
+  if (avgOBV > 0.08) strengths.push('Positive On-Ball Value');
+  else weaknesses.push('On-Ball Impact');
+  if (avgDeepProg > 2.5) strengths.push('Progressive Play');
+  else weaknesses.push('Ball Progression');
+  if (avgTouches > 1.5) strengths.push('Box Presence');
+  else weaknesses.push('Penalty Area Entries');
+  if (avgPassOBV > 0.04) strengths.push('Passing Quality');
+  else weaknesses.push('Pass OBV');
+  if (avgTurnovers < 2.5) strengths.push('Ball Security');
+  else weaknesses.push('Turnover Rate');
+  if (avgAerialWin > 0.45) strengths.push('Aerial Dominance');
+  if (avgDribbledPast < 1) strengths.push('Defensive Solidity 1v1');
+
+  document.getElementById('swGrid').innerHTML = `
+    <div class="sw-card">
+      <div class="sw-card-title str">✅ Team Strengths</div>
+      ${strengths.map(s=>`<span class="sw-chip str">${s}</span>`).join('')}
+    </div>
+    <div class="sw-card">
+      <div class="sw-card-title wk">⚠ Areas to Improve</div>
+      ${weaknesses.map(s=>`<span class="sw-chip wk">${s}</span>`).join('')}
+    </div>`;
+
+  // Top performers
+  const categories = [
+    { label:'xG/90', key:'Non Penalty xG', top:3 },
+    { label:'Pressures/90', key:'Pressures', top:3 },
+    { label:'T&I/90', key:'Tackles & Interceptions', top:3 },
+    { label:'OBV', key:'OBV', top:3 },
+    { label:'Deep Progressions', key:'Deep Progressions', top:3 },
+    { label:'Touches in Box', key:'Touches in box', top:3 },
+  ];
+  document.getElementById('topPerformers').innerHTML = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">` +
+    categories.map(cat => {
+      const sorted = [...q].sort((a,b)=>(b[cat.key]??-999)-(a[cat.key]??-999)).slice(0,cat.top);
+      return `<div>
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">${cat.label}</div>
+        ${sorted.map((p,i)=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;color:${['var(--gold2)','var(--slate2)','var(--slate)'][i]};width:14px;">${i+1}</span>
+          <span style="font-size:12px;color:var(--white);flex:1;">${p.Player.split(' ').slice(-1)[0]}</span>
+          <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--green);">${(p[cat.key]??0).toFixed(2)}</span>
+        </div>`).join('')}
+      </div>`;
+    }).join('') + '</div>';
+}
+
+// ── AI SCOUTING REPORT ────────────────────────────────────────────
+async function generateScoutReport() {
+  const opponent = document.getElementById('sc-opponent').value.trim();
+  if (!opponent) { showToast('Please enter an opponent name'); return; }
+
+  const btn = document.getElementById('scoutBtn');
+  btn.disabled = true; btn.textContent = '⏳ Generating...';
+  document.getElementById('scoutStatus').textContent = 'Analyzing your squad data...';
+
+  const formation = document.getElementById('sc-formation').value;
+  const style = document.getElementById('sc-style').value;
+  const intel = document.getElementById('sc-intel').value;
+  const matchDate = document.getElementById('sc-date').value;
+
+  // Build squad summary for the AI
+  const q = QUALIFIED;
+  const squadSummary = q.map(p =>
+    `${p.Player}: ${Math.round(p.Minutes)}min, npxG/90=${p['Non Penalty xG'].toFixed(3)}, OBV=${p.OBV.toFixed(3)}, Pressures/90=${p.Pressures.toFixed(1)}, T&I/90=${p['Tackles & Interceptions'].toFixed(2)}, DeepProg/90=${p['Deep Progressions'].toFixed(2)}, TouchesBox/90=${p['Touches in box'].toFixed(2)}, PassOBV=${p['Pass OBV'].toFixed(3)}, DribbleOBV=${p['Dribble & Carry OBV'].toFixed(3)}, DefOBV=${p['Defensive Action OBV'].toFixed(3)}`
+  ).join('\n');
+
+  const strengths = [], weaknesses = [];
+  if(avg(q.map(p=>p.Pressures))>20) strengths.push('high pressing intensity');
+  if(avg(q.map(p=>p['Tackles & Interceptions']))>3) strengths.push('strong defensive recoveries');
+  if(avg(q.map(p=>p['Non Penalty xG']))>0.08) strengths.push('consistent xG generation');
+  if(avg(q.map(p=>p.OBV))>0.08) strengths.push('positive on-ball value team-wide');
+  if(avg(q.map(p=>p['Deep Progressions']))>2.5) strengths.push('progressive ball carrying');
+  if(avg(q.map(p=>p.Turnovers))>2.5) weaknesses.push('high turnover rate');
+  if(avg(q.map(p=>p['Touches in box']))<1.5) weaknesses.push('limited box entries');
+
+  const prompt = `You are an elite collegiate soccer tactical analyst. Generate a comprehensive pre-match scouting report for Pittsburgh Panthers Women's Soccer preparing to face ${opponent}.
+
+PITTSBURGH PANTHERS 2025 FALL SEASON DATA (per 90 minutes, qualified players only):
+${squadSummary}
+
+TEAM STRENGTHS: ${strengths.join(', ') || 'balanced profile'}
+AREAS TO IMPROVE: ${weaknesses.join(', ') || 'none identified'}
+
+OPPONENT INTEL:
+- Opponent: ${opponent}
+- Formation: ${formation || 'Unknown'}
+- Playing Style: ${style || 'Unknown'}
+- Additional Intel: ${intel || 'None provided'}
+${matchDate ? `- Match Date: ${matchDate}` : ''}
+
+Generate a detailed tactical scouting report with these sections:
+1. **EXECUTIVE SUMMARY** — 3-4 sentence overview of this matchup
+2. **OUR KEY ADVANTAGES** — 3-4 specific tactical edges we have based on the data
+3. **THREATS TO MANAGE** — specific risks and opponent threats to prepare for
+4. **TACTICAL GAME PLAN** — recommended formation, pressing triggers, and in-possession/out-of-possession structure
+5. **KEY PLAYER MATCHUPS** — 3 specific individual matchups that will decide the game, using our actual player names from the data
+6. **SET PIECE STRATEGY** — attacking and defensive set piece recommendations
+7. **COACHING CUES** — 5 specific pre-match talking points for the squad
+
+Use specific player names from our data. Be tactical and precise. Reference specific stats where relevant.`;
+
+  const reportEl = document.getElementById('reportOut');
+  reportEl.style.display = '';
+  reportEl.innerHTML = '<span class="typing-cursor"></span>';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1500,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || 'Error generating report.';
+
+    // Render with markdown-like formatting
+    reportEl.innerHTML = formatReport(text);
+    document.getElementById('saveBtn').style.display='';
+    document.getElementById('scoutStatus').textContent = `Report generated for ${opponent}`;
+    showToast('Scouting report ready ✓');
+  } catch(e) {
+    reportEl.innerHTML = `<span style="color:var(--red);">Error: ${e.message}</span>`;
+  }
+
+  btn.disabled=false; btn.textContent='⚡ Generate Scouting Report';
+}
+
+function formatReport(text) {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^#{1,3}\s*(.+)$/gm, '<h3>$1</h3>')
+    .replace(/^\d+\.\s+\*\*(.+?)\*\*/gm, '<h3>$1</h3>')
+    .replace(/^\d+\.\s+(.+)/gm, '<h4>$1</h4>')
+    .replace(/^- (.+)/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+    .replace(/\n\n/g,'</p><p>')
+    .replace(/^(?!<[hul])/gm, '')
+    .trim();
+}
+
+function saveReport() {
+  const opponent = document.getElementById('sc-opponent').value.trim();
+  const html = document.getElementById('reportOut').innerHTML;
+  const saved = JSON.parse(localStorage.getItem('fis_scout_reports')||'[]');
+  saved.unshift({ opponent, date: new Date().toISOString().split('T')[0], html });
+  localStorage.setItem('fis_scout_reports', JSON.stringify(saved.slice(0,20)));
+  showToast(`Report saved for ${opponent} ✓`);
+  loadSavedReports();
+}
+
+function loadSavedReports() {
+  const saved = JSON.parse(localStorage.getItem('fis_scout_reports')||'[]');
+  if (!saved.length) return;
+  document.getElementById('savedReports').innerHTML = `
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">Saved Reports</div>
+    ${saved.map((r,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;">
+      <span style="font-weight:600;color:var(--white);flex:1;">vs ${r.opponent}</span>
+      <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);">${r.date}</span>
+      <button class="btn btn-ghost" style="font-size:10px;padding:3px 8px;" onclick="viewSaved(${i})">View</button>
+      <button class="btn btn-ghost" style="font-size:10px;padding:3px 8px;color:var(--red);" onclick="deleteSaved(${i})">✕</button>
+    </div>`).join('')}`;
+}
+
+function viewSaved(i) {
+  const saved = JSON.parse(localStorage.getItem('fis_scout_reports')||'[]');
+  const r = saved[i];
+  document.getElementById('sc-opponent').value = r.opponent;
+  const reportEl = document.getElementById('reportOut');
+  reportEl.style.display=''; reportEl.innerHTML = r.html;
+  reportEl.scrollIntoView({behavior:'smooth'});
+}
+function deleteSaved(i) {
+  const saved = JSON.parse(localStorage.getItem('fis_scout_reports')||'[]');
+  saved.splice(i,1);
+  localStorage.setItem('fis_scout_reports',JSON.stringify(saved));
+  loadSavedReports();
+}
+
+// ── CSV UPLOAD ────────────────────────────────────────────────────
+function loadCSV(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const lines = ev.target.result.trim().split('\n');
+      const headers = lines[0].split(',').map(h=>h.trim());
+      const newData = lines.slice(1).map(line => {
+        const vals = line.split(',');
+        const obj = {};
+        headers.forEach((h,i) => {
+          const v = vals[i]?.trim();
+          obj[h] = v&&!isNaN(v) ? parseFloat(v) : (v||null);
+        });
+        return obj;
+      }).filter(r=>r['Player']&&r['Minutes']>0);
+      // Reload with new data
+      SEASON_DATA.length=0; SEASON_DATA.push(...newData);
+      QUALIFIED.length=0; QUALIFIED.push(...newData.filter(p=>p.Minutes>=90));
+      document.getElementById('datasetLabel').textContent = file.name.replace('.csv','');
+      init();
+      showToast(`Loaded ${newData.length} players from ${file.name} ✓`);
+    } catch(err) { showToast('Error parsing CSV: '+err.message); }
+  };
+  reader.readAsText(file);
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────
+function avg(arr) { const v=arr.filter(x=>x!=null&&!isNaN(x)); return v.length?v.reduce((a,b)=>a+b,0)/v.length:0; }
+function sum(arr) { return arr.filter(x=>x!=null&&!isNaN(x)).reduce((a,b)=>a+b,0); }
+function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
+
+function switchTab(tab, btn) {
+  currentTab=tab;
+  ['squad','players','strengths','scouting'].forEach(t=>{ document.getElementById('tab-'+t).style.display=t===tab?'':'none'; });
+  document.querySelectorAll('.tac-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+init();
+</script>
+</body>
+</html>
