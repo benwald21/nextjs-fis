@@ -96,7 +96,7 @@ function closeModal(){document.getElementById('addModal').classList.remove('open
 async function loadMarketing() {
   const plat = document.getElementById('platformFilter').value;
   try {
-    const params = { sort:[{field:'Week',direction:'desc'}] };
+    const params = {};
     if (plat) params.filterByFormula = `{Platform}="${plat}"`;
     const records = await airtableFetch(FIS_CONFIG.TABLES.MARKETING, params);
 

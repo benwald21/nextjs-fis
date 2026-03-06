@@ -129,7 +129,7 @@ function intensityPill(i) {
 async function loadSessions() {
   try {
     const sessions = await airtableFetch(FIS_CONFIG.TABLES.TRAINING, {
-      sort: [{ field: 'Date', direction: 'desc' }], maxRecords: 30
+      maxRecords: 30
     });
     // Stats
     const now = new Date();
@@ -158,7 +158,7 @@ async function loadSessions() {
 async function loadLoadData() {
   try {
     const records = await airtableFetch(FIS_CONFIG.TABLES.LOAD, {
-      sort: [{ field: 'PlayerLoad', direction: 'desc' }], maxRecords: 30
+      maxRecords: 30
     });
     const flags = records.filter(r => (r.fields['Load Risk Flag']||'').includes('HIGH'));
     document.getElementById('ts-flags').textContent = flags.length;

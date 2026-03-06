@@ -131,7 +131,7 @@ async function loadSchedule() {
   const today = new Date().toISOString().split('T')[0];
 
   try {
-    const all = await airtableFetch(FIS_CONFIG.TABLES.SCHEDULE, { sort:[{field:'Date',direction:'asc'}] });
+    const all = await airtableFetch(FIS_CONFIG.TABLES.SCHEDULE, {});
 
     // Stats
     const matches = all.filter(e => e.fields['Type']==='Match');

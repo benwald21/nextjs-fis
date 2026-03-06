@@ -113,7 +113,7 @@ async function loadTasks() {
   board.innerHTML = `<div class="loading"><div class="spinner"></div></div>`;
   try {
     allTasks = await airtableFetch(FIS_CONFIG.TABLES.TASKS, {
-      sort: [{ field: 'Due Date', direction: 'asc' }]
+      
     });
 
     const today = new Date().toISOString().split('T')[0];

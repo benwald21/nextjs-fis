@@ -188,9 +188,7 @@ function statusPillHTML(status) {
 
 async function loadRoster() {
   try {
-    allPlayers = await airtableFetch(FIS_CONFIG.TABLES.PLAYERS, {
-      sort: [{ field: 'Jersey #', direction: 'asc' }]
-    });
+    allPlayers = await airtableFetch(FIS_CONFIG.TABLES.PLAYERS, {});
     renderTable(allPlayers);
   } catch(e) {
     document.getElementById('rosterBody').innerHTML = `<tr><td colspan="10" style="color:var(--red);padding:20px;">Error loading roster: ${e.message}</td></tr>`;

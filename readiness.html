@@ -251,7 +251,7 @@ async function loadWellness() {
   else if (filter === 'yesterday') formula = `{Date}="${yesterday}"`;
 
   try {
-    const params = { sort: [{ field: 'Date', direction: 'desc' }], maxRecords: 50 };
+    const params = { maxRecords: 50 };
     if (formula) params.filterByFormula = formula;
     const records = await airtableFetch(FIS_CONFIG.TABLES.WELLNESS, params);
     if (!records.length) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-text">No check-ins for this period</div></div></td></tr>`; return; }
@@ -278,7 +278,7 @@ async function loadInjuries() {
   tbody.innerHTML = `<tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr>`;
   const filterVal = document.getElementById('injuryFilter').value;
   try {
-    const params = { sort: [{ field: 'Date of Injury', direction: 'desc' }] };
+    const params = {};
     if (filterVal === 'Active') params.filterByFormula = `{Status}="Active"`;
     const records = await airtableFetch(FIS_CONFIG.TABLES.INJURIES, params);
     if (!records.length) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon">✅</div><div class="empty-text">No injuries logged</div></div></td></tr>`; return; }
@@ -302,7 +302,7 @@ async function loadInjuries() {
 
 async function openWellnessModal() {
   if (!players.length) {
-    players = await airtableFetch(FIS_CONFIG.TABLES.PLAYERS, { sort: [{ field: 'Player Name', direction: 'asc' }] });
+    players = await airtableFetch(FIS_CONFIG.TABLES.PLAYERS, {});
   }
   const sel = document.getElementById('w-player');
   sel.innerHTML = '<option value="">Select player...</option>' + players.map(p => `<option value="${p.fields['Player Name']}">${p.fields['Player Name']}</option>`).join('');
@@ -312,7 +312,7 @@ async function openWellnessModal() {
 
 async function openInjuryModal() {
   if (!players.length) {
-    players = await airtableFetch(FIS_CONFIG.TABLES.PLAYERS, { sort: [{ field: 'Player Name', direction: 'asc' }] });
+    players = await airtableFetch(FIS_CONFIG.TABLES.PLAYERS, {});
   }
   const sel = document.getElementById('inj-player');
   sel.innerHTML = '<option value="">Select player...</option>' + players.map(p => `<option value="${p.fields['Player Name']}">${p.fields['Player Name']}</option>`).join('');

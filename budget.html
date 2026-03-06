@@ -131,7 +131,7 @@ async function loadScholarships() {
 async function loadBudget() {
   const cat = document.getElementById('catFilter').value;
   try {
-    const params = { sort:[{field:'Category',direction:'asc'}] };
+    const params = {};
     if (cat) params.filterByFormula = `{Category}="${cat}"`;
     const records = await airtableFetch(FIS_CONFIG.TABLES.BUDGET, params);
 
