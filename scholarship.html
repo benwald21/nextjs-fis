@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIS — Scholarship Budget</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+/* ── SCHOLARSHIP PAGE ── */
+.schol-header-bar {
+  display:grid; grid-template-columns:repeat(4,1fr) 2fr; gap:12px; margin-bottom:20px;
+}
+.schol-stat {
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:14px 16px; display:flex; flex-direction:column; gap:4px;
+}
+.schol-stat-label { font-family:'DM Mono',monospace; font-size:9px; color:var(--slate); letter-spacing:0.12em; text-transform:uppercase; }
+.schol-stat-value { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:26px; }
+.schol-stat-sub { font-size:11px; color:var(--slate); }
+
+/* EQUIV BAR */
+.equiv-bar-card {
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:14px 16px; display:flex; flex-direction:column; gap:8px;
+}
+.equiv-bar-label { font-family:'DM Mono',monospace; font-size:9px; color:var(--slate); letter-spacing:0.12em; text-transform:uppercase; }
+.equiv-bar-track { height:14px; background:var(--steel); border-radius:99px; overflow:hidden; position:relative; }
+.equiv-bar-fill { height:100%; border-radius:99px; transition:width 0.4s ease; }
+.equiv-bar-fill.ok { background:linear-gradient(90deg,var(--green),var(--gold2)); }
+.equiv-bar-fill.over { background:linear-gradient(90deg,var(--gold2),var(--red)); }
+.equiv-bar-nums { display:flex; justify-content:space-between; font-family:'DM Mono',monospace; font-size:10px; color:var(--slate2); }
+
+/* TABS */
+.schol-tabs { display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:16px; }
+.schol-tab {
+  padding:9px 18px; font-family:'Barlow Condensed',sans-serif; font-weight:700;
+  font-size:13px; letter-spacing:0.05em; text-transform:uppercase;
+  color:var(--slate); border-bottom:2px solid transparent;
+  cursor:pointer; background:none; border-top:none; border-left:none; border-right:none; transition:all 0.18s;
+}
+.schol-tab:hover { color:var(--white); }
+.schol-tab.active { color:var(--gold2); border-bottom-color:var(--gold); }
+
+/* TABLE */
+.schol-table-wrap { background:var(--card); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+.schol-table { width:100%; border-collapse:collapse; }
+.schol-table th {
+  background:var(--steel); font-family:'DM Mono',monospace; font-size:10px;
+  letter-spacing:0.1em; text-transform:uppercase; color:var(--slate2);
+  padding:10px 12px; text-align:left; border-bottom:1px solid var(--border); white-space:nowrap;
+}
+.schol-table td { padding:9px 12px; border-bottom:1px solid rgba(77,106,156,0.12); vertical-align:middle; }
+.schol-table tr:last-child td { border-bottom:none; }
+.schol-table tr:hover td { background:rgba(201,151,58,0.04); }
+.schol-table tr.highlight-cyan td { background:rgba(0,200,200,0.07); }
+.schol-table tr.highlight-yellow td { background:rgba(240,180,41,0.09); }
+
+.player-name { font-weight:600; color:var(--white); font-size:13px; }
+.year-pill {
+  font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:11px;
+  background:var(--steel); border-radius:4px; padding:2px 7px; color:var(--slate2);
+}
+.type-badge {
+  font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.08em;
+  border-radius:4px; padding:2px 6px; text-transform:uppercase; font-weight:500;
+}
+.type-badge.in-state { background:rgba(34,201,139,0.12); color:var(--green); border:1px solid rgba(34,201,139,0.25); }
+.type-badge.out-state { background:rgba(77,166,255,0.12); color:var(--blue); border:1px solid rgba(77,166,255,0.25); }
+.type-badge.grad { background:rgba(201,151,58,0.12); color:var(--gold2); border:1px solid rgba(201,151,58,0.25); }
+
+/* EDITABLE CELLS */
+.cell-input {
+  background:transparent; border:none; color:var(--white);
+  font-family:'Barlow',sans-serif; font-size:13px; width:100%; padding:0;
+  cursor:pointer;
+}
+.cell-input:focus {
+  outline:none; background:rgba(201,151,58,0.08);
+  border-radius:4px; padding:2px 4px;
+}
+.equiv-input {
+  width:60px; text-align:right; font-family:'DM Mono',monospace; font-size:12px;
+  color:var(--gold2);
+}
+.dollar-input {
+  width:110px; text-align:right; font-family:'DM Mono',monospace; font-size:12px;
+  color:var(--green);
+}
+.notes-input { color:var(--slate2); font-size:12px; font-style:italic; width:100%; min-width:180px; }
+
+/* TOTALS ROW */
+.totals-row td {
+  background:var(--steel) !important; font-family:'Barlow Condensed',sans-serif;
+  font-weight:800; font-size:14px; border-top:2px solid var(--border) !important;
+}
+
+/* ADD ROW */
+.add-row-btn {
+  display:flex; align-items:center; gap:8px; padding:10px 16px;
+  font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:12px;
+  color:var(--slate); cursor:pointer; background:none; border:none;
+  letter-spacing:0.05em; text-transform:uppercase; transition:color 0.15s;
+  width:100%;
+}
+.add-row-btn:hover { color:var(--gold2); }
+
+/* SETTINGS */
+.settings-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; max-width:500px; }
+.setting-item { display:flex; flex-direction:column; gap:6px; }
+.setting-label { font-family:'DM Mono',monospace; font-size:10px; color:var(--slate); letter-spacing:0.1em; text-transform:uppercase; }
+.setting-input {
+  background:var(--steel); border:1px solid var(--border); border-radius:6px;
+  color:var(--white); padding:8px 12px; font-family:'DM Mono',monospace; font-size:13px;
+}
+.setting-input:focus { outline:none; border-color:var(--gold); }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="logo-mark">FIS</div>
+    <div class="nav-section-label">MAIN</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">⬡</span><span class="nav-label">Dashboard</span></a>
+    <a href="readiness.html" class="nav-item"><span class="nav-icon">💚</span><span class="nav-label">Player Readiness</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">OPERATIONS</div>
+    <a href="roster.html" class="nav-item"><span class="nav-icon">👥</span><span class="nav-label">Roster</span></a>
+    <a href="recruiting.html" class="nav-item"><span class="nav-icon">🎯</span><span class="nav-label">Recruiting</span></a>
+    <a href="depthchart.html" class="nav-item"><span class="nav-icon">⚽</span><span class="nav-label">Depth Chart</span></a>
+    <a href="scholarship.html" class="nav-item active"><span class="nav-icon">💵</span><span class="nav-label">Scholarship</span></a>
+    <a href="schedule.html" class="nav-item"><span class="nav-icon">📅</span><span class="nav-label">Schedule</span></a>
+    <a href="tasks.html" class="nav-item"><span class="nav-icon">✅</span><span class="nav-label">Staff Tasks</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">SPORT SCIENCE</div>
+    <a href="training.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Training &amp; Load</span></a>
+    <a href="opponents.html" class="nav-item"><span class="nav-icon">🔍</span><span class="nav-label">Opponents</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">PROGRAM</div>
+    <a href="academics.html" class="nav-item"><span class="nav-icon">🎓</span><span class="nav-label">Academics</span></a>
+    <a href="budget.html" class="nav-item"><span class="nav-icon">💰</span><span class="nav-label">Budget</span></a>
+    <a href="marketing.html" class="nav-item"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
+    <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
+    <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+  </nav>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">SCHOLARSHIP <span>BUDGET</span></div>
+      <div class="topbar-actions">
+        <select class="form-select" id="classSelect" onchange="switchClass()" style="width:130px;">
+          <option value="2026">Class 2026</option>
+          <option value="2027">Class 2027</option>
+          <option value="2028">Class 2028</option>
+          <option value="2029">Class 2029</option>
+        </select>
+        <button class="btn btn-ghost" style="font-size:11px;" onclick="exportCSV()">⬇ Export CSV</button>
+        <button class="btn btn-gold" style="font-size:11px;" onclick="saveAll()">💾 Save</button>
+        <div class="avatar">HC</div>
+      </div>
+    </header>
+    <div class="page">
+
+      <!-- EQUIVALENCY OVERVIEW -->
+      <div class="schol-header-bar">
+        <div class="schol-stat">
+          <div class="schol-stat-label">Max Equivalencies</div>
+          <div class="schol-stat-value" id="s-max" style="color:var(--white);">14.00</div>
+          <div class="schol-stat-sub">NCAA Limit</div>
+        </div>
+        <div class="schol-stat">
+          <div class="schol-stat-label">Used</div>
+          <div class="schol-stat-value" id="s-used" style="color:var(--gold2);">0.00</div>
+          <div class="schol-stat-sub">Equivalencies</div>
+        </div>
+        <div class="schol-stat">
+          <div class="schol-stat-label">Remaining</div>
+          <div class="schol-stat-value" id="s-remaining" style="color:var(--green);">14.00</div>
+          <div class="schol-stat-sub">Equivalencies</div>
+        </div>
+        <div class="schol-stat">
+          <div class="schol-stat-label">Total $ Committed</div>
+          <div class="schol-stat-value" id="s-dollars" style="color:var(--blue);">$0</div>
+          <div class="schol-stat-sub" id="s-players">0 players</div>
+        </div>
+        <div class="equiv-bar-card">
+          <div class="equiv-bar-label">Equivalency Usage — <span id="s-pct">0%</span></div>
+          <div class="equiv-bar-track">
+            <div class="equiv-bar-fill ok" id="equivFill" style="width:0%"></div>
+          </div>
+          <div class="equiv-bar-nums">
+            <span>0</span>
+            <span id="equivMidLabel">7.0</span>
+            <span id="equivMaxLabel">14.0</span>
+          </div>
+          <div style="display:flex;gap:16px;margin-top:2px;">
+            <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--green);">● In-State: <span id="s-instate">0.00</span></span>
+            <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--blue);">● Out-of-State: <span id="s-outstate">0.00</span></span>
+            <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--gold2);">● Grad/Other: <span id="s-grad">0.00</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="schol-tabs">
+        <button class="schol-tab active" onclick="switchTab('roster',this)">Current Roster</button>
+        <button class="schol-tab" onclick="switchTab('recruits',this)">Recruits</button>
+        <button class="schol-tab" onclick="switchTab('settings',this)">⚙ Settings</button>
+      </div>
+
+      <!-- ROSTER TAB -->
+      <div id="tab-roster">
+        <div class="schol-table-wrap">
+          <table class="schol-table">
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Year</th>
+                <th>Degree/School</th>
+                <th>Type</th>
+                <th style="text-align:right;">Equiv.</th>
+                <th style="text-align:right;">Dollar Amount</th>
+                <th>Revenue Share</th>
+                <th>Notes</th>
+                <th style="width:30px;"></th>
+              </tr>
+            </thead>
+            <tbody id="rosterBody"></tbody>
+            <tfoot>
+              <tr class="totals-row" id="rosterTotals">
+                <td colspan="4" style="color:var(--slate2);">TOTALS</td>
+                <td style="text-align:right;color:var(--gold2);" id="t-equiv">0.00</td>
+                <td style="text-align:right;color:var(--green);" id="t-dollars">$0</td>
+                <td colspan="3"></td>
+              </tr>
+            </tfoot>
+          </table>
+          <button class="add-row-btn" onclick="addRow('roster')">+ Add Player</button>
+        </div>
+      </div>
+
+      <!-- RECRUITS TAB -->
+      <div id="tab-recruits" style="display:none;">
+        <div class="schol-table-wrap">
+          <table class="schol-table">
+            <thead>
+              <tr>
+                <th>Prospect</th>
+                <th>Class Year</th>
+                <th>Position</th>
+                <th>Type</th>
+                <th style="text-align:right;">Equiv.</th>
+                <th style="text-align:right;">Offer ($)</th>
+                <th>Stage</th>
+                <th>Notes</th>
+                <th style="width:30px;"></th>
+              </tr>
+            </thead>
+            <tbody id="recruitsBody"></tbody>
+            <tfoot>
+              <tr class="totals-row">
+                <td colspan="4" style="color:var(--slate2);">TOTALS</td>
+                <td style="text-align:right;color:var(--gold2);" id="r-equiv">0.00</td>
+                <td style="text-align:right;color:var(--green);" id="r-dollars">$0</td>
+                <td colspan="3"></td>
+              </tr>
+            </tfoot>
+          </table>
+          <button class="add-row-btn" onclick="addRow('recruits')">+ Add Recruit</button>
+        </div>
+      </div>
+
+      <!-- SETTINGS TAB -->
+      <div id="tab-settings" style="display:none;">
+        <div class="schol-table-wrap" style="padding:20px;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;color:var(--gold2);margin-bottom:16px;letter-spacing:0.05em;">EQUIVALENCY SETTINGS</div>
+          <div class="settings-grid">
+            <div class="setting-item">
+              <div class="setting-label">Max Equivalencies (NCAA Limit)</div>
+              <input class="setting-input" type="number" id="set-max" value="14" step="0.01" oninput="saveSettings();recalc()">
+            </div>
+            <div class="setting-item">
+              <div class="setting-label">In-State Full Scholarship ($)</div>
+              <input class="setting-input" type="number" id="set-instate" value="65000" oninput="saveSettings()">
+            </div>
+            <div class="setting-item">
+              <div class="setting-label">Out-of-State Full Scholarship ($)</div>
+              <input class="setting-input" type="number" id="set-outstate" value="65000" oninput="saveSettings()">
+            </div>
+            <div class="setting-item">
+              <div class="setting-label">Academic Year</div>
+              <input class="setting-input" type="text" id="set-year" value="2025-26" oninput="saveSettings()">
+            </div>
+          </div>
+          <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+            <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">Highlight Colors</div>
+            <div style="font-size:12px;color:var(--slate2);line-height:1.8;">
+              Use the <strong style="color:var(--white);">H</strong> column dropdown per player to flag rows:<br>
+              <span style="color:rgba(0,200,200,0.8);">■ Cyan</span> — Initial conversations / prospecting<br>
+              <span style="color:var(--yellow);">■ Yellow</span> — Watch list / special status (e.g. RS, DSA'd)
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="config.js"></script>
+<script>
+// ── STATE ──
+let currentClass = '2026';
+let currentTab = 'roster';
+// data[classYear] = { roster: [...rows], recruits: [...rows] }
+let data = {};
+
+const YEAR_OPTIONS = ['Fr','So','Jr','Sr','Grad','RS/Fr','RS/So','RS/Jr','RS/Sr','5th'];
+const TYPE_OPTIONS = ['In-State','Out-of-State','Grad','Walk-On'];
+const STAGE_OPTIONS = ['Identified','Contacted','Engaged','Campus Visit','Offered','Committed','Signed'];
+const HIGHLIGHT_OPTIONS = ['none','cyan','yellow'];
+
+function showToast(msg) {
+  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+function fmt$(n) { return n ? '$' + Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) : '—'; }
+function fmtEq(n) { return n ? Number(n).toFixed(2) : '—'; }
+
+// ── STORAGE ──
+function storageKey() { return `fis_schol_data`; }
+function settingsKey() { return `fis_schol_settings`; }
+
+function saveAll() {
+  localStorage.setItem(storageKey(), JSON.stringify(data));
+  showToast('Saved ✓');
+}
+
+function loadAll() {
+  const s = localStorage.getItem(storageKey());
+  data = s ? JSON.parse(s) : {};
+}
+
+function saveSettings() {
+  localStorage.setItem(settingsKey(), JSON.stringify({
+    max: document.getElementById('set-max').value,
+    instate: document.getElementById('set-instate').value,
+    outstate: document.getElementById('set-outstate').value,
+    year: document.getElementById('set-year').value
+  }));
+}
+
+function loadSettings() {
+  const s = localStorage.getItem(settingsKey());
+  if (s) {
+    const v = JSON.parse(s);
+    document.getElementById('set-max').value = v.max || 14;
+    document.getElementById('set-instate').value = v.instate || 65000;
+    document.getElementById('set-outstate').value = v.outstate || 65000;
+    document.getElementById('set-year').value = v.year || '2025-26';
+  }
+}
+
+function getMax() { return parseFloat(document.getElementById('set-max').value) || 14; }
+
+// ── CLASS SWITCH ──
+function switchClass() {
+  currentClass = document.getElementById('classSelect').value;
+  render();
+}
+
+function ensureClass(cls) {
+  if (!data[cls]) data[cls] = { roster: [], recruits: [] };
+}
+
+// ── TABS ──
+function switchTab(tab, btn) {
+  currentTab = tab;
+  ['roster','recruits','settings'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = t === tab ? '' : 'none';
+  });
+  document.querySelectorAll('.schol-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── RENDER ──
+function render() {
+  ensureClass(currentClass);
+  renderTable('roster');
+  renderTable('recruits');
+  recalc();
+}
+
+function renderTable(type) {
+  ensureClass(currentClass);
+  const rows = data[currentClass][type] || [];
+  const tbody = document.getElementById(type + 'Body');
+  tbody.innerHTML = rows.map((r, i) => rowHTML(r, i, type)).join('');
+  attachListeners(type);
+}
+
+function rowHTML(r, i, type) {
+  const isRoster = type === 'roster';
+  const hlClass = r.highlight === 'cyan' ? 'highlight-cyan' : r.highlight === 'yellow' ? 'highlight-yellow' : '';
+  return `<tr class="${hlClass}" data-i="${i}" data-type="${type}">
+    <td><input class="cell-input player-name" data-field="name" value="${esc(r.name||'')}" placeholder="Last, First" oninput="updateRow(${i},'${type}',this)"></td>
+    <td>
+      <select class="cell-input year-pill" data-field="year" onchange="updateRow(${i},'${type}',this)" style="width:70px;padding:2px 4px;">
+        ${YEAR_OPTIONS.map(y => `<option${r.year===y?' selected':''}>${y}</option>`).join('')}
+      </select>
+    </td>
+    <td><input class="cell-input" data-field="school" value="${esc(r.school||'')}" placeholder="${isRoster?'CAS / ENGR...':'Position'}" oninput="updateRow(${i},'${type}',this)" style="width:90px;color:var(--slate2);font-size:12px;"></td>
+    <td>
+      <select class="cell-input" data-field="type" onchange="updateRow(${i},'${type}',this)">
+        ${TYPE_OPTIONS.map(t => `<option${r.type===t?' selected':''}>${t}</option>`).join('')}
+      </select>
+    </td>
+    <td><input class="cell-input equiv-input" data-field="equiv" type="number" step="0.01" min="0" max="1" value="${r.equiv||''}" placeholder="0.00" oninput="updateRow(${i},'${type}',this)"></td>
+    <td><input class="cell-input dollar-input" data-field="dollars" type="number" step="100" value="${r.dollars||''}" placeholder="$0" oninput="updateRow(${i},'${type}',this)"></td>
+    <td><input class="cell-input" data-field="revshare" value="${esc(r.revshare||'')}" placeholder="—" oninput="updateRow(${i},'${type}',this)" style="width:80px;font-size:12px;color:var(--slate2);"></td>
+    <td><input class="cell-input notes-input" data-field="notes" value="${esc(r.notes||'')}" placeholder="Add note..." oninput="updateRow(${i},'${type}',this)"></td>
+    <td style="text-align:center;">
+      <select class="cell-input" data-field="highlight" onchange="updateRow(${i},'${type}',this)" style="width:36px;padding:1px 2px;font-size:10px;" title="Row color">
+        <option value="none"${!r.highlight||r.highlight==='none'?' selected':''}>—</option>
+        <option value="cyan"${r.highlight==='cyan'?' selected':''} style="background:#0cc;">🔵</option>
+        <option value="yellow"${r.highlight==='yellow'?' selected':''} style="background:#f0b429;">🟡</option>
+      </select>
+      <button onclick="removeRow(${i},'${type}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;padding:0 2px;" title="Remove">×</button>
+    </td>
+  </tr>`;
+}
+
+function esc(s) { return String(s).replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+function attachListeners(type) {
+  // auto-save on blur
+  document.querySelectorAll(`[data-type="${type}"] .cell-input`).forEach(el => {
+    el.addEventListener('blur', () => saveAll());
+  });
+}
+
+// ── ROW ACTIONS ──
+function updateRow(i, type, el) {
+  ensureClass(currentClass);
+  const field = el.dataset.field;
+  const val = el.type === 'number' ? (parseFloat(el.value) || null) : el.value;
+  data[currentClass][type][i][field] = val;
+  // Re-render highlight if changed
+  if (field === 'highlight') {
+    const tr = el.closest('tr');
+    tr.className = val === 'cyan' ? 'highlight-cyan' : val === 'yellow' ? 'highlight-yellow' : '';
+  }
+  recalc();
+}
+
+function addRow(type) {
+  ensureClass(currentClass);
+  data[currentClass][type].push({ name:'', year:'Fr', school:'', type:'In-State', equiv:null, dollars:null, revshare:'', notes:'', highlight:'none' });
+  renderTable(type);
+  recalc();
+  // Focus new row name
+  const tbody = document.getElementById(type + 'Body');
+  const lastRow = tbody.lastElementChild;
+  if (lastRow) lastRow.querySelector('.player-name').focus();
+}
+
+function removeRow(i, type) {
+  ensureClass(currentClass);
+  data[currentClass][type].splice(i, 1);
+  renderTable(type);
+  recalc();
+  saveAll();
+}
+
+// ── RECALC ──
+function recalc() {
+  ensureClass(currentClass);
+  const rosterRows = data[currentClass].roster || [];
+  const recruitRows = data[currentClass].recruits || [];
+  const allRows = [...rosterRows, ...recruitRows];
+
+  const totalEquiv = allRows.reduce((s, r) => s + (parseFloat(r.equiv) || 0), 0);
+  const totalDollars = allRows.reduce((s, r) => s + (parseFloat(r.dollars) || 0), 0);
+  const instate = allRows.filter(r => r.type === 'In-State').reduce((s, r) => s + (parseFloat(r.equiv) || 0), 0);
+  const outstate = allRows.filter(r => r.type === 'Out-of-State').reduce((s, r) => s + (parseFloat(r.equiv) || 0), 0);
+  const grad = allRows.filter(r => r.type === 'Grad').reduce((s, r) => s + (parseFloat(r.equiv) || 0), 0);
+
+  const rEquiv = rosterRows.reduce((s, r) => s + (parseFloat(r.equiv) || 0), 0);
+  const rDollars = rosterRows.reduce((s, r) => s + (parseFloat(r.dollars) || 0), 0);
+  const recEquiv = recruitRows.reduce((s, r) => s + (parseFloat(r.equiv) || 0), 0);
+  const recDollars = recruitRows.reduce((s, r) => s + (parseFloat(r.dollars) || 0), 0);
+
+  const max = getMax();
+  const remaining = max - totalEquiv;
+  const pct = Math.min(100, (totalEquiv / max) * 100);
+
+  document.getElementById('s-max').textContent = max.toFixed(2);
+  document.getElementById('s-used').textContent = totalEquiv.toFixed(2);
+  document.getElementById('s-remaining').textContent = remaining.toFixed(2);
+  document.getElementById('s-remaining').style.color = remaining < 0 ? 'var(--red)' : 'var(--green)';
+  document.getElementById('s-dollars').textContent = '$' + totalDollars.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0});
+  document.getElementById('s-players').textContent = allRows.filter(r=>r.name).length + ' players';
+  document.getElementById('s-pct').textContent = pct.toFixed(1) + '%';
+  document.getElementById('s-instate').textContent = instate.toFixed(2);
+  document.getElementById('s-outstate').textContent = outstate.toFixed(2);
+  document.getElementById('s-grad').textContent = grad.toFixed(2);
+
+  const fill = document.getElementById('equivFill');
+  fill.style.width = pct + '%';
+  fill.className = 'equiv-bar-fill ' + (pct > 95 ? 'over' : 'ok');
+  document.getElementById('equivMidLabel').textContent = (max/2).toFixed(1);
+  document.getElementById('equivMaxLabel').textContent = max.toFixed(1);
+
+  // Roster totals
+  document.getElementById('t-equiv').textContent = rEquiv.toFixed(2);
+  document.getElementById('t-dollars').textContent = '$' + rDollars.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  // Recruit totals
+  document.getElementById('r-equiv').textContent = recEquiv.toFixed(2);
+  document.getElementById('r-dollars').textContent = '$' + recDollars.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+// ── EXPORT CSV ──
+function exportCSV() {
+  ensureClass(currentClass);
+  const rows = [...(data[currentClass].roster||[]), ...(data[currentClass].recruits||[])];
+  const header = ['Player','Year','School/Position','Type','Equiv','Dollar Amount','Revenue Share','Notes'];
+  const lines = [header.join(','), ...rows.map(r =>
+    [r.name,r.year,r.school,r.type,r.equiv||'',r.dollars||'',r.revshare,r.notes].map(v => `"${v||''}"`).join(',')
+  )];
+  const blob = new Blob([lines.join('\n')], {type:'text/csv'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `FIS_Scholarship_${currentClass}.csv`; a.click();
+}
+
+// ── INIT ──
+loadSettings();
+loadAll();
+render();
+</script>
+</body>
+</html>
