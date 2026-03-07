@@ -5,6 +5,72 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FIS — Marketing</title>
 <link rel="stylesheet" href="styles.css">
+<style>
+/* ── MARKETING PAGE ── */
+.mkt-tabs { display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:20px; }
+.mkt-tab {
+  padding:9px 20px; font-family:'Barlow Condensed',sans-serif; font-weight:700;
+  font-size:13px; letter-spacing:0.05em; text-transform:uppercase;
+  color:var(--slate); border-bottom:2px solid transparent;
+  cursor:pointer; background:none; border-top:none; border-left:none; border-right:none; transition:all 0.18s;
+}
+.mkt-tab:hover { color:var(--white); }
+.mkt-tab.active { color:var(--gold2); border-bottom-color:var(--gold); }
+
+/* TREND SPARKLINE */
+.sparkline { display:inline-flex; align-items:flex-end; gap:2px; height:28px; }
+.spark-bar { width:6px; background:var(--blue); border-radius:2px 2px 0 0; opacity:0.7; min-height:3px; }
+
+/* CAMPAIGN CARD */
+.campaign-card {
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:18px; margin-bottom:14px; transition:border-color 0.2s;
+}
+.campaign-card:hover { border-color:rgba(201,151,58,0.4); }
+.campaign-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.campaign-platform {
+  font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.1em;
+  text-transform:uppercase; border-radius:4px; padding:3px 8px;
+}
+.campaign-platform.instagram { background:rgba(225,48,108,0.15); color:#e1306c; border:1px solid rgba(225,48,108,0.3); }
+.campaign-platform.tiktok { background:rgba(0,0,0,0.3); color:#fff; border:1px solid rgba(255,255,255,0.2); }
+.campaign-platform.twitter { background:rgba(29,161,242,0.15); color:#1da1f2; border:1px solid rgba(29,161,242,0.3); }
+.campaign-platform.facebook { background:rgba(66,103,178,0.15); color:#4267b2; border:1px solid rgba(66,103,178,0.3); }
+.campaign-platform.multi { background:rgba(201,151,58,0.15); color:var(--gold2); border:1px solid rgba(201,151,58,0.3); }
+.campaign-title { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:17px; color:var(--white); flex:1; }
+.campaign-caption {
+  font-size:13px; color:var(--slate2); line-height:1.6; margin-bottom:12px;
+  background:rgba(0,0,0,0.2); border-radius:6px; padding:12px;
+  border-left:3px solid var(--gold);
+}
+.campaign-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+.campaign-tag {
+  font-family:'DM Mono',monospace; font-size:10px; color:var(--blue);
+  background:rgba(77,166,255,0.1); border-radius:4px; padding:2px 7px;
+}
+.campaign-meta { display:flex; gap:16px; font-family:'DM Mono',monospace; font-size:10px; color:var(--slate); }
+.copy-btn {
+  background:rgba(201,151,58,0.1); border:1px solid rgba(201,151,58,0.3); border-radius:6px;
+  color:var(--gold2); font-size:11px; padding:4px 10px; cursor:pointer; transition:all 0.15s;
+  font-family:'DM Mono',monospace;
+}
+.copy-btn:hover { background:rgba(201,151,58,0.25); }
+
+/* AI BOT */
+.ai-form { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:20px; margin-bottom:20px; }
+.ai-form-title { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:16px; color:var(--gold2); letter-spacing:0.05em; margin-bottom:4px; }
+.ai-form-sub { font-size:12px; color:var(--slate); margin-bottom:16px; }
+
+/* GROWTH IDEAS */
+.idea-card {
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:16px; display:flex; gap:14px; align-items:flex-start; margin-bottom:10px;
+}
+.idea-icon { font-size:24px; flex-shrink:0; }
+.idea-title { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:15px; color:var(--white); margin-bottom:4px; }
+.idea-desc { font-size:12px; color:var(--slate2); line-height:1.6; }
+.idea-tag { display:inline-block; font-family:'DM Mono',monospace; font-size:9px; background:rgba(34,201,139,0.1); color:var(--green); border-radius:4px; padding:2px 6px; margin-top:6px; }
+</style>
 </head>
 <body>
 <div class="app">
@@ -23,7 +89,7 @@
     <a href="tasks.html" class="nav-item"><span class="nav-icon">✅</span><span class="nav-label">Staff Tasks</span></a>
     <div class="nav-divider"></div>
     <div class="nav-section-label">SPORT SCIENCE</div>
-    <a href="training.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Training & Load</span></a>
+    <a href="training.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Training &amp; Load</span></a>
     <a href="opponents.html" class="nav-item"><span class="nav-icon">🔍</span><span class="nav-label">Opponents</span></a>
     <a href="tactical.html" class="nav-item"><span class="nav-icon">📊</span><span class="nav-label">Tactical Analysis</span></a>
     <div class="nav-divider"></div>
@@ -36,39 +102,201 @@
   </nav>
   <div class="main">
     <header class="topbar">
-      <div class="topbar-title">MARKETING <span>KPIs</span></div>
+      <div class="topbar-title">MARKETING <span>&amp; BRAND</span></div>
       <div class="topbar-actions">
-        <button class="btn btn-gold" onclick="openAddModal()">+ Log Weekly KPIs</button>
+        <button class="btn btn-ghost" onclick="openAddModal()">+ Log KPIs</button>
+        <button class="btn btn-gold" onclick="switchTab('ai',document.querySelector('.mkt-tab:nth-child(3)'))">🤖 Generate Campaign</button>
         <div class="avatar">HC</div>
       </div>
     </header>
     <div class="page">
-      <div class="stats-row" style="margin-bottom:20px;">
-        <div class="stat-card" style="--accent:var(--blue);"><div class="stat-icon">👥</div><div class="stat-label">Total Followers</div><div class="stat-value" id="m-followers" style="color:var(--blue);">—</div></div>
-        <div class="stat-card" style="--accent:var(--gold);"><div class="stat-icon">👁</div><div class="stat-label">Avg Weekly Reach</div><div class="stat-value" id="m-reach" style="color:var(--gold2);">—</div></div>
-        <div class="stat-card" style="--accent:var(--green);"><div class="stat-icon">❤️</div><div class="stat-label">Avg Engagement</div><div class="stat-value" id="m-engage" style="color:var(--green);">—</div></div>
-        <div class="stat-card" style="--accent:var(--slate);"><div class="stat-icon">📅</div><div class="stat-label">Weeks Tracked</div><div class="stat-value" id="m-weeks" style="color:var(--slate2);">—</div></div>
-      </div>
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title"><div class="dot"></div>Weekly KPI Log</div>
-          <select class="form-select" id="platformFilter" onchange="loadMarketing()" style="width:140px;padding:5px 8px;">
-            <option value="">All Platforms</option>
-            <option>Instagram</option><option>Twitter/X</option><option>TikTok</option><option>Facebook</option>
-          </select>
+
+      <!-- STAT CARDS -->
+      <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
+        <div class="stat-card" style="--accent:var(--blue);">
+          <div class="stat-icon">👥</div><div class="stat-label">Total Followers</div>
+          <div class="stat-value" id="m-followers" style="color:var(--blue);">—</div>
+          <div class="stat-delta" id="m-followers-sub">Across platforms</div>
         </div>
-        <div class="card-body" style="padding:0;">
-          <table class="data-table">
-            <thead><tr><th>Week</th><th>Platform</th><th>Followers</th><th>Reach</th><th>Engagement %</th><th>Top Post</th><th>Notes</th></tr></thead>
-            <tbody id="mktBody"><tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
-          </table>
+        <div class="stat-card" style="--accent:var(--gold);">
+          <div class="stat-icon">👁</div><div class="stat-label">Avg Weekly Reach</div>
+          <div class="stat-value" id="m-reach" style="color:var(--gold2);">—</div>
+          <div class="stat-delta">Per week average</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--green);">
+          <div class="stat-icon">❤️</div><div class="stat-label">Avg Engagement</div>
+          <div class="stat-value" id="m-engage" style="color:var(--green);">—</div>
+          <div class="stat-delta">Engagement rate</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--slate);">
+          <div class="stat-icon">📅</div><div class="stat-label">Entries Logged</div>
+          <div class="stat-value" id="m-weeks" style="color:var(--slate2);">—</div>
+          <div class="stat-delta">KPI records total</div>
         </div>
       </div>
+
+      <!-- TABS -->
+      <div class="mkt-tabs">
+        <button class="mkt-tab active" onclick="switchTab('kpi',this)">📊 KPI Dashboard</button>
+        <button class="mkt-tab" onclick="switchTab('growth',this)">🚀 Growth Playbook</button>
+        <button class="mkt-tab" onclick="switchTab('ai',this)">🤖 AI Campaign Bot</button>
+      </div>
+
+      <!-- KPI TAB -->
+      <div id="tab-kpi">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><div class="dot" style="background:var(--gold);"></div>Weekly KPI Log</div>
+            <div style="display:flex;gap:8px;">
+              <select class="form-select" id="platformFilter" onchange="loadMarketing()" style="width:140px;padding:5px 8px;">
+                <option value="">All Platforms</option>
+                <option>Instagram</option><option>Twitter/X</option><option>TikTok</option><option>Facebook</option>
+              </select>
+            </div>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <table class="data-table">
+              <thead><tr><th>Week</th><th>Platform</th><th>Followers</th><th>Reach</th><th>Engagement %</th><th>Top Post</th><th>Notes</th></tr></thead>
+              <tbody id="mktBody"><tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Debug panel -->
+        <div id="debugPanel" style="display:none;margin-top:12px;padding:12px;background:var(--steel);border-radius:8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--slate2);" id="debugPanel"></div>
+      </div>
+
+      <!-- GROWTH PLAYBOOK TAB -->
+      <div id="tab-growth" style="display:none;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
+          <div class="card">
+            <div class="card-header"><div class="card-title"><div class="dot" style="background:var(--green);"></div>Quick Wins — Do This Week</div></div>
+            <div class="card-body" style="padding:12px;">
+              <div class="idea-card" style="margin-bottom:8px;padding:12px;">
+                <div class="idea-icon">🎬</div>
+                <div><div class="idea-title">Player Day-in-the-Life Reel</div><div class="idea-desc">Follow one player from morning workout to class to training. 60-90 sec reel. Human-interest content consistently outperforms highlight reels 3:1 in engagement.</div><span class="idea-tag">HIGH IMPACT · LOW EFFORT</span></div>
+              </div>
+              <div class="idea-card" style="margin-bottom:8px;padding:12px;">
+                <div class="idea-icon">📍</div>
+                <div><div class="idea-title">Matchday Location Tag Drops</div><div class="idea-desc">Post a story 2 hrs before kickoff tagging the venue. Use "Add Yours" sticker to invite fans to share their arrival photos. Builds community UGC.</div><span class="idea-tag">ENGAGEMENT DRIVER</span></div>
+              </div>
+              <div class="idea-card" style="padding:12px;">
+                <div class="idea-icon">🔢</div>
+                <div><div class="idea-title">Jersey Number Spotlight Series</div><div class="idea-desc">Each week post one player: jersey # as the cover, 3 fun facts, favorite goal/play clip. Fans nominate the next player in comments.</div><span class="idea-tag">FOLLOWER GROWTH</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title"><div class="dot" style="background:var(--blue);"></div>Platform Strategy</div></div>
+            <div class="card-body" style="padding:12px;">
+              <div class="idea-card" style="margin-bottom:8px;padding:12px;">
+                <div class="idea-icon">📸</div>
+                <div><div class="idea-title">Instagram — Aesthetic First</div><div class="idea-desc">Establish a consistent gold/navy/white color palette. Use Reels for reach, carousel posts for engagement, Stories for daily touchpoints. Post at 6-8pm ET for max visibility.</div><span class="idea-tag">BRAND IDENTITY</span></div>
+              </div>
+              <div class="idea-card" style="margin-bottom:8px;padding:12px;">
+                <div class="idea-icon">🎵</div>
+                <div><div class="idea-title">TikTok — Raw & Authentic</div><div class="idea-desc">Training bloopers, locker room celebrations, post-game chants. TikTok rewards authenticity over polish. Trending audio + soccer = massive organic reach. Aim for 3x/week.</div><span class="idea-tag">VIRAL POTENTIAL</span></div>
+              </div>
+              <div class="idea-card" style="padding:12px;">
+                <div class="idea-icon">🐦</div>
+                <div><div class="idea-title">Twitter/X — Live Match Energy</div><div class="idea-desc">Live-tweet every match with stats, reactions, and player callouts. Tag opposing teams, conference accounts, and national soccer media for amplification.</div><span class="idea-tag">REAL-TIME ENGAGEMENT</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Full growth ideas -->
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="dot" style="background:var(--gold);"></div>Season-Long Brand Growth Playbook</div></div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+              ${[
+                {icon:'🏆',title:'Win the Conference Narrative',desc:'Before the season starts, post a "Road to the Title" video series — 3-part documentary style. Sets expectations and builds hype with recruits and fans.',tag:'CONTENT SERIES'},
+                {icon:'👨‍👩‍👧','title':'Family Day Content',desc:'Invite parents/families to a practice. Capture reaction videos. Parents share to their networks — free reach multiplier with high authenticity.',tag:'COMMUNITY'},
+                {icon:'🎓',title:'Academic Achievement Posts',desc:'Highlight Dean\'s List players. Academic excellence content resonates with recruits\' families and differentiates Pitt from pure athletics-first programs.',tag:'RECRUITING TOOL'},
+                {icon:'🤝',title:'Alumni Player Takeovers',desc:'Have a former player "take over" your Instagram Stories for a day. They post throwbacks, behind-the-scenes, connect current team to history.',tag:'NOSTALGIA + REACH'},
+                {icon:'📊',title:'Stats That Tell Stories',desc:'Turn your Wyscout/StatsBomb data into visual stat cards. "Katie Ellermeyer leads the ACC in pressures" is more shareable than a generic photo.',tag:'DATA STORYTELLING'},
+                {icon:'🎯',title:'Countdown to Rivalry Match',desc:'7-day countdown series to your biggest rivalry game. Daily posts building narrative, history, quotes. Creates sustained engagement spike over a week.',tag:'EVENT MARKETING'},
+                {icon:'💪',title:'Strength & Conditioning Content',desc:'Weekly "Training Tuesday" — short clips of unusual drills, agility work, or gym sessions. Fitness content has massive organic reach across all platforms.',tag:'NICHE AUDIENCE'},
+                {icon:'🌍',title:'International Player Spotlights',desc:'Feature your international players with home country flags, cultural facts, their journey to Pitt. Taps into diaspora communities who love following countrymates.',tag:'GLOBAL REACH'},
+                {icon:'🎙',title:'Post-Match Player Quotes',desc:'Immediately after games, post a punchy player quote over a match photo. Raw emotion performs 4x better than polished post-game graphics.',tag:'AUTHENTICITY'},
+              ].map(i=>`<div class="idea-card">
+                <div class="idea-icon">${i.icon}</div>
+                <div><div class="idea-title">${i.title}</div><div class="idea-desc">${i.desc}</div><span class="idea-tag">${i.tag}</span></div>
+              </div>`).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI CAMPAIGN BOT TAB -->
+      <div id="tab-ai" style="display:none;">
+        <div class="ai-form">
+          <div class="ai-form-title">🤖 AI Social Media Campaign Generator</div>
+          <div class="ai-form-sub">Powered by Claude AI — generates complete, ready-to-post social media campaigns tailored to Pitt Panthers Women's Soccer.</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+            <div class="form-group">
+              <label class="form-label">Campaign Type *</label>
+              <select class="form-select" id="ai-type">
+                <option value="matchday">🏟 Matchday Hype</option>
+                <option value="win">🏆 Post-Win Celebration</option>
+                <option value="player">⭐ Player Spotlight</option>
+                <option value="recruiting">🎯 Recruiting Content</option>
+                <option value="season">📅 Season Preview/Recap</option>
+                <option value="culture">💛 Team Culture</option>
+                <option value="community">🤝 Community/Fan Engagement</option>
+                <option value="academic">🎓 Academic Achievement</option>
+                <option value="custom">✏️ Custom Campaign</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Target Platform(s)</label>
+              <select class="form-select" id="ai-platform">
+                <option value="all">All Platforms</option>
+                <option value="instagram">Instagram</option>
+                <option value="tiktok">TikTok</option>
+                <option value="twitter">Twitter/X</option>
+                <option value="facebook">Facebook</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tone</label>
+              <select class="form-select" id="ai-tone">
+                <option value="hype">🔥 Hype & Energetic</option>
+                <option value="authentic">💛 Authentic & Personal</option>
+                <option value="professional">👔 Professional</option>
+                <option value="fun">😄 Fun & Playful</option>
+                <option value="inspirational">💫 Inspirational</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+            <div class="form-group">
+              <label class="form-label">Specific Details (opponent, player name, event, achievement...)</label>
+              <input class="form-input" id="ai-details" placeholder="e.g. Sophie Rourke scored the winner vs Duke in the 89th minute...">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Additional Context (optional)</label>
+              <input class="form-input" id="ai-context" placeholder="e.g. Homecoming game, rainy weather, senior night...">
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <button class="btn btn-gold" onclick="generateCampaign()" id="aiBtn">⚡ Generate Campaign</button>
+            <button class="btn btn-ghost" style="font-size:11px;" onclick="generateGrowthIdeas()" id="ideasBtn">💡 Surprise Me with a Fresh Idea</button>
+            <span id="aiStatus" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);"></span>
+          </div>
+        </div>
+
+        <!-- Campaign output -->
+        <div id="campaignOutput"></div>
+
+        <!-- Saved campaigns -->
+        <div id="savedCampaigns"></div>
+      </div>
+
     </div>
   </div>
 </div>
 
-<!-- ADD MODAL -->
+<!-- LOG KPI MODAL -->
 <div class="modal-overlay" id="addModal">
   <div class="modal">
     <div class="modal-title">📣 Log Weekly KPIs</div>
@@ -93,63 +321,281 @@
 <div id="toast"></div>
 <script src="config.js"></script>
 <script>
+// ── FIELD FALLBACKS (handles any Airtable naming) ──────────────────
+const getField = (fields, ...keys) => {
+  for (const k of keys) {
+    if (fields[k] !== undefined && fields[k] !== null && fields[k] !== '') return fields[k];
+  }
+  return null;
+};
+
 function showToast(msg,dur=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 function closeModal(){document.getElementById('addModal').classList.remove('open');}
+function openAddModal(){document.getElementById('m-week').value=new Date().toISOString().split('T')[0];document.getElementById('addModal').classList.add('open');}
 
+// ── TABS ──────────────────────────────────────────────────────────
+function switchTab(tab, btn) {
+  ['kpi','growth','ai'].forEach(t => document.getElementById('tab-'+t).style.display = t===tab?'':'none');
+  document.querySelectorAll('.mkt-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+// ── LOAD KPIs FROM AIRTABLE ───────────────────────────────────────
 async function loadMarketing() {
   const plat = document.getElementById('platformFilter').value;
+  const tbody = document.getElementById('mktBody');
+  tbody.innerHTML = `<tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr>`;
+
   try {
-    const params = {};
+    const params = { maxRecords: 100 };
     if (plat) params.filterByFormula = `{Platform}="${plat}"`;
     const records = await airtableFetch(FIS_CONFIG.TABLES.MARKETING, params);
 
-    const followers = records.map(r => parseFloat(r.fields['Followers']||0));
-    const reaches = records.map(r => parseFloat(r.fields['Reach']||0)).filter(x=>x>0);
-    const engages = records.map(r => parseFloat(r.fields['Engagement Rate']||0)).filter(x=>x>0);
+    // Debug — show what fields we actually got
+    if (records.length > 0) {
+      const sampleFields = Object.keys(records[0].fields);
+      console.log('Airtable Marketing fields:', sampleFields);
+      document.getElementById('debugPanel').style.display = '';
+      document.getElementById('debugPanel').textContent = `Fields found in Airtable: ${sampleFields.join(' · ')}`;
+    }
 
-    document.getElementById('m-followers').textContent = followers.length ? Math.max(...followers).toLocaleString() : '—';
-    document.getElementById('m-reach').textContent = reaches.length ? Math.round(reaches.reduce((a,b)=>a+b,0)/reaches.length).toLocaleString() : '—';
-    document.getElementById('m-engage').textContent = engages.length ? (engages.reduce((a,b)=>a+b,0)/engages.length).toFixed(1)+'%' : '—';
+    if (!records.length) {
+      tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-text">No KPI data found — try logging your first week with the button above</div></div></td></tr>`;
+      ['m-followers','m-reach','m-engage','m-weeks'].forEach(id => document.getElementById(id).textContent = '—');
+      return;
+    }
+
+    // Flexible field name reading — handles any naming convention
+    const allFollowers = records.map(r => parseFloat(getField(r.fields,'Followers','followers','Total Followers','follower_count') || 0));
+    const allReach = records.map(r => parseFloat(getField(r.fields,'Reach','reach','Weekly Reach','Total Reach','Impressions','impressions') || 0)).filter(x=>x>0);
+    const allEngage = records.map(r => parseFloat(getField(r.fields,'Engagement Rate','Engagement','engagement_rate','Engagement %','Avg Engagement','engagement') || 0)).filter(x=>x>0);
+
+    document.getElementById('m-followers').textContent = allFollowers.length ? Math.max(...allFollowers).toLocaleString() : '—';
+    document.getElementById('m-reach').textContent = allReach.length ? Math.round(allReach.reduce((a,b)=>a+b,0)/allReach.length).toLocaleString() : '—';
+    document.getElementById('m-engage').textContent = allEngage.length ? (allEngage.reduce((a,b)=>a+b,0)/allEngage.length).toFixed(1)+'%' : '—';
     document.getElementById('m-weeks').textContent = records.length;
+    document.getElementById('m-followers-sub').textContent = `${records.length} entries logged`;
 
-    const tbody = document.getElementById('mktBody');
-    tbody.innerHTML = records.length ? records.map(r => {
+    const platIcon = {'Instagram':'📸','Twitter/X':'🐦','TikTok':'🎵','Facebook':'📘'};
+    const platClass = {'Instagram':'instagram','Twitter/X':'twitter','TikTok':'tiktok','Facebook':'facebook'};
+
+    tbody.innerHTML = records.map(r => {
       const f = r.fields;
-      const eng = parseFloat(f['Engagement Rate']||0);
-      const engColor = eng >= 5 ? 'var(--green)' : eng >= 2 ? 'var(--yellow)' : 'var(--red)';
-      const platIcon = {'Instagram':'📸','Twitter/X':'🐦','TikTok':'🎵','Facebook':'📘'}[f['Platform']] || '📱';
+      const week   = getField(f,'Week','week','Date','date','Period','period') || '—';
+      const plat2  = getField(f,'Platform','platform','Channel','channel') || '—';
+      const foll   = parseFloat(getField(f,'Followers','followers','Total Followers') || 0);
+      const reach  = parseFloat(getField(f,'Reach','reach','Weekly Reach','Impressions') || 0);
+      const eng    = parseFloat(getField(f,'Engagement Rate','Engagement','engagement_rate','Engagement %') || 0);
+      const topPost = getField(f,'Top Post','top_post','Best Post','Top Content','Post') || '';
+      const notes  = getField(f,'Notes','notes','Comments','comments') || '';
+      const engColor = eng >= 5 ? 'var(--green)' : eng >= 2 ? 'var(--yellow)' : eng > 0 ? 'var(--red)' : 'var(--slate)';
+      const icon = platIcon[plat2] || '📱';
+      const cls = platClass[plat2] || 'multi';
       return `<tr>
-        <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);">${f['Week']||'—'}</td>
-        <td><span class="pill pill-blue">${platIcon} ${f['Platform']||'—'}</span></td>
-        <td style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;color:var(--white);">${parseFloat(f['Followers']||0).toLocaleString()}</td>
-        <td style="color:var(--slate2);">${parseFloat(f['Reach']||0).toLocaleString()}</td>
-        <td style="font-weight:700;color:${engColor};">${f['Engagement Rate'] ? f['Engagement Rate']+'%' : '—'}</td>
-        <td style="font-size:11px;color:var(--slate2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f['Top Post']||''}</td>
-        <td style="font-size:11px;color:var(--slate);">${f['Notes']||''}</td>
+        <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);">${week}</td>
+        <td><span class="campaign-platform ${cls}">${icon} ${plat2}</span></td>
+        <td style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;color:var(--white);">${foll>0?foll.toLocaleString():'—'}</td>
+        <td style="color:var(--slate2);">${reach>0?reach.toLocaleString():'—'}</td>
+        <td style="font-weight:700;color:${engColor};">${eng>0?eng+'%':'—'}</td>
+        <td style="font-size:11px;color:var(--slate2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${topPost}">${topPost||'—'}</td>
+        <td style="font-size:11px;color:var(--slate);">${notes}</td>
       </tr>`;
-    }).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-text">No KPI data yet — log your first week</div></div></td></tr>';
+    }).join('');
   } catch(e) {
-    document.getElementById('mktBody').innerHTML = `<tr><td colspan="7" style="color:var(--red);padding:16px;">Error: ${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="color:var(--red);padding:16px;">⚠ Airtable Error: ${e.message}<br><small style="color:var(--slate);">Check that your Marketing_KPIs table exists in Airtable and your token is valid.</small></td></tr>`;
   }
 }
 
-function openAddModal(){document.getElementById('m-week').value=new Date().toISOString().split('T')[0];document.getElementById('addModal').classList.add('open');}
 async function addKPI(){
   try {
     await airtableCreate(FIS_CONFIG.TABLES.MARKETING,{
-      'Week':document.getElementById('m-week').value,
-      'Platform':document.getElementById('m-platform').value,
-      'Followers':parseInt(document.getElementById('m-foll').value)||null,
-      'Reach':parseInt(document.getElementById('m-reach-in').value)||null,
-      'Engagement Rate':parseFloat(document.getElementById('m-eng').value)||null,
-      'Top Post':document.getElementById('m-top').value,
-      'Notes':document.getElementById('m-notes').value,
+      'Week': document.getElementById('m-week').value,
+      'Platform': document.getElementById('m-platform').value,
+      'Followers': parseInt(document.getElementById('m-foll').value)||null,
+      'Reach': parseInt(document.getElementById('m-reach-in').value)||null,
+      'Engagement Rate': parseFloat(document.getElementById('m-eng').value)||null,
+      'Top Post': document.getElementById('m-top').value,
+      'Notes': document.getElementById('m-notes').value,
     });
-    closeModal();showToast('KPIs logged ✓');loadMarketing();
-  } catch(e){showToast(`Error: ${e.message}`);}
+    closeModal(); showToast('KPIs logged ✓'); loadMarketing();
+  } catch(e){ showToast(`Error: ${e.message}`); }
 }
+
+// ── AI CAMPAIGN GENERATOR ─────────────────────────────────────────
+async function generateCampaign() {
+  const type = document.getElementById('ai-type').value;
+  const platform = document.getElementById('ai-platform').value;
+  const tone = document.getElementById('ai-tone').value;
+  const details = document.getElementById('ai-details').value;
+  const context = document.getElementById('ai-context').value;
+
+  const typeLabels = {matchday:'Matchday Hype',win:'Post-Win Celebration',player:'Player Spotlight',recruiting:'Recruiting Content',season:'Season Preview/Recap',culture:'Team Culture',community:'Community/Fan Engagement',academic:'Academic Achievement',custom:'Custom Campaign'};
+  const toneLabels = {hype:'high-energy and hype',authentic:'authentic and personal',professional:'professional and polished',fun:'fun and playful',inspirational:'inspirational and motivational'};
+  const platLabels = {all:'Instagram, TikTok, Twitter/X, and Facebook',instagram:'Instagram (Reels + Feed + Stories)',tiktok:'TikTok',twitter:'Twitter/X',facebook:'Facebook'};
+
+  const btn = document.getElementById('aiBtn');
+  btn.disabled = true; btn.textContent = '⏳ Generating...';
+  document.getElementById('aiStatus').textContent = 'Writing your campaign...';
+
+  const prompt = `You are a social media marketing expert for Pitt Panthers Women's Soccer — a Division I program at the University of Pittsburgh. Generate a complete, ready-to-post social media campaign.
+
+CAMPAIGN BRIEF:
+- Type: ${typeLabels[type]}
+- Platform(s): ${platLabels[platform]}
+- Tone: ${toneLabels[tone]}
+- Specific Details: ${details || 'General Pitt Panthers Women's Soccer content'}
+- Additional Context: ${context || 'None'}
+- Brand Colors: Gold (#FFB81C) and Navy Blue (#003594)
+- Hashtags to always include: #H2P #PittWSoccer #PittPanthers
+
+Generate a complete campaign with:
+
+1. **CAMPAIGN CONCEPT** — 1-2 sentence hook/big idea
+2. **INSTAGRAM POST** — Caption (150-200 words), 8-10 hashtags, best time to post
+3. **TIKTOK/REELS SCRIPT** — Hook (first 3 seconds), visual direction, caption, trending audio suggestion
+4. **TWITTER/X THREAD** — 3-tweet thread with punchy text (under 280 chars each)
+5. **STORY/INTERACTIVE** — Instagram Story sequence (3 slides) with poll or question sticker idea
+6. **CONTENT DIRECTION** — What to film/photograph, specific shots needed
+7. **ENGAGEMENT TACTICS** — 2-3 specific ways to boost engagement on this post (CTAs, collabs, timing)
+
+Make all copy ready to paste directly. Use actual player names if provided. Be specific to Pitt Panthers brand voice.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1500,
+        messages: [{role:'user', content: prompt}]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || 'Error generating campaign.';
+    renderCampaign(text, typeLabels[type], platform);
+    document.getElementById('aiStatus').textContent = 'Campaign ready ✓';
+    showToast('Campaign generated! ✓');
+  } catch(e) {
+    document.getElementById('campaignOutput').innerHTML = `<div style="color:var(--red);padding:16px;">Error: ${e.message}</div>`;
+  }
+  btn.disabled=false; btn.textContent='⚡ Generate Campaign';
+}
+
+async function generateGrowthIdeas() {
+  const btn = document.getElementById('ideasBtn');
+  btn.disabled=true; btn.textContent='⏳ Thinking...';
+
+  const prompt = `You are a creative social media strategist for Pitt Panthers Women's Soccer. Generate ONE fresh, unexpected, highly creative content idea that most college soccer programs haven't tried yet.
+
+The idea should:
+- Be specific and actionable (not generic advice)
+- Tap into a current social media trend or format
+- Be achievable with a smartphone and a creative student worker
+- Have real potential to go viral or significantly grow their following
+
+Format your response as:
+**IDEA NAME** — catchy title
+**THE CONCEPT** — 2-3 sentences explaining it
+**HOW TO EXECUTE** — 3-4 specific steps
+**WHY IT WORKS** — the psychology/trend behind it
+**SAMPLE POST COPY** — exact caption ready to use
+**DIFFICULTY** — Easy/Medium/Hard
+**ESTIMATED IMPACT** — Low/Medium/High/Viral Potential`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:800,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '';
+    document.getElementById('campaignOutput').innerHTML = `
+      <div class="campaign-card">
+        <div class="campaign-header">
+          <span class="campaign-platform multi">💡 FRESH IDEA</span>
+          <span class="campaign-title">Growth Hack of the Day</span>
+          <button class="copy-btn" onclick="copyText(this, \`${text.replace(/`/g,'\\`').replace(/\n/g,'\\n')}\`)">📋 Copy</button>
+        </div>
+        <div class="campaign-caption" style="white-space:pre-wrap;">${formatAI(text)}</div>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button class="btn btn-ghost" style="font-size:11px;" onclick="saveCampaign('Growth Idea', \`${text.replace(/`/g,'\\`')}\`)">💾 Save</button>
+          <button class="btn btn-ghost" style="font-size:11px;" onclick="generateGrowthIdeas()">🔄 Another</button>
+        </div>
+      </div>`;
+    showToast('Fresh idea ready ✓');
+  } catch(e) { showToast('Error: '+e.message); }
+  btn.disabled=false; btn.textContent='💡 Surprise Me with a Fresh Idea';
+}
+
+function renderCampaign(text, type, platform) {
+  const platClass = {all:'multi',instagram:'instagram',tiktok:'tiktok',twitter:'twitter',facebook:'facebook'}[platform]||'multi';
+  const platLabel = {all:'All Platforms',instagram:'Instagram',tiktok:'TikTok',twitter:'Twitter/X',facebook:'Facebook'}[platform]||platform;
+  document.getElementById('campaignOutput').innerHTML = `
+    <div class="campaign-card">
+      <div class="campaign-header">
+        <span class="campaign-platform ${platClass}">${platLabel}</span>
+        <span class="campaign-title">${type} Campaign</span>
+        <button class="copy-btn" onclick="copyAllCampaign()">📋 Copy All</button>
+        <button class="btn btn-ghost" style="font-size:11px;" onclick="saveCampaign('${type}', document.getElementById('campaignRaw').value)">💾 Save</button>
+      </div>
+      <div class="campaign-caption" style="white-space:pre-wrap;font-size:12px;">${formatAI(text)}</div>
+      <textarea id="campaignRaw" style="display:none;">${text}</textarea>
+    </div>`;
+  loadSavedCampaigns();
+}
+
+function formatAI(text) {
+  return text
+    .replace(/\*\*(.+?)\*\*/g,'<strong style="color:var(--white);">$1</strong>')
+    .replace(/^#{1,3}\s*(.+)$/gm,'<div style="font-family:\'Barlow Condensed\',sans-serif;font-weight:800;font-size:15px;color:var(--gold2);margin:12px 0 4px;">$1</div>')
+    .replace(/^- (.+)/gm,'<div style="padding-left:12px;margin-bottom:3px;">• $1</div>')
+    .replace(/\n/g,'<br>');
+}
+
+function copyAllCampaign() {
+  const raw = document.getElementById('campaignRaw');
+  if (raw) { navigator.clipboard.writeText(raw.value); showToast('Campaign copied to clipboard ✓'); }
+}
+function copyText(btn, text) {
+  navigator.clipboard.writeText(text); showToast('Copied ✓');
+}
+
+function saveCampaign(type, text) {
+  const saved = JSON.parse(localStorage.getItem('fis_campaigns')||'[]');
+  saved.unshift({type, text, date: new Date().toISOString().split('T')[0]});
+  localStorage.setItem('fis_campaigns', JSON.stringify(saved.slice(0,20)));
+  showToast(`Campaign saved ✓`);
+  loadSavedCampaigns();
+}
+
+function loadSavedCampaigns() {
+  const saved = JSON.parse(localStorage.getItem('fis_campaigns')||'[]');
+  if (!saved.length) return;
+  document.getElementById('savedCampaigns').innerHTML = `
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);letter-spacing:0.1em;text-transform:uppercase;margin:16px 0 8px;">Saved Campaigns</div>
+    ${saved.map((c,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;">
+      <span style="font-weight:600;color:var(--white);flex:1;">${c.type}</span>
+      <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);">${c.date}</span>
+      <button class="copy-btn" onclick="copyText(this,\`${c.text.replace(/`/g,'\\`').replace(/\n/g,'\\n')}\`)">📋 Copy</button>
+      <button class="btn btn-ghost" style="font-size:10px;padding:3px 8px;color:var(--red);" onclick="deleteCampaign(${i})">✕</button>
+    </div>`).join('')}`;
+}
+
+function deleteCampaign(i) {
+  const saved = JSON.parse(localStorage.getItem('fis_campaigns')||'[]');
+  saved.splice(i,1);
+  localStorage.setItem('fis_campaigns',JSON.stringify(saved));
+  loadSavedCampaigns();
+}
+
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 loadMarketing();
+loadSavedCampaigns();
 </script>
 </body>
 </html>
