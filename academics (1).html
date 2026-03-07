@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIS — Academics</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.acad-tabs { display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:20px; }
+.acad-tab {
+  padding:9px 20px; font-family:'Barlow Condensed',sans-serif; font-weight:700;
+  font-size:13px; letter-spacing:0.05em; text-transform:uppercase;
+  color:var(--slate); border-bottom:2px solid transparent;
+  cursor:pointer; background:none; border-top:none; border-left:none; border-right:none; transition:all 0.18s;
+}
+.acad-tab:hover { color:var(--white); }
+.acad-tab.active { color:var(--gold2); border-bottom-color:var(--gold); }
+
+.gpa-bar-wrap { background:rgba(0,0,0,0.2); border-radius:4px; height:6px; width:100%; margin-top:4px; }
+.gpa-bar { height:6px; border-radius:4px; transition:width 0.4s; }
+
+.grade-pill {
+  display:inline-block; font-family:'DM Mono',monospace; font-size:11px; font-weight:700;
+  border-radius:4px; padding:2px 7px; min-width:28px; text-align:center;
+}
+.grade-A  { background:rgba(34,201,139,0.15); color:var(--green); border:1px solid rgba(34,201,139,0.3); }
+.grade-B  { background:rgba(77,166,255,0.12); color:#4da6ff; border:1px solid rgba(77,166,255,0.3); }
+.grade-C  { background:rgba(201,151,58,0.15); color:var(--gold2); border:1px solid rgba(201,151,58,0.3); }
+.grade-D  { background:rgba(220,80,50,0.15); color:#ff6b4a; border:1px solid rgba(220,80,50,0.3); }
+.grade-F  { background:rgba(220,50,50,0.2); color:var(--red); border:1px solid rgba(220,50,50,0.4); font-size:13px; }
+.grade-S  { background:rgba(130,130,130,0.15); color:var(--slate2); border:1px solid rgba(130,130,130,0.3); }
+.grade-W  { background:rgba(130,130,130,0.1); color:var(--slate); border:1px solid rgba(130,130,130,0.2); }
+
+.risk-badge {
+  font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.08em;
+  text-transform:uppercase; border-radius:4px; padding:2px 7px;
+}
+.risk-high   { background:rgba(220,50,50,0.15); color:var(--red); border:1px solid rgba(220,50,50,0.3); }
+.risk-medium { background:rgba(201,151,58,0.15); color:var(--gold2); border:1px solid rgba(201,151,58,0.3); }
+.risk-good   { background:rgba(34,201,139,0.1); color:var(--green); border:1px solid rgba(34,201,139,0.2); }
+.risk-great  { background:rgba(77,166,255,0.1); color:#4da6ff; border:1px solid rgba(77,166,255,0.2); }
+
+.course-row { display:flex; align-items:center; gap:10px; padding:5px 0; border-bottom:1px solid rgba(77,106,156,0.1); font-size:12px; }
+.course-row:last-child { border-bottom:none; }
+.course-name { flex:1; color:var(--slate2); }
+.course-subj { font-family:'DM Mono',monospace; font-size:10px; color:var(--slate); width:80px; flex-shrink:0; }
+
+.player-acad-card {
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:16px; margin-bottom:12px; transition:border-color 0.2s;
+}
+.player-acad-card:hover { border-color:rgba(201,151,58,0.3); }
+.player-acad-card.risk-border { border-color:rgba(220,50,50,0.35); }
+.player-acad-card.warn-border { border-color:rgba(201,151,58,0.35); }
+
+.acad-alert {
+  background:rgba(220,50,50,0.08); border:1px solid rgba(220,50,50,0.25);
+  border-radius:8px; padding:12px 16px; margin-bottom:14px;
+  display:flex; align-items:flex-start; gap:12px;
+}
+.acad-alert-icon { font-size:18px; flex-shrink:0; margin-top:1px; }
+.acad-alert-text { font-size:12px; color:var(--slate2); line-height:1.6; }
+.acad-alert-title { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:14px; color:var(--red); margin-bottom:2px; }
+
+.airtable-guide {
+  background:var(--card); border:1px solid var(--border); border-radius:10px; padding:20px;
+}
+.at-step { display:flex; gap:14px; margin-bottom:16px; align-items:flex-start; }
+.at-step-num {
+  width:28px; height:28px; border-radius:50%; background:var(--gold);
+  color:var(--bg); font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:14px;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.at-step-body { flex:1; }
+.at-step-title { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:14px; color:var(--white); margin-bottom:3px; }
+.at-step-desc { font-size:12px; color:var(--slate2); line-height:1.6; }
+.at-code { font-family:'DM Mono',monospace; font-size:10px; background:rgba(0,0,0,0.3); border-radius:4px; padding:2px 6px; color:var(--gold2); }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="logo-mark">FIS</div>
+    <div class="nav-section-label">MAIN</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">⬡</span><span class="nav-label">Dashboard</span></a>
+    <a href="readiness.html" class="nav-item"><span class="nav-icon">💚</span><span class="nav-label">Player Readiness</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">OPERATIONS</div>
+    <a href="roster.html" class="nav-item"><span class="nav-icon">👥</span><span class="nav-label">Roster</span></a>
+    <a href="recruiting.html" class="nav-item"><span class="nav-icon">🎯</span><span class="nav-label">Recruiting</span></a>
+    <a href="depthchart.html" class="nav-item"><span class="nav-icon">⚽</span><span class="nav-label">Depth Chart</span></a>
+    <a href="scholarship.html" class="nav-item"><span class="nav-icon">💵</span><span class="nav-label">Scholarship</span></a>
+    <a href="schedule.html" class="nav-item"><span class="nav-icon">📅</span><span class="nav-label">Schedule</span></a>
+    <a href="tasks.html" class="nav-item"><span class="nav-icon">✅</span><span class="nav-label">Staff Tasks</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">SPORT SCIENCE</div>
+    <a href="training.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Training &amp; Load</span></a>
+    <a href="opponents.html" class="nav-item"><span class="nav-icon">🔍</span><span class="nav-label">Opponents</span></a>
+    <a href="tactical.html" class="nav-item"><span class="nav-icon">📊</span><span class="nav-label">Tactical Analysis</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">PROGRAM</div>
+    <a href="academics.html" class="nav-item active"><span class="nav-icon">🎓</span><span class="nav-label">Academics</span></a>
+    <a href="budget.html" class="nav-item"><span class="nav-icon">💰</span><span class="nav-label">Budget</span></a>
+    <a href="marketing.html" class="nav-item"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
+    <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
+    <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+  </nav>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">ACADEMICS <span>FALL 26-1</span></div>
+      <div class="topbar-actions">
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);">Pitt WSO · Jan 8 2026</span>
+        <button class="btn btn-ghost" style="font-size:11px;" onclick="switchTab('airtable',document.querySelectorAll('.acad-tab')[2])">📋 Airtable Guide</button>
+        <div class="avatar">HC</div>
+      </div>
+    </header>
+    <div class="page">
+
+      <!-- STAT CARDS -->
+      <div class="stats-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:20px;" id="acadStats"></div>
+
+      <!-- TABS -->
+      <div class="acad-tabs">
+        <button class="acad-tab active" onclick="switchTab('roster',this)">📊 Full Roster</button>
+        <button class="acad-tab" onclick="switchTab('alerts',this)">⚠️ At-Risk Players</button>
+        <button class="acad-tab" onclick="switchTab('airtable',this)">📋 Airtable Update Guide</button>
+      </div>
+
+      <!-- ROSTER TAB -->
+      <div id="tab-roster">
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+          <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);">SORT BY:</span>
+          <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px;" onclick="sortRoster('name')" id="sort-name">Name</button>
+          <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px;" onclick="sortRoster('termgpa')" id="sort-termgpa">Term GPA ↓</button>
+          <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px;" onclick="sortRoster('cumgpa')" id="sort-cumgpa">Cum GPA ↓</button>
+          <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px;" onclick="sortRoster('risk')" id="sort-risk">At-Risk First</button>
+          <input type="text" class="form-input" id="searchAcad" placeholder="Search player..." oninput="renderRoster()" style="width:160px;padding:5px 10px;margin-left:auto;">
+        </div>
+        <div id="rosterCards"></div>
+      </div>
+
+      <!-- AT-RISK TAB -->
+      <div id="tab-alerts" style="display:none;">
+        <div id="alertCards"></div>
+      </div>
+
+      <!-- AIRTABLE GUIDE TAB -->
+      <div id="tab-airtable" style="display:none;">
+        <div class="airtable-guide">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:var(--gold2);margin-bottom:4px;">📋 How to Update Airtable — Fall 26-1 Grades</div>
+          <p style="font-size:12px;color:var(--slate);margin-bottom:20px;">Follow these steps to sync the Fall 26-1 grade data into your Academics table in Airtable.</p>
+
+          <div class="at-step">
+            <div class="at-step-num">1</div>
+            <div class="at-step-body">
+              <div class="at-step-title">Open your Academics table in Airtable</div>
+              <div class="at-step-desc">Go to <strong>airtable.com</strong> → your FIS base → <span class="at-code">Academics</span> table. Make sure you have these fields: <span class="at-code">Name</span> · <span class="at-code">Term GPA</span> · <span class="at-code">Cumulative GPA</span> · <span class="at-code">Total Credits</span> · <span class="at-code">Academic Status</span> · <span class="at-code">Term</span> · <span class="at-code">Notes</span></div>
+            </div>
+          </div>
+
+          <div class="at-step">
+            <div class="at-step-num">2</div>
+            <div class="at-step-body">
+              <div class="at-step-title">Add missing fields if needed</div>
+              <div class="at-step-desc">Click the <strong>+</strong> at the end of the field headers to add: <span class="at-code">Term GPA</span> (Number), <span class="at-code">Cumulative GPA</span> (Number), <span class="at-code">Total Credits Earned</span> (Number), <span class="at-code">Term</span> (Single line text), <span class="at-code">Academic Status</span> (Single select: Good Standing / At-Risk / Watch List / Dean's List)</div>
+            </div>
+          </div>
+
+          <div class="at-step">
+            <div class="at-step-num">3</div>
+            <div class="at-step-body">
+              <div class="at-step-title">Remove players no longer on the 2026 roster</div>
+              <div class="at-step-desc">The following players from your previous Airtable entries are <strong style="color:var(--red);">NOT on the 2026 roster</strong> (based on the Fall 26-1 grade report) and should be deleted or archived in Airtable. Cross-check with your current roster to confirm before deleting.</div>
+            </div>
+          </div>
+
+          <div class="at-step">
+            <div class="at-step-num">4</div>
+            <div class="at-step-body">
+              <div class="at-step-title">Enter the Fall 26-1 grades for each player</div>
+              <div class="at-step-desc">Use the table below — copy each player's data directly into Airtable. Set <span class="at-code">Term</span> = <strong>Fall 26-1</strong> for all records.</div>
+            </div>
+          </div>
+
+          <div class="at-step">
+            <div class="at-step-num">5</div>
+            <div class="at-step-body">
+              <div class="at-step-title">Flag at-risk players</div>
+              <div class="at-step-desc">Set <span class="at-code">Academic Status</span> to <strong style="color:var(--red);">At-Risk</strong> for: <strong>Breech Elliott</strong> (F in Org Chem, Term 2.43), <strong>Dabo Mariama</strong> (F in CS 0447, Term 3.04), <strong>Zailski Katie</strong> (D in Photography, Term 2.21). Set <strong>Watch List</strong> for: <strong>Bright Maya</strong> (Term 2.66), <strong>Bruce Maya</strong> (Term 2.73), <strong>Archibald Mya</strong> (Term 2.65), <strong>Wagenknecht Bailey</strong> (Term 2.80).</div>
+            </div>
+          </div>
+
+          <!-- Full data table for copy/paste -->
+          <div style="margin-top:20px;font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">Copy-Paste Reference Table — Fall 26-1</div>
+          <div style="overflow-x:auto;">
+            <table class="data-table" style="font-size:11px;">
+              <thead><tr><th>Player</th><th>Term GPA</th><th>Cum GPA</th><th>Total Credits</th><th>Status</th><th>Flags</th></tr></thead>
+              <tbody id="airtableRef"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+<script src="config.js"></script>
+<script>
+// ── COMPLETE FALL 26-1 GRADE DATA ─────────────────────────────────
+const GRADE_DATA = [
+  { name:"Lola Abraham",    termGPA:3.859, cumGPA:3.819, credits:68,  crdsThisTerm:16,
+    courses:[{subj:"PEDC 0153",title:"Varsity Sports 3",grade:"A"},{subj:"SOC 0005",title:"Societies",grade:"A"},{subj:"MATH 0290",title:"Differential Equations",grade:"A"},{subj:"ENGR 0022",title:"Materials Structure & Properties",grade:"A"},{subj:"MEMS 0024",title:"Intro Mechanical Engr Design",grade:"A"},{subj:"ENGR 0135",title:"Statics & Mechanics of Materials",grade:"B+"}]},
+  { name:"Mya Archibald",   termGPA:2.654, cumGPA:3.202, credits:76,  crdsThisTerm:16,
+    courses:[{subj:"GEOL 1055",title:"Environmental Ethics",grade:"B"},{subj:"STAT 1000",title:"Applied Statistical Methods",grade:"C+"},{subj:"GEOL 1342",title:"Environmental Issues",grade:"S"},{subj:"HAA 0010",title:"Introduction to World Art",grade:"B"},{subj:"SOC 0339",title:"Sociology of Religion",grade:"B"}]},
+  { name:"Adi Bianchin",    termGPA:3.712, cumGPA:3.766, credits:17,  crdsThisTerm:14,
+    courses:[{subj:"COMMRC 0520",title:"Public Speaking",grade:"A"},{subj:"BIOSC 0150",title:"Foundations of Biology 1",grade:"B"},{subj:"PEDC 0090",title:"Varsity Sports 1",grade:"A"},{subj:"SOC 0005",title:"Societies",grade:"A"},{subj:"PITT 0210",title:"Anti-Black Racism",grade:"S"},{subj:"EDUC 1015",title:"Personal Skills Development",grade:"A"}]},
+
+  { name:"Maya Bright",     termGPA:2.661, cumGPA:2.661, credits:14,  crdsThisTerm:14,
+    courses:[{subj:"MATH 0031",title:"Algebra",grade:"C"},{subj:"PEDC 0090",title:"Varsity Sports 1",grade:"A"},{subj:"ECON 0100",title:"Intro Microeconomic Theory",grade:"D+",flag:true},{subj:"PSY 0010",title:"Introduction to Psychology",grade:"B"},{subj:"PUBHLT 0100",title:"Fund of Public Health",grade:"A"},{subj:"PUBHLT 0140",title:"First-Year Public Health Seminar",grade:"A"}]},
+  { name:"Maya Bruce",      termGPA:2.731, cumGPA:2.731, credits:14,  crdsThisTerm:14,
+    courses:[{subj:"PEDC 0090",title:"Varsity Sports 1",grade:"A"},{subj:"ECON 0100",title:"Intro Microeconomic Theory",grade:"C"},{subj:"PSY 0010",title:"Introduction to Psychology",grade:"A"},{subj:"COMMRC 0320",title:"Mass Communication & Society",grade:"D+",flag:true},{subj:"EDUC 1015",title:"Personal Skills Development",grade:"A"},{subj:"PITT 0210",title:"Anti-Black Racism",grade:"S"}]},
+  { name:"Emily Cooper",    termGPA:3.932, cumGPA:3.794, credits:113, crdsThisTerm:13,
+    courses:[{subj:"PEDC 0153",title:"Varsity Sports 3",grade:"A"},{subj:"PEDC 1300",title:"Nutrition in Exercise & Sport",grade:"A"},{subj:"PSY 1210",title:"Intro to Clinical Psychology",grade:"A"},{subj:"PSY 1907",title:"Directed Individual Research",grade:"S"},{subj:"PSY 0423",title:"Cognitive Psychology Lab",grade:"A"},{subj:"PSY 0184",title:"Psychology of Gender",grade:"A+"}]},
+  { name:"Mariama Dabo",    termGPA:3.042, cumGPA:3.153, credits:67,  crdsThisTerm:15,
+    courses:[{subj:"FR 0221",title:"Reading French: Lit, Media, Culture",grade:"A+"},{subj:"SOC 0005",title:"Societies",grade:"A"},{subj:"NROSCI 0081",title:"Drugs and Behavior",grade:"A"},{subj:"CS 0441",title:"Discrete Structures for CS",grade:"B+"},{subj:"CS 0447",title:"Computer Org & Assembly Lang",grade:"F",flag:true},{subj:"CS 0445",title:"Algorithms & Data Structures 1",grade:"B+"}]},
+  { name:"Sofia Doheny",    termGPA:3.583, cumGPA:3.495, credits:94,  crdsThisTerm:18,
+    courses:[{subj:"SOC 0005",title:"Societies",grade:"A"},{subj:"BUSFIN 1321",title:"Investment Management",grade:"B"},{subj:"BUSFIN 1351",title:"Financial Modeling",grade:"B+"},{subj:"BUSFIN 1311",title:"Corporate Finance",grade:"B+"},{subj:"GEOL 0870",title:"The Planets",grade:"A"},{subj:"BUSMKT 1428",title:"Digital & Social Media Marketing",grade:"A"}]},
+  { name:"Katie Ellermeyer",termGPA:3.824, cumGPA:3.813, credits:21,  crdsThisTerm:18,
+    courses:[{subj:"PEDC 0090",title:"Varsity Sports 1",grade:"A"},{subj:"ECON 0110",title:"Intro Macroeconomic Theory",grade:"A"},{subj:"BUSSPP 0020",title:"Managing Complex Environments",grade:"A+"},{subj:"MATH 0120",title:"Business Calculus",grade:"B+"},{subj:"EDUC 1015",title:"Personal Skills Development",grade:"A"},{subj:"BUSBIS 0100",title:"Programming Essentials for Business",grade:"A"},{subj:"BUS 0010",title:"Academic & Career Success",grade:"S"}]},
+  { name:"Magali Gagne",    termGPA:3.325, cumGPA:3.159, credits:142, crdsThisTerm:10,
+    courses:[{subj:"PEDC 0090",title:"Varsity Sports 1",grade:"A"},{subj:"SA 0120",title:"Painting Studio 1",grade:"W"},{subj:"PORT 0102",title:"Elementary Portuguese 2",grade:"A"},{subj:"RELGST 0105",title:"Religions of the West",grade:"B"},{subj:"PSY 0423",title:"Cognitive Psychology Lab",grade:"B"}]},
+  { name:"Alia Jaidi",      termGPA:3.250, cumGPA:3.413, credits:113, crdsThisTerm:17,
+    courses:[{subj:"PEDC 0090",title:"Varsity Sports 1",grade:"A"},{subj:"STAT 1000",title:"Applied Statistical Methods",grade:"A"},{subj:"MUSIC 1340",title:"Music in Africa",grade:"B+"},{subj:"HIST 1706",title:"Drugs in Global History",grade:"B"},{subj:"ANTH 1560",title:"Politics in Prehistory",grade:"B+"},{subj:"PSY 1050",title:"Topics in Psychology",grade:"C+"}]},
+  { name:"Olivia Lee",      termGPA:3.500, cumGPA:3.773, credits:88,  crdsThisTerm:18,
+    courses:[{subj:"BUSSPP 0020",title:"Managing Complex Environments",grade:"A"},{subj:"BUSFIN 1321",title:"Investment Management",grade:"B"},{subj:"BUSQOM 0050",title:"Decision Analytics",grade:"B"},{subj:"PSY 0105",title:"Introduction to Social Psych",grade:"A"},{subj:"BUSACC 0040",title:"Managerial Accounting",grade:"B+"},{subj:"BUSQOM 0102",title:"Business Analytics 2",grade:"A"}]},
+  { name:"Hannah Minogue",  termGPA:4.000, cumGPA:4.000, credits:33,  crdsThisTerm:17,
+    courses:[{subj:"PEDC 0091",title:"Varsity Sports 2",grade:"A"},{subj:"ECON 0110",title:"Intro Macroeconomic Theory",grade:"A"},{subj:"SOC 0005",title:"Societies",grade:"A"},{subj:"EDUC 1015",title:"Personal Skills Development",grade:"A"},{subj:"BUSERV 1940",title:"Marketing Fundamentals",grade:"A"},{subj:"STAT 1000",title:"Applied Statistical Methods",grade:"A"}]},
+  { name:"Celine Ottah",    termGPA:3.143, cumGPA:3.250, credits:114, crdsThisTerm:14,
+    courses:[{subj:"CHEM 0120",title:"General Chemistry 2",grade:"C"},{subj:"EDUC 1015",title:"Personal Skills Development",grade:"A"},{subj:"ANTH 0680",title:"Intro to Bio Anthropology",grade:"A"},{subj:"ENGCMP 1103",title:"Public Relations Writing",grade:"B"},{subj:"ARTSC 0800",title:"Intro to US & Pitt Culture",grade:"A"}]},
+  { name:"Abigail Reisz",   termGPA:3.932, cumGPA:3.838, credits:109, crdsThisTerm:12,
+    courses:[{subj:"PEDC 0154",title:"Varsity Sports 4",grade:"A"},{subj:"REHSCI 1210",title:"Neuroscience",grade:"A"},{subj:"REHSCI 1285",title:"Intro to Evidence-Based Rehab",grade:"A"},{subj:"PITT 0210",title:"Anti-Black Racism",grade:"S"},{subj:"REHSCI 1219",title:"Exercise Physiology with Lab",grade:"A"}]},
+  { name:"Sophie Rourke",   termGPA:3.942, cumGPA:3.953, credits:52,  crdsThisTerm:14,
+    courses:[{subj:"PEDC 0090",title:"Varsity Sports 1",grade:"A"},{subj:"ECON 0110",title:"Intro Macroeconomic Theory",grade:"A"},{subj:"COMMRC 0320",title:"Mass Communication & Society",grade:"A"},{subj:"PSY 0010",title:"Introduction to Psychology",grade:"A"},{subj:"PITT 0210",title:"Anti-Black Racism",grade:"S"},{subj:"EDUC 1015",title:"Personal Skills Development",grade:"A"}]},
+  { name:"Ellie Rowlands",  termGPA:3.333, cumGPA:3.500, credits:24,  crdsThisTerm:18,
+    courses:[{subj:"PEDC 0090",title:"Varsity Sports 1",grade:"A"},{subj:"CHEM 0110",title:"General Chemistry 1",grade:"C"},{subj:"SOC 0005",title:"Societies",grade:"A"},{subj:"STAT 1000",title:"Applied Statistical Methods",grade:"B"},{subj:"EDUC 1015",title:"Personal Skills Development",grade:"A"},{subj:"COMMRC 0520",title:"Public Speaking",grade:"A+"}]},
+  { name:"Sage Stelzer",    termGPA:3.300, cumGPA:3.590, credits:91,  crdsThisTerm:15,
+    courses:[{subj:"SOC 0005",title:"Societies",grade:"A"},{subj:"BUSQOM 1070",title:"Operations Management",grade:"C+"},{subj:"BUSFIN 1351",title:"Financial Modeling",grade:"B"},{subj:"BUSFIN 1311",title:"Corporate Finance",grade:"B+"},{subj:"BUSMKT 1428",title:"Digital & Social Media Marketing",grade:"A"}]},
+
+
+  { name:"Lucia Wells",     termGPA:3.050, cumGPA:3.200, credits:83,  crdsThisTerm:15,
+    courses:[{subj:"BUSBIS 1060",title:"Intro to Information Systems",grade:"C+"},{subj:"BUSMKT 1441",title:"Consumer Behavior",grade:"C+"},{subj:"EDUC 1015",title:"Personal Skills Development",grade:"A"},{subj:"HAA 0010",title:"Introduction to World Art",grade:"A"},{subj:"BUSQOM 0101",title:"Business Analytics 1",grade:"B"}]},
+  { name:"Margaret Wilde",  termGPA:3.962, cumGPA:3.686, credits:117, crdsThisTerm:13,
+    courses:[{subj:"PHYS 0212",title:"Intro to Laboratory Physics",grade:"A"},{subj:"BIOSC 0067",title:"Fds of Biology Research Lab 2",grade:"A+"},{subj:"HHD 1035",title:"Exercise Science Seminar 2",grade:"A"},{subj:"HHD 1226",title:"Assessment & Prescription for Special Pop",grade:"A"},{subj:"HHD 1487",title:"Chronic Disease and Obesity",grade:"A+"},{subj:"HHD 0195",title:"First Aid and CPR",grade:"A"},{subj:"HHD 1176",title:"Cardio Conditioning Instructor",grade:"A"}]},
+
+  { name:"Krystina Wolf",   termGPA:3.885, cumGPA:3.917, credits:29,  crdsThisTerm:13,
+    courses:[{subj:"PEDC 0091",title:"Varsity Sports 2",grade:"A"},{subj:"SOC 0005",title:"Societies",grade:"A"},{subj:"BUSORG 1020",title:"Organizational Behavior",grade:"A"},{subj:"BUSORG 1101",title:"Workplace Communications",grade:"A"},{subj:"BUSQOM 0101",title:"Business Analytics 1",grade:"A"}]},
+  { name:"Adoo Yina",       termGPA:3.885, cumGPA:3.921, credits:20,  crdsThisTerm:14,
+    courses:[{subj:"PEDC 0090",title:"Varsity Sports 1",grade:"A"},{subj:"SOC 0005",title:"Societies",grade:"A"},{subj:"LING 0008",title:"ESL Speaking and Listening",grade:"A"},{subj:"LING 0007",title:"ESL Writing Intermediate",grade:"A"},{subj:"EDUC 1015",title:"Personal Skills Development",grade:"A"},{subj:"PITT 0210",title:"Anti-Black Racism",grade:"S"}]},
+  { name:"Katie Zailski",   termGPA:2.208, cumGPA:2.770, credits:120, crdsThisTerm:18,
+    courses:[{subj:"COMMRC 0530",title:"Interpersonal Communication",grade:"B"},{subj:"COMMRC 1111",title:"Theories of Persuasion",grade:"C"},{subj:"ENGWRT 0610",title:"Intro Journalism & Nonfiction",grade:"C+"},{subj:"SOC 0477",title:"Medical Sociology",grade:"C"},{subj:"FMST 1890",title:"The Business of Broadcasting",grade:"B+"},{subj:"HAA 0470",title:"Photography and Art",grade:"D",flag:true}]},
+];
+
+// ── RISK LOGIC ────────────────────────────────────────────────────
+function getRisk(p) {
+  const hasF = p.courses.some(c=>c.grade==='F');
+  const hasD = p.courses.some(c=>c.grade==='D'||c.grade==='D+');
+  if (hasF || p.termGPA < 2.5) return 'high';
+  if (hasD || p.termGPA < 3.0) return 'medium';
+  if (p.termGPA >= 3.9) return 'great';
+  return 'good';
+}
+function getRiskLabel(r) { return {high:'At-Risk',medium:'Watch List',good:'Good Standing',great:"Dean's List"}[r]; }
+function getRiskClass(r) { return {high:'risk-high',medium:'risk-medium',good:'risk-good',great:'risk-great'}[r]; }
+function getGradeClass(g) {
+  if (!g) return 'grade-S';
+  const base = g.replace('+','').replace('-','');
+  if (base==='A') return 'grade-A';
+  if (base==='B') return 'grade-B';
+  if (base==='C') return 'grade-C';
+  if (base==='D') return 'grade-D';
+  if (base==='F') return 'grade-F';
+  return 'grade-S';
+}
+function gpaColor(g) {
+  if (g>=3.9) return 'var(--green)';
+  if (g>=3.5) return '#4da6ff';
+  if (g>=3.0) return 'var(--gold2)';
+  if (g>=2.5) return '#ff9a3c';
+  return 'var(--red)';
+}
+
+// ── STATS ─────────────────────────────────────────────────────────
+function renderStats() {
+  const gpas = GRADE_DATA.map(p=>p.termGPA);
+  const avg = (gpas.reduce((a,b)=>a+b,0)/gpas.length).toFixed(3);
+  const atRisk = GRADE_DATA.filter(p=>getRisk(p)==='high').length;
+  const watchList = GRADE_DATA.filter(p=>getRisk(p)==='medium').length;
+  const deansList = GRADE_DATA.filter(p=>getRisk(p)==='great').length;
+  const withF = GRADE_DATA.filter(p=>p.courses.some(c=>c.grade==='F')).length;
+  document.getElementById('acadStats').innerHTML = `
+    <div class="stat-card" style="--accent:var(--green);">
+      <div class="stat-icon">📊</div><div class="stat-label">Team Avg GPA</div>
+      <div class="stat-value" style="color:var(--green);">${avg}</div>
+      <div class="stat-delta">Fall 26-1 term · ${GRADE_DATA.length} players</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--red);">
+      <div class="stat-icon">⚠️</div><div class="stat-label">At-Risk</div>
+      <div class="stat-value" style="color:var(--red);">${atRisk}</div>
+      <div class="stat-delta">Needs immediate attention</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--yellow);">
+      <div class="stat-icon">👁</div><div class="stat-label">Watch List</div>
+      <div class="stat-value" style="color:var(--yellow);">${watchList}</div>
+      <div class="stat-delta">Monitor closely</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--blue);">
+      <div class="stat-icon">⭐</div><div class="stat-label">Dean's List</div>
+      <div class="stat-value" style="color:#4da6ff;">${deansList}</div>
+      <div class="stat-delta">Term GPA ≥ 3.9</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--red);">
+      <div class="stat-icon">❌</div><div class="stat-label">Failing Grades</div>
+      <div class="stat-value" style="color:var(--red);">${withF}</div>
+      <div class="stat-delta">F received this term</div>
+    </div>`;
+}
+
+// ── ROSTER CARDS ──────────────────────────────────────────────────
+let sortMode = 'risk';
+function sortRoster(mode) {
+  sortMode = mode;
+  document.querySelectorAll('[id^="sort-"]').forEach(b=>b.classList.remove('btn-gold'));
+  document.getElementById('sort-'+mode)?.classList.add('btn-gold');
+  renderRoster();
+}
+
+function renderRoster() {
+  const q = document.getElementById('searchAcad').value.toLowerCase();
+  let data = [...GRADE_DATA].filter(p=>p.name.toLowerCase().includes(q));
+  if (sortMode==='termgpa') data.sort((a,b)=>b.termGPA-a.termGPA);
+  else if (sortMode==='cumgpa') data.sort((a,b)=>b.cumGPA-a.cumGPA);
+  else if (sortMode==='name') data.sort((a,b)=>a.name.localeCompare(b.name));
+  else { // risk first
+    const order={high:0,medium:1,good:2,great:3};
+    data.sort((a,b)=>order[getRisk(a)]-order[getRisk(b)]);
+  }
+  document.getElementById('rosterCards').innerHTML = data.map(p => {
+    const risk = getRisk(p);
+    const borderClass = risk==='high'?'risk-border':risk==='medium'?'warn-border':'';
+    const hasF = p.courses.some(c=>c.grade==='F');
+    const hasD = p.courses.some(c=>c.grade==='D'||c.grade==='D+');
+    return `<div class="player-acad-card ${borderClass}">
+      <div style="display:flex;align-items:flex-start;gap:14px;">
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:var(--white);">${p.name}</div>
+            <span class="risk-badge ${getRiskClass(risk)}">${getRiskLabel(risk)}</span>
+            ${hasF?'<span class="risk-badge risk-high">⚠ F GRADE</span>':''}
+          </div>
+          <div style="display:flex;gap:20px;margin-bottom:12px;flex-wrap:wrap;">
+            <div>
+              <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px;">Term GPA</div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;color:${gpaColor(p.termGPA)};">${p.termGPA.toFixed(3)}</div>
+              <div class="gpa-bar-wrap" style="width:80px;"><div class="gpa-bar" style="width:${(p.termGPA/4)*100}%;background:${gpaColor(p.termGPA)};"></div></div>
+            </div>
+            <div>
+              <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px;">Cum GPA</div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;color:${gpaColor(p.cumGPA)};">${p.cumGPA.toFixed(3)}</div>
+              <div class="gpa-bar-wrap" style="width:80px;"><div class="gpa-bar" style="width:${(p.cumGPA/4)*100}%;background:${gpaColor(p.cumGPA)};"></div></div>
+            </div>
+            <div>
+              <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px;">Credits Earned</div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;color:var(--slate2);">${p.credits}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;">Fall 26-1 Courses</div>
+      ${p.courses.map(c=>`<div class="course-row">
+        <span class="course-subj">${c.subj}</span>
+        <span class="course-name">${c.title}</span>
+        <span class="grade-pill ${getGradeClass(c.grade)}">${c.grade}</span>
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+// ── ALERTS ────────────────────────────────────────────────────────
+function renderAlerts() {
+  const high = GRADE_DATA.filter(p=>getRisk(p)==='high');
+  const medium = GRADE_DATA.filter(p=>getRisk(p)==='medium');
+  let html = '';
+  if (high.length) {
+    html += `<div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;color:var(--red);letter-spacing:0.05em;margin-bottom:10px;text-transform:uppercase;">🚨 Immediate Attention Required</div>`;
+    html += high.map(p => {
+      const failedCourses = p.courses.filter(c=>c.grade==='F'||c.grade==='D'||c.grade==='D+');
+      return `<div class="acad-alert">
+        <div class="acad-alert-icon">⚠️</div>
+        <div class="acad-alert-text">
+          <div class="acad-alert-title">${p.name}</div>
+          Term GPA: <strong style="color:${gpaColor(p.termGPA)};">${p.termGPA.toFixed(3)}</strong> · Cum GPA: ${p.cumGPA.toFixed(3)}<br>
+          ${failedCourses.length?`<strong>Problem grades:</strong> ${failedCourses.map(c=>`${c.subj} (${c.grade})`).join(', ')}<br>`:''}
+          <strong>Action:</strong> Schedule academic check-in. ${p.courses.some(c=>c.grade==='F')?`${p.name.split(' ')[0]} failed ${p.courses.filter(c=>c.grade==='F').map(c=>c.title).join(' and ')} — eligibility review recommended.`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+  if (medium.length) {
+    html += `<div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;color:var(--gold2);letter-spacing:0.05em;margin:16px 0 10px;text-transform:uppercase;">👁 Watch List — Monitor Closely</div>`;
+    html += medium.map(p => {
+      const lowGrades = p.courses.filter(c=>c.grade==='D'||c.grade==='D+'||c.grade==='C');
+      return `<div class="acad-alert" style="background:rgba(201,151,58,0.06);border-color:rgba(201,151,58,0.25);">
+        <div class="acad-alert-icon">📋</div>
+        <div class="acad-alert-text" style="color:var(--slate2);">
+          <div class="acad-alert-title" style="color:var(--gold2);">${p.name}</div>
+          Term GPA: <strong style="color:${gpaColor(p.termGPA)};">${p.termGPA.toFixed(3)}</strong> · Cum GPA: ${p.cumGPA.toFixed(3)}<br>
+          ${lowGrades.length?`Low grades in: ${lowGrades.map(c=>`${c.subj} (${c.grade})`).join(', ')}`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('alertCards').innerHTML = html;
+}
+
+// ── AIRTABLE REF TABLE ────────────────────────────────────────────
+function renderAirtableRef() {
+  document.getElementById('airtableRef').innerHTML = GRADE_DATA.map(p => {
+    const risk = getRisk(p);
+    return `<tr>
+      <td style="color:var(--white);font-weight:600;">${p.name}</td>
+      <td style="font-family:'DM Mono',monospace;color:${gpaColor(p.termGPA)};">${p.termGPA.toFixed(3)}</td>
+      <td style="font-family:'DM Mono',monospace;color:${gpaColor(p.cumGPA)};">${p.cumGPA.toFixed(3)}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--slate2);">${p.credits}</td>
+      <td><span class="risk-badge ${getRiskClass(risk)}">${getRiskLabel(risk)}</span></td>
+      <td style="font-size:10px;color:var(--red);">${p.courses.filter(c=>c.grade==='F'||c.grade==='D'||c.grade==='D+').map(c=>c.grade+' '+c.subj).join(', ')}</td>
+    </tr>`;
+  }).join('');
+}
+
+function switchTab(tab, btn) {
+  ['roster','alerts','airtable'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'':'none');
+  document.querySelectorAll('.acad-tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+
+function showToast(msg,dur=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+
+renderStats();
+sortRoster('risk');
+renderRoster();
+renderAlerts();
+renderAirtableRef();
+</script>
+</body>
+</html>
