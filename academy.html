@@ -6,27 +6,63 @@
 <title>FIS — Panther Academy</title>
 <link rel="stylesheet" href="styles.css">
 <style>
-.nil-badge { background:rgba(201,151,58,0.15); border:1px solid var(--gold); color:var(--gold2); font-family:'DM Mono',monospace; font-size:10px; border-radius:6px; padding:3px 9px; }
-.strategy-block { border-left:3px solid var(--gold); padding:14px 16px; background:rgba(201,151,58,0.05); border-radius:0 8px 8px 0; font-style:italic; color:var(--slate2); font-size:13px; line-height:1.7; margin-bottom:16px; }
-.pillar-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px; }
-.pillar-label { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:var(--slate); margin-bottom:8px; }
-.pillar-title { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:16px; color:var(--white); margin-bottom:8px; }
-.pillar-body { font-size:12px; color:var(--slate2); line-height:1.6; }
-.pillar-impact { font-size:11px; color:var(--green); margin-top:10px; }
-.pillar-impact::before { content:'↑ '; }
+/* ── TABS ── */
+.tab-bar { display:flex; gap:4px; margin-bottom:20px; background:var(--steel); border-radius:10px; padding:4px; }
+.tab-btn { flex:1; padding:8px 12px; border:none; background:transparent; color:var(--slate); font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:13px; letter-spacing:0.05em; border-radius:7px; cursor:pointer; transition:all 0.15s; }
+.tab-btn.active { background:var(--card); color:var(--white); box-shadow:0 1px 4px rgba(0,0,0,0.3); }
+.tab-btn:hover:not(.active) { color:var(--white); }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
 
-.academy-tier { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 16px; margin-bottom:10px; display:flex; align-items:center; gap:14px; }
-.tier-badge { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:11px; padding:3px 8px; border-radius:5px; }
-.tier-elite { background:rgba(201,151,58,0.15); color:var(--gold2); border:1px solid var(--gold); }
-.tier-standard { background:rgba(77,166,255,0.1); color:#4da6ff; border:1px solid rgba(77,166,255,0.3); }
-.tier-youth { background:rgba(34,201,139,0.1); color:var(--green); border:1px solid rgba(34,201,139,0.3); }
+/* ── PARTICIPANT TABLE ── */
+.ptable { width:100%; border-collapse:collapse; font-size:12px; }
+.ptable th { background:rgba(0,0,0,0.25); font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:var(--slate2); padding:9px 12px; text-align:left; white-space:nowrap; }
+.ptable td { padding:9px 12px; border-bottom:1px solid rgba(77,106,156,0.1); vertical-align:middle; }
+.ptable tr:last-child td { border-bottom:none; }
+.ptable tr:hover td { background:rgba(201,151,58,0.04); }
 
-.nil-player-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px; }
-.nil-player-name { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:17px; color:var(--white); }
-.nil-player-role { font-size:11px; color:var(--slate); margin-top:2px; }
-.nil-earnings { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:22px; color:var(--gold2); }
+/* ── TIER BADGES ── */
+.tier-badge { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:10px; padding:2px 7px; border-radius:4px; white-space:nowrap; }
+.tier-elite    { background:rgba(201,151,58,0.15); color:var(--gold2); border:1px solid var(--gold); }
+.tier-standard { background:rgba(77,166,255,0.12); color:#4da6ff; border:1px solid rgba(77,166,255,0.3); }
+.tier-youth    { background:rgba(34,201,139,0.12); color:var(--green); border:1px solid rgba(34,201,139,0.3); }
 
-.prospect-flag { display:inline-block; background:rgba(77,166,255,0.1); color:#4da6ff; font-family:'DM Mono',monospace; font-size:9px; border:1px solid rgba(77,166,255,0.25); border-radius:4px; padding:2px 7px; }
+/* ── NIL ── */
+.nil-row { display:flex; align-items:center; gap:12px; padding:11px 14px; border-bottom:1px solid rgba(77,106,156,0.1); }
+.nil-row:last-child { border-bottom:none; }
+.nil-avatar { width:32px; height:32px; border-radius:50%; background:rgba(201,151,58,0.15); border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:12px; color:var(--gold2); flex-shrink:0; }
+.nil-status { font-family:'DM Mono',monospace; font-size:9px; padding:2px 7px; border-radius:4px; }
+.nil-completed  { background:rgba(34,201,139,0.1); color:var(--green); border:1px solid rgba(34,201,139,0.3); }
+.nil-pending    { background:rgba(201,151,58,0.1); color:var(--gold2); border:1px solid rgba(201,151,58,0.3); }
+.nil-negotiating{ background:rgba(77,166,255,0.1); color:#4da6ff; border:1px solid rgba(77,166,255,0.3); }
+
+/* ── CURRICULUM ── */
+.curriculum-unit { background:var(--card); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:12px; }
+.curriculum-unit-header { display:flex; align-items:center; gap:12px; padding:14px 16px; cursor:pointer; }
+.curriculum-unit-header:hover { background:rgba(201,151,58,0.04); }
+.curriculum-icon { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.curriculum-title { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:15px; color:var(--white); }
+.curriculum-meta { font-size:11px; color:var(--slate); margin-top:2px; }
+.curriculum-body { padding:14px 16px; border-top:1px solid var(--border); display:none; }
+.curriculum-body.open { display:block; }
+.drill-item { display:flex; gap:10px; padding:8px 0; border-bottom:1px solid rgba(77,106,156,0.08); font-size:12px; }
+.drill-item:last-child { border-bottom:none; }
+.drill-num { font-family:'DM Mono',monospace; font-size:10px; color:var(--slate); min-width:20px; }
+.drill-name { font-weight:600; color:var(--white); }
+.drill-desc { color:var(--slate2); font-size:11px; margin-top:2px; }
+.level-badge { font-family:'DM Mono',monospace; font-size:9px; padding:2px 6px; border-radius:4px; margin-left:auto; flex-shrink:0; }
+.level-beginner     { background:rgba(34,201,139,0.1); color:var(--green); }
+.level-intermediate { background:rgba(201,151,58,0.1); color:var(--gold2); }
+.level-advanced     { background:rgba(220,50,50,0.1); color:var(--red); }
+
+/* ── REVENUE CARD ── */
+.rev-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px; }
+.rev-label { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:var(--slate); margin-bottom:6px; }
+.rev-value { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:28px; }
+.rev-delta { font-size:11px; color:var(--slate); margin-top:3px; }
+
+/* ── PROSPECT TAG ── */
+.prospect-tag { display:inline-block; background:rgba(77,166,255,0.1); color:#4da6ff; font-family:'DM Mono',monospace; font-size:9px; border:1px solid rgba(77,166,255,0.25); border-radius:4px; padding:2px 6px; }
 </style>
 </head>
 <body>
@@ -66,182 +102,310 @@
       <div class="topbar-actions">
         <div style="display:flex;align-items:center;gap:8px;background:rgba(201,151,58,0.12);border:1px solid var(--gold);border-radius:8px;padding:6px 12px;">
           <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);">NIL IMPACT</span>
-          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:16px;color:var(--gold2);" id="nilTotal">$4,200</span>
+          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:16px;color:var(--gold2);" id="nilImpactTotal">$4,200</span>
         </div>
-        <button class="btn btn-gold" onclick="openNilModal()">+ Log NIL Activity</button>
+        <button class="btn btn-ghost" onclick="openNilModal()">⚡ Log NIL Deal</button>
+        <button class="btn btn-gold" onclick="openEnrollModal()">+ Add Participant</button>
         <div class="avatar">HC</div>
       </div>
     </header>
 
     <div class="page">
 
+      <!-- PAGE HEADER -->
+      <div style="margin-bottom:18px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+          <div>
+            <h2 style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:26px;color:var(--white);margin:0 0 4px;">Panther Academy</h2>
+            <div style="font-size:13px;color:var(--slate2);">Youth Development Platform · NIL Revenue Engine · Community Bridge Builder</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <a href="https://pantherfw.com" target="_blank" class="btn btn-ghost" style="font-size:11px;">🔗 Open Platform</a>
+          </div>
+        </div>
+      </div>
+
       <!-- STAT CARDS -->
-      <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
-        <div class="stat-card" style="--accent:var(--blue);">
-          <div class="stat-icon">👥</div><div class="stat-label">Total Enrollees</div>
-          <div class="stat-value" style="color:#4da6ff;" id="totalEnrollees">85</div>
+      <div class="stats-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:20px;">
+        <div class="stat-card" style="--accent:#4da6ff;">
+          <div class="stat-icon">👥</div><div class="stat-label">Total Participants</div>
+          <div class="stat-value" style="color:#4da6ff;" id="statTotal">85</div>
           <div class="stat-delta">Across all tiers</div>
         </div>
         <div class="stat-card" style="--accent:var(--green);">
-          <div class="stat-icon">💵</div><div class="stat-label">Academy Revenue</div>
-          <div class="stat-value" style="color:var(--green);">$12.5k</div>
-          <div class="stat-delta">Current season</div>
+          <div class="stat-icon">💵</div><div class="stat-label">Total Revenue</div>
+          <div class="stat-value" style="color:var(--green);" id="statRevenue">$12,500</div>
+          <div class="stat-delta" id="statRevDelta">Current season</div>
         </div>
         <div class="stat-card" style="--accent:var(--gold);">
-          <div class="stat-icon">⚡</div><div class="stat-label">NIL Funds Paid</div>
-          <div class="stat-value" style="color:var(--gold2);" id="nilPaid">$4.2k</div>
-          <div class="stat-delta">To current athletes</div>
+          <div class="stat-icon">⚡</div><div class="stat-label">NIL Paid Out</div>
+          <div class="stat-value" style="color:var(--gold2);" id="statNil">$4,200</div>
+          <div class="stat-delta">To program athletes</div>
         </div>
         <div class="stat-card" style="--accent:var(--blue);">
-          <div class="stat-icon">⭐</div><div class="stat-label">Future Prospects</div>
-          <div class="stat-value" style="color:#4da6ff;" id="prospectCount">1</div>
-          <div class="stat-delta">Elite pipeline</div>
+          <div class="stat-icon">⭐</div><div class="stat-label">Pipeline Prospects</div>
+          <div class="stat-value" style="color:#4da6ff;" id="statProspects">1</div>
+          <div class="stat-delta">Future Pitt recruits</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--green);">
+          <div class="stat-icon">📋</div><div class="stat-label">Curriculum Units</div>
+          <div class="stat-value" style="color:var(--green);">6</div>
+          <div class="stat-delta">Coach-ready modules</div>
         </div>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-
-        <!-- GROWTH STRATEGIST AI -->
-        <div class="card" style="border-color:rgba(201,151,58,0.3);">
-          <div class="card-header">
-            <div style="display:flex;align-items:center;gap:10px;">
-              <div style="width:36px;height:36px;border-radius:8px;background:rgba(77,77,255,0.15);border:1px solid rgba(77,77,255,0.3);display:flex;align-items:center;justify-content:center;font-size:18px;">✦</div>
-              <div>
-                <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;color:var(--white);">Growth & Impact Strategist</div>
-                <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">MAXIMIZING PROGRAM NIL FLOW & COMMUNITY BRAND EQUITY</div>
-              </div>
-            </div>
-            <button class="btn btn-ghost" style="font-size:10px;" onclick="runStrategyAnalysis()">↻ Analyze Impact</button>
-          </div>
-          <div class="card-body">
-            <div class="strategy-block" id="strategyText">
-              "This strategy focuses on scaling the Elite Technical Academy's financial output by integrating local corporate sponsorships to boost NIL pools. By initiating community mentorship programs and providing NIL education to elite prospects, Panther Academy will bridge the engagement gap and solidify its position as the premier destination for talent development and revenue generation."
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
-              <div class="pillar-card">
-                <div class="pillar-label">NIL Payout Optimization</div>
-                <div class="pillar-title">Implement a tiered corporate sponsorship model for the Elite Technical Academy.</div>
-                <div class="pillar-impact">Elevated student-athlete earnings and increased program revenue through localized brand partnerships.</div>
-              </div>
-              <div class="pillar-card">
-                <div class="pillar-label">Community Engagement</div>
-                <div class="pillar-title">Launch the 'Panther Legacy' mentorship initiative connecting U12–U14 athletes with top-tier prospects.</div>
-                <div class="pillar-impact">Community-based content creation drives brand equity and recruits.</div>
-              </div>
-              <div class="pillar-card">
-                <div class="pillar-label">Talent Pipeline Conversion</div>
-                <div class="pillar-title">Develop an early-access NIL branding & education curriculum for elite potential recruits.</div>
-                <div class="pillar-impact">High conversion rate of pipeline prospects into enrollees by demonstrating superior financial upside.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- NIL ROSTER -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title"><div class="dot" style="background:var(--gold);"></div>Active NIL Participants</div>
-            <button class="btn btn-ghost" style="font-size:10px;" onclick="openNilModal()">+ Add</button>
-          </div>
-          <div class="card-body" style="padding:0;" id="nilRoster">
-            <!-- Populated by JS -->
-          </div>
-        </div>
+      <!-- TABS -->
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('overview')">📊 Overview & Revenue</button>
+        <button class="tab-btn" onclick="switchTab('participants')">👥 Participants</button>
+        <button class="tab-btn" onclick="switchTab('nil')">⚡ NIL Tracker</button>
+        <button class="tab-btn" onclick="switchTab('curriculum')">📚 Training Curriculum</button>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <!-- ── TAB: OVERVIEW ── -->
+      <div id="tab-overview" class="tab-panel active">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
 
-        <!-- ACADEMY TIERS -->
+          <!-- REVENUE BREAKDOWN -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot" style="background:var(--green);"></div>Revenue Breakdown</div>
+              <button class="btn btn-ghost" style="font-size:10px;" onclick="openRevenueModal()">+ Log Revenue</button>
+            </div>
+            <div class="card-body">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+                <div class="rev-card">
+                  <div class="rev-label">Elite Technical Fees</div>
+                  <div class="rev-value" style="color:var(--gold2);" id="revElite">$7,000</div>
+                  <div class="rev-delta">28 participants × $250</div>
+                </div>
+                <div class="rev-card">
+                  <div class="rev-label">Youth Skills Academy</div>
+                  <div class="rev-value" style="color:#4da6ff;" id="revStandard">$4,200</div>
+                  <div class="rev-delta">42 participants × $100</div>
+                </div>
+                <div class="rev-card">
+                  <div class="rev-label">Foundations Camp</div>
+                  <div class="rev-value" style="color:var(--green);" id="revYouth">$750</div>
+                  <div class="rev-delta">15 participants × $50</div>
+                </div>
+                <div class="rev-card">
+                  <div class="rev-label">Sponsorship / Grants</div>
+                  <div class="rev-value" style="color:var(--white);" id="revSponsor">$550</div>
+                  <div class="rev-delta">Community partners</div>
+                </div>
+              </div>
+              <div style="background:rgba(34,201,139,0.06);border:1px solid rgba(34,201,139,0.2);border-radius:8px;padding:12px;display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);text-transform:uppercase;">Total Season Revenue</div>
+                <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:24px;color:var(--green);" id="revTotal">$12,500</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- COMMUNITY IMPACT -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot" style="background:var(--gold);"></div>Community & NIL Impact</div>
+            </div>
+            <div class="card-body">
+              <div style="border-left:3px solid var(--gold);padding:12px 14px;background:rgba(201,151,58,0.05);border-radius:0 8px 8px 0;font-style:italic;color:var(--slate2);font-size:12px;line-height:1.7;margin-bottom:14px;" id="impactStatement">
+                "Panther Academy bridges Pitt Women's Soccer with the Pittsburgh community — generating NIL income for current athletes, building a long-term recruiting pipeline, and developing the next generation of players through elite youth programming."
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;" id="pattAthleteNil">
+                <!-- NIL participant list rendered by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PROGRAM TIERS -->
         <div class="card">
           <div class="card-header">
             <div class="card-title"><div class="dot" style="background:var(--blue);"></div>Academy Program Tiers</div>
-            <button class="btn btn-gold" style="font-size:10px;" onclick="openEnrollModal()">+ Enroll</button>
           </div>
           <div class="card-body">
-            <div class="academy-tier">
-              <div>
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+              <div style="background:rgba(201,151,58,0.06);border:1px solid rgba(201,151,58,0.25);border-radius:10px;padding:16px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
                   <span class="tier-badge tier-elite">ELITE</span>
-                  <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;color:var(--white);">Elite Technical Academy</span>
+                  <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;color:var(--white);">Elite Technical Academy</span>
                 </div>
-                <div style="font-size:11px;color:var(--slate2);">High-performance U15–U18 · NIL-eligible prospects · 5 days/week</div>
+                <div style="font-size:12px;color:var(--slate2);line-height:1.6;margin-bottom:10px;">High-performance U15–U18 platform. NIL-eligible prospects coached directly by Pitt athletes. 5 sessions/week.</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;color:var(--gold2);" id="tierEliteCount">28</div>
+                  <div style="text-align:right;font-size:11px;color:var(--slate);">$250/participant<br>per month</div>
+                </div>
               </div>
-              <div style="margin-left:auto;text-align:right;">
-                <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;color:var(--gold2);" id="eliteCount">28</div>
-                <div style="font-size:10px;color:var(--slate);">Enrolled</div>
-              </div>
-            </div>
-            <div class="academy-tier">
-              <div>
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <div style="background:rgba(77,166,255,0.06);border:1px solid rgba(77,166,255,0.2);border-radius:10px;padding:16px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
                   <span class="tier-badge tier-standard">STANDARD</span>
-                  <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;color:var(--white);">Youth Skills Academy</span>
+                  <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;color:var(--white);">Youth Skills Academy</span>
                 </div>
-                <div style="font-size:11px;color:var(--slate2);">U12–U15 development · Technique & tactics · 3 days/week</div>
+                <div style="font-size:12px;color:var(--slate2);line-height:1.6;margin-bottom:10px;">U12–U15 technical and tactical development. Group sessions led by Pitt staff and athletes. 3 sessions/week.</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;color:#4da6ff;" id="tierStandardCount">42</div>
+                  <div style="text-align:right;font-size:11px;color:var(--slate);">$100/participant<br>per month</div>
+                </div>
               </div>
-              <div style="margin-left:auto;text-align:right;">
-                <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;color:#4da6ff;" id="standardCount">42</div>
-                <div style="font-size:10px;color:var(--slate);">Enrolled</div>
-              </div>
-            </div>
-            <div class="academy-tier">
-              <div>
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <div style="background:rgba(34,201,139,0.06);border:1px solid rgba(34,201,139,0.2);border-radius:10px;padding:16px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
                   <span class="tier-badge tier-youth">FOUNDATIONS</span>
-                  <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;color:var(--white);">Foundations Camp</span>
+                  <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;color:var(--white);">Foundations Camp</span>
                 </div>
-                <div style="font-size:11px;color:var(--slate2);">U8–U12 intro program · Fun-first · Weekend sessions</div>
-              </div>
-              <div style="margin-left:auto;text-align:right;">
-                <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;color:var(--green);" id="youthCount">15</div>
-                <div style="font-size:10px;color:var(--slate);">Enrolled</div>
+                <div style="font-size:12px;color:var(--slate2);line-height:1.6;margin-bottom:10px;">U8–U12 introductory program. Fun-first, skill-building weekend sessions. Community access priority.</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;color:var(--green);" id="tierYouthCount">15</div>
+                  <div style="text-align:right;font-size:11px;color:var(--slate);">$50/participant<br>per month</div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        <!-- PROSPECT PIPELINE -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title"><div class="dot" style="background:var(--green);"></div>Elite Prospect Pipeline</div>
-          </div>
-          <div class="card-body" id="prospectPipeline">
-            <!-- Populated by JS -->
           </div>
         </div>
       </div>
 
+      <!-- ── TAB: PARTICIPANTS ── -->
+      <div id="tab-participants" class="tab-panel">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><div class="dot" style="background:#4da6ff;"></div>Participant Roster</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select class="form-select" id="tierFilter" onchange="renderParticipants()" style="font-size:11px;padding:4px 8px;width:auto;">
+                <option value="all">All Tiers</option>
+                <option value="elite">Elite Technical</option>
+                <option value="standard">Youth Skills</option>
+                <option value="youth">Foundations</option>
+              </select>
+              <input class="form-input" id="participantSearch" placeholder="Search..." oninput="renderParticipants()" style="font-size:11px;padding:4px 10px;width:150px;">
+              <button class="btn btn-gold" style="font-size:11px;" onclick="openEnrollModal()">+ Add Participant</button>
+            </div>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="ptable">
+              <thead>
+                <tr>
+                  <th>Name</th><th>Tier</th><th>Age / Grad Yr</th><th>Club</th>
+                  <th>Coach (Pitt Athlete)</th><th>Monthly Fee</th><th>Prospect</th><th>Joined</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="participantBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TAB: NIL TRACKER ── -->
+      <div id="tab-nil" class="tab-panel">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot" style="background:var(--gold);"></div>⚡ NIL Deal Log</div>
+              <button class="btn btn-gold" style="font-size:11px;" onclick="openNilModal()">+ Log Deal</button>
+            </div>
+            <div id="nilLog" style="max-height:500px;overflow-y:auto;"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot" style="background:var(--green);"></div>Earnings by Athlete</div>
+            </div>
+            <div id="nilByAthlete"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TAB: CURRICULUM ── -->
+      <div id="tab-curriculum" class="tab-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:var(--white);">Coach Training Curriculum</div>
+            <div style="font-size:12px;color:var(--slate2);">Structured modules for Pitt athletes coaching in the Academy program</div>
+          </div>
+          <button class="btn btn-gold" style="font-size:11px;" onclick="openCurriculumModal()">+ Add Drill / Unit</button>
+        </div>
+
+        <div id="curriculumUnits">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+    </div><!-- /page -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ── ENROLL MODAL ── -->
+<div class="modal-overlay" id="enrollModal">
+  <div class="modal">
+    <div class="modal-title">👥 Add Academy Participant</div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">First Name *</label><input class="form-input" id="enr-first" placeholder="First"></div>
+      <div class="form-group"><label class="form-label">Last Name *</label><input class="form-input" id="enr-last" placeholder="Last"></div>
+      <div class="form-group"><label class="form-label">Age / Grad Year</label><input class="form-input" id="enr-age" placeholder="e.g. 14 / 2029"></div>
+      <div class="form-group"><label class="form-label">Program Tier *</label>
+        <select class="form-select" id="enr-tier">
+          <option value="elite">Elite Technical Academy ($250/mo)</option>
+          <option value="standard">Youth Skills Academy ($100/mo)</option>
+          <option value="youth">Foundations Camp ($50/mo)</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Current Club</label><input class="form-input" id="enr-club" placeholder="Club team name"></div>
+      <div class="form-group"><label class="form-label">Assigned Pitt Coach</label>
+        <select class="form-select" id="enr-coach">
+          <option value="">Unassigned</option>
+          <option>Lola Abraham</option><option>Lucia Wells</option><option>Sophie Rourke</option>
+          <option>Katie Ellermeyer</option><option>Sofia Doheny</option><option>Mya Archibald</option>
+          <option>Adi Bianchin</option><option>Celine Ottah</option><option>Ellie Rowlands</option>
+          <option>Sage Stelzer</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Recruit Prospect?</label>
+        <select class="form-select" id="enr-prospect">
+          <option value="no">No</option>
+          <option value="yes">⭐ Yes — Future Pitt Recruit</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Date Joined</label><input class="form-input" id="enr-date" type="date"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Notes / Scouting</label><textarea class="form-textarea" id="enr-notes" placeholder="Coaching notes, standout qualities, recruiting interest..."></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('enrollModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="saveParticipant()">Add Participant</button>
     </div>
   </div>
 </div>
 
-<!-- NIL MODAL -->
+<!-- ── NIL MODAL ── -->
 <div class="modal-overlay" id="nilModal">
   <div class="modal">
-    <div class="modal-title">⚡ Log NIL Activity</div>
+    <div class="modal-title">⚡ Log NIL Deal</div>
     <div class="grid-2">
-      <div class="form-group"><label class="form-label">Player *</label>
+      <div class="form-group"><label class="form-label">Pitt Athlete *</label>
         <select class="form-select" id="nil-player">
-          <option>Lola Abraham</option><option>Lucia Wells</option><option>Katie Ellermeyer</option>
-          <option>Sofia Doheny</option><option>Sophie Rourke</option><option>Mya Archibald</option>
+          <option>Lola Abraham</option><option>Lucia Wells</option><option>Sophie Rourke</option>
+          <option>Katie Ellermeyer</option><option>Sofia Doheny</option><option>Mya Archibald</option>
           <option>Adi Bianchin</option><option>Celine Ottah</option><option>Ellie Rowlands</option>
+          <option>Hannah Minogue</option><option>Sage Stelzer</option>
         </select>
       </div>
       <div class="form-group"><label class="form-label">Deal Type</label>
         <select class="form-select" id="nil-type">
-          <option>Social Media Post</option><option>Appearance</option><option>Brand Partnership</option>
-          <option>Camp Instruction</option><option>Autograph Signing</option><option>Video Content</option>
+          <option>Academy Coaching Fee</option><option>Social Media Post</option>
+          <option>Appearance / Event</option><option>Brand Partnership</option>
+          <option>Camp Instruction</option><option>Video Content</option><option>Autograph / Merch</option>
         </select>
       </div>
-      <div class="form-group"><label class="form-label">Amount ($)</label><input class="form-input" id="nil-amount" type="number" placeholder="500"></div>
-      <div class="form-group"><label class="form-label">Brand / Partner</label><input class="form-input" id="nil-brand" placeholder="e.g. Local sports store"></div>
+      <div class="form-group"><label class="form-label">Amount ($) *</label><input class="form-input" id="nil-amount" type="number" placeholder="500"></div>
+      <div class="form-group"><label class="form-label">Partner / Sponsor</label><input class="form-input" id="nil-brand" placeholder="e.g. Panther Academy, Local Brand..."></div>
       <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="nil-date" type="date"></div>
       <div class="form-group"><label class="form-label">Status</label>
         <select class="form-select" id="nil-status">
-          <option>Completed</option><option>Pending</option><option>Negotiating</option>
+          <option value="Completed">✅ Completed</option>
+          <option value="Pending">⏳ Pending</option>
+          <option value="Negotiating">🔄 Negotiating</option>
         </select>
       </div>
     </div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="nil-notes" placeholder="Deal details, deliverables, terms..."></textarea></div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('nilModal')">Cancel</button>
       <button class="btn btn-gold" onclick="saveNil()">Log NIL Deal</button>
@@ -249,33 +413,62 @@
   </div>
 </div>
 
-<!-- ENROLL MODAL -->
-<div class="modal-overlay" id="enrollModal">
+<!-- ── REVENUE MODAL ── -->
+<div class="modal-overlay" id="revenueModal">
   <div class="modal">
-    <div class="modal-title">🐾 Enroll Academy Participant</div>
+    <div class="modal-title">💵 Log Revenue Entry</div>
     <div class="grid-2">
-      <div class="form-group"><label class="form-label">First Name *</label><input class="form-input" id="enr-first" placeholder="First"></div>
-      <div class="form-group"><label class="form-label">Last Name *</label><input class="form-input" id="enr-last" placeholder="Last"></div>
-      <div class="form-group"><label class="form-label">Age / Grad Year</label><input class="form-input" id="enr-age" placeholder="e.g. 14 / 2029"></div>
-      <div class="form-group"><label class="form-label">Tier</label>
-        <select class="form-select" id="enr-tier">
-          <option value="elite">Elite Technical Academy</option>
-          <option value="standard">Youth Skills Academy</option>
-          <option value="youth">Foundations Camp</option>
+      <div class="form-group"><label class="form-label">Source</label>
+        <select class="form-select" id="rev-source">
+          <option value="elite">Elite Technical Fees</option>
+          <option value="standard">Youth Skills Fees</option>
+          <option value="youth">Foundations Fees</option>
+          <option value="sponsor">Sponsorship / Grant</option>
+          <option value="other">Other</option>
         </select>
       </div>
-      <div class="form-group"><label class="form-label">Current Club</label><input class="form-input" id="enr-club" placeholder="Club team name"></div>
-      <div class="form-group"><label class="form-label">Prospect Flag</label>
-        <select class="form-select" id="enr-prospect">
-          <option value="no">Not flagged</option>
-          <option value="yes">⭐ Future Prospect</option>
+      <div class="form-group"><label class="form-label">Amount ($)</label><input class="form-input" id="rev-amount" type="number" placeholder="1000"></div>
+      <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="rev-date" type="date"></div>
+      <div class="form-group"><label class="form-label">Description</label><input class="form-input" id="rev-desc" placeholder="e.g. October session fees"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('revenueModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="saveRevenue()">Log Revenue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CURRICULUM MODAL ── -->
+<div class="modal-overlay" id="curriculumModal">
+  <div class="modal">
+    <div class="modal-title">📚 Add Curriculum Drill / Session</div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Unit / Module</label>
+        <select class="form-select" id="cur-unit">
+          <option value="technical">Technical Foundation</option>
+          <option value="tactical">Tactical Development</option>
+          <option value="physical">Physical Preparation</option>
+          <option value="goalkeeper">Goalkeeper Specific</option>
+          <option value="small_sided">Small-Sided Games</option>
+          <option value="mental">Mental Performance</option>
+          <option value="new">+ Create New Unit</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Drill Name *</label><input class="form-input" id="cur-name" placeholder="Drill / session name"></div>
+      <div class="form-group"><label class="form-label">Duration (min)</label><input class="form-input" id="cur-duration" type="number" placeholder="20"></div>
+      <div class="form-group"><label class="form-label">Level</label>
+        <select class="form-select" id="cur-level">
+          <option value="beginner">Beginner (U8–U12)</option>
+          <option value="intermediate">Intermediate (U12–U15)</option>
+          <option value="advanced">Advanced (U15–U18)</option>
         </select>
       </div>
     </div>
-    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="enr-notes" placeholder="Coaching notes, standout qualities..."></textarea></div>
+    <div class="form-group"><label class="form-label">Description / Instructions</label><textarea class="form-textarea" id="cur-desc" placeholder="Drill setup, coaching points, progressions..."></textarea></div>
+    <div class="form-group"><label class="form-label">New Unit Name (if creating new)</label><input class="form-input" id="cur-newunit" placeholder="e.g. Set Piece Training"></div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('enrollModal')">Cancel</button>
-      <button class="btn btn-gold" onclick="saveEnroll()">Enroll Participant</button>
+      <button class="btn btn-ghost" onclick="closeModal('curriculumModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="saveCurriculum()">Add to Curriculum</button>
     </div>
   </div>
 </div>
@@ -283,131 +476,319 @@
 <div id="toast"></div>
 <script src="config.js"></script>
 <script>
-const ACADEMY_KEY = 'fis_academy_v1';
-function loadAcademy() {
-  try { return JSON.parse(localStorage.getItem(ACADEMY_KEY)) || { nil:[], enrollees:[] }; }
-  catch(e) { return { nil:[], enrollees:[] }; }
+// ── STORAGE ──────────────────────────────────────────────────────
+const KEY = 'fis_academy_v2';
+function load() {
+  try { return JSON.parse(localStorage.getItem(KEY)) || getDefaults(); }
+  catch(e) { return getDefaults(); }
 }
-function saveAcademy(d) { localStorage.setItem(ACADEMY_KEY, JSON.stringify(d)); }
+function save(d) { localStorage.setItem(KEY, JSON.stringify(d)); }
 
+function getDefaults() {
+  return {
+    participants: [
+      { id:1, first:'Sarah', last:'Miller', age:'14 / 2029', tier:'elite', club:'Steel City FC', coach:'Lola Abraham', prospect:'yes', joined:'2025-09-01', notes:'Elite technical ability, top-5 nationally in her class. NWSL draft projection.' },
+      { id:2, first:'Ava', last:'Thompson', age:'13 / 2030', tier:'elite', club:'Riverhounds Academy', coach:'Lucia Wells', prospect:'no', joined:'2025-09-01', notes:'' },
+      { id:3, first:'Chloe', last:'Martinez', age:'15 / 2028', tier:'elite', club:'FC Pittsburgh', coach:'Katie Ellermeyer', prospect:'yes', joined:'2025-09-01', notes:'Technically gifted central midfielder. High recruiting interest.' },
+      { id:4, first:'Emma', last:'Davis', age:'11 / 2032', tier:'standard', club:'None', coach:'Sophie Rourke', prospect:'no', joined:'2025-10-01', notes:'' },
+      { id:5, first:'Lily', last:'Johnson', age:'12 / 2031', tier:'standard', club:'North Hills SC', coach:'Mya Archibald', prospect:'no', joined:'2025-10-01', notes:'' },
+      { id:6, first:'Zoe', last:'Wilson', age:'9 / 2034', tier:'youth', club:'None', coach:'', prospect:'no', joined:'2025-11-01', notes:'' },
+    ],
+    nil: [
+      { id:1, player:'Lola Abraham', type:'Academy Coaching Fee', amount:1200, brand:'Panther Academy', date:'2026-02-01', status:'Completed', notes:'' },
+      { id:2, player:'Lucia Wells', type:'Academy Coaching Fee', amount:800, brand:'Panther Academy', date:'2026-02-01', status:'Completed', notes:'' },
+      { id:3, player:'Sophie Rourke', type:'Academy Coaching Fee', amount:600, brand:'Panther Academy', date:'2026-02-01', status:'Completed', notes:'' },
+      { id:4, player:'Katie Ellermeyer', type:'Social Media Post', amount:400, brand:'Pittsburgh Gear Co', date:'2026-01-15', status:'Completed', notes:'' },
+      { id:5, player:'Sofia Doheny', type:'Appearance / Event', amount:500, brand:'Community Event', date:'2026-02-10', status:'Pending', notes:'' },
+      { id:6, player:'Mya Archibald', type:'Academy Coaching Fee', amount:700, brand:'Panther Academy', date:'2026-02-01', status:'Completed', notes:'' },
+    ],
+    revenue: [],
+    curriculum: [],
+  };
+}
+
+const DEFAULT_CURRICULUM = [
+  { unit:'technical', unitLabel:'Technical Foundation', icon:'⚽', drills:[
+    { name:'Rondo 4v2', duration:15, level:'intermediate', desc:'Keep-away game in a circle. Focus on one-touch passing, body shape on reception, and pressure resistance. Progress to 5v2 with directional passes.' },
+    { name:'Passing Patterns (Y-Shape)', duration:20, level:'beginner', desc:'Three-player patterns: Y and L shapes. Emphasis on passing weight, timing of runs, and communication. Add movement to balls to progress.' },
+    { name:'1v1 Technical Duel', duration:15, level:'advanced', desc:'Player attacks, defender defends a 3-yard gate. Teach cuts: inside/outside, Cruyff turn, body feints. Score by dribbling through the gate.' },
+  ]},
+  { unit:'tactical', unitLabel:'Tactical Development', icon:'🧠', drills:[
+    { name:'3v2 +1 Transition', duration:20, level:'intermediate', desc:'Attacking team of 3 vs 2 defenders with a neutral joker. After winning the ball, defenders transition to attack immediately. Coach compactness and pressing triggers.' },
+    { name:'Shadow Play — Build-Up', duration:25, level:'advanced', desc:'11v0 shape rehearsal focusing on GK distribution, CB splits, and midfielder support angles. Repeat until automatic. Add passive then active opposition.' },
+    { name:'Positional Rotation Game', duration:20, level:'beginner', desc:'4v4 in a grid. Players must occupy all 4 zones when team has the ball. Teaches positional awareness and spacing concepts.' },
+  ]},
+  { unit:'physical', unitLabel:'Physical Preparation', icon:'💪', drills:[
+    { name:'SAQ Circuit', duration:15, level:'intermediate', desc:'Speed, agility, quickness: ladder drills, cone weaves, 5-10-5 shuttles. Run 3 rounds of 5 min. Focus on foot strike and deceleration mechanics.' },
+    { name:'Plyometric Power Block', duration:12, level:'advanced', desc:'Box jumps, lateral bounds, hurdle hops, depth drops. 3 sets of 6 reps each. Rest 90 sec between sets. Not suitable for U12 and below.' },
+  ]},
+  { unit:'goalkeeper', unitLabel:'Goalkeeper Specific', icon:'🧤', drills:[
+    { name:'Footwork & Set Position', duration:15, level:'beginner', desc:'Goalkeeper footwork patterns: shuffle, crossover, drop step. Emphasize set position timing relative to the shot. Use tennis balls for reaction speed.' },
+    { name:'Cross Command Training', duration:20, level:'intermediate', desc:'GK calls "KEEPER!" and catches or punches served crosses. Progress from static server to dynamic wide player. Teach take-off timing and dominant hand catch.' },
+  ]},
+  { unit:'small_sided', unitLabel:'Small-Sided Games', icon:'🏟', drills:[
+    { name:'4v4 End Zone Game', duration:20, level:'beginner', desc:'Score by dribbling or passing into the end zone. No goalkeepers. Encourages combination play, forward runs, and pressing. Fantastic for U10–U13.' },
+    { name:'Transition 5v5+2', duration:25, level:'intermediate', desc:'5 attackers vs 5 defenders with 2 neutral wide players always with attacking team. Immediate transition on turnover. Award bonus goal for quick counter within 6 seconds.' },
+  ]},
+  { unit:'mental', unitLabel:'Mental Performance', icon:'🧘', drills:[
+    { name:'Pressure Penalty Shoot-out', duration:15, level:'intermediate', desc:'Team split in half, each player takes 1 penalty. Score by team. Simulate pressure of high-stakes moments. Debrief breathing and routine afterward.' },
+    { name:'Decision-Making Under Fatigue', duration:20, level:'advanced', desc:'Players sprint 40 yards then immediately receive a pass and must choose: shoot, pass, or dribble — based on live defenders. Builds executive function under physiological stress.' },
+  ]},
+];
+
+// ── UTILITIES ─────────────────────────────────────────────────────
 function showToast(m,d=2800){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d);}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
+function openEnrollModal(){document.getElementById('enr-date').value=new Date().toISOString().split('T')[0];document.getElementById('enrollModal').classList.add('open');}
 function openNilModal(){document.getElementById('nil-date').value=new Date().toISOString().split('T')[0];document.getElementById('nilModal').classList.add('open');}
-function openEnrollModal(){document.getElementById('enrollModal').classList.add('open');}
+function openRevenueModal(){document.getElementById('rev-date').value=new Date().toISOString().split('T')[0];document.getElementById('revenueModal').classList.add('open');}
+function openCurriculumModal(){document.getElementById('curriculumModal').classList.add('open');}
 
-function saveNil() {
-  const data = loadAcademy();
-  data.nil.unshift({
-    player: document.getElementById('nil-player').value,
-    type: document.getElementById('nil-type').value,
-    amount: parseFloat(document.getElementById('nil-amount').value)||0,
-    brand: document.getElementById('nil-brand').value,
-    date: document.getElementById('nil-date').value,
-    status: document.getElementById('nil-status').value,
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    const tabs=['overview','participants','nil','curriculum'];
+    b.classList.toggle('active', tabs[i]===name);
   });
-  saveAcademy(data);
-  closeModal('nilModal');
-  showToast('NIL deal logged ✓');
-  renderNilRoster();
-  updateStats();
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
 }
 
-function saveEnroll() {
+// ── STATS ─────────────────────────────────────────────────────────
+function updateStats() {
+  const d = load();
+  const total = 85 + d.participants.length - 6; // 6 defaults already counted
+  const eliteC = d.participants.filter(p=>p.tier==='elite').length;
+  const stdC   = d.participants.filter(p=>p.tier==='standard').length;
+  const youthC = d.participants.filter(p=>p.tier==='youth').length;
+  const prospects = d.participants.filter(p=>p.prospect==='yes').length;
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('tierEliteCount').textContent = eliteC;
+  document.getElementById('tierStandardCount').textContent = stdC;
+  document.getElementById('tierYouthCount').textContent = youthC;
+  document.getElementById('statProspects').textContent = prospects;
+
+  // Revenue
+  const nilTotal = d.nil.filter(n=>n.status==='Completed').reduce((a,n)=>a+n.amount,0);
+  const extraRev = d.revenue.reduce((a,r)=>a+r.amount,0);
+  const baseRev  = eliteC*250 + stdC*100 + youthC*50;
+  const totalRev = baseRev + extraRev;
+
+  document.getElementById('statNil').textContent = '$' + nilTotal.toLocaleString();
+  document.getElementById('nilImpactTotal').textContent = '$' + nilTotal.toLocaleString();
+  document.getElementById('statRevenue').textContent = '$' + totalRev.toLocaleString();
+  document.getElementById('revTotal').textContent = '$' + totalRev.toLocaleString();
+  document.getElementById('revElite').textContent = '$' + (eliteC*250).toLocaleString();
+  document.getElementById('revStandard').textContent = '$' + (stdC*100).toLocaleString();
+  document.getElementById('revYouth').textContent = '$' + (youthC*50).toLocaleString();
+}
+
+// ── PARTICIPANTS ───────────────────────────────────────────────────
+function saveParticipant() {
   const first = document.getElementById('enr-first').value.trim();
   if(!first){ showToast('Name required'); return; }
-  const data = loadAcademy();
-  data.enrollees.unshift({
-    name: first + ' ' + document.getElementById('enr-last').value.trim(),
+  const d = load();
+  const newId = Date.now();
+  d.participants.push({
+    id: newId,
+    first, last: document.getElementById('enr-last').value.trim(),
     age: document.getElementById('enr-age').value,
     tier: document.getElementById('enr-tier').value,
     club: document.getElementById('enr-club').value,
-    prospect: document.getElementById('enr-prospect').value === 'yes',
+    coach: document.getElementById('enr-coach').value,
+    prospect: document.getElementById('enr-prospect').value,
+    joined: document.getElementById('enr-date').value,
     notes: document.getElementById('enr-notes').value,
   });
-  saveAcademy(data);
+  save(d);
   closeModal('enrollModal');
-  showToast('Participant enrolled ✓');
-  renderProspects();
-  updateStats();
+  showToast('Participant added ✓');
+  renderAll();
 }
 
-function updateStats() {
-  const data = loadAcademy();
-  const nilTotal = data.nil.filter(n=>n.status==='Completed').reduce((a,n)=>a+n.amount,0);
-  document.getElementById('nilTotal').textContent = '$' + nilTotal.toLocaleString();
-  document.getElementById('nilPaid').textContent = '$' + (nilTotal/1000).toFixed(1) + 'k';
-  const prospects = data.enrollees.filter(e=>e.prospect).length + 1; // +1 for default
-  document.getElementById('prospectCount').textContent = prospects;
-  document.getElementById('totalEnrollees').textContent = 85 + data.enrollees.length;
-  document.getElementById('eliteCount').textContent = 28 + data.enrollees.filter(e=>e.tier==='elite').length;
-  document.getElementById('standardCount').textContent = 42 + data.enrollees.filter(e=>e.tier==='standard').length;
-  document.getElementById('youthCount').textContent = 15 + data.enrollees.filter(e=>e.tier==='youth').length;
+function deleteParticipant(id) {
+  const d = load();
+  d.participants = d.participants.filter(p=>p.id!==id);
+  save(d); renderAll(); showToast('Participant removed');
 }
 
-function renderNilRoster() {
-  const data = loadAcademy();
-  const defaultNil = [
-    { player:'Lola Abraham', type:'Brand Partnership', amount:1200, brand:'Pittsburgh Gear Co', status:'Completed' },
-    { player:'Lucia Wells', type:'Social Media Post', amount:800, brand:'Pitt Athletics', status:'Completed' },
-    { player:'Sophie Rourke', type:'Camp Instruction', amount:600, brand:'Panther Academy', status:'Completed' },
-    { player:'Katie Ellermeyer', type:'Appearance', amount:400, brand:'Local Sponsor', status:'Pending' },
-    { player:'Sofia Doheny', type:'Video Content', amount:500, brand:'NCAA Showcase', status:'Negotiating' },
-  ];
-  const allNil = [...defaultNil, ...data.nil];
-  const byPlayer = {};
-  allNil.forEach(n => {
-    if(!byPlayer[n.player]) byPlayer[n.player] = { total:0, deals:0, latest:'' };
-    if(n.status==='Completed') byPlayer[n.player].total += n.amount;
-    byPlayer[n.player].deals++;
-    byPlayer[n.player].latest = n.type;
+function renderParticipants() {
+  const d = load();
+  const filter = document.getElementById('tierFilter')?.value || 'all';
+  const search = (document.getElementById('participantSearch')?.value || '').toLowerCase();
+  const tierFees = { elite:250, standard:100, youth:50 };
+  const tierLabels = { elite:'Elite Technical', standard:'Youth Skills', youth:'Foundations' };
+
+  let rows = d.participants;
+  if(filter !== 'all') rows = rows.filter(p=>p.tier===filter);
+  if(search) rows = rows.filter(p=>(p.first+' '+p.last+' '+p.club).toLowerCase().includes(search));
+
+  document.getElementById('participantBody').innerHTML = rows.length ? rows.map(p => `
+    <tr>
+      <td style="font-weight:700;color:var(--white);">${p.first} ${p.last}</td>
+      <td><span class="tier-badge tier-${p.tier}">${tierLabels[p.tier]||p.tier}</span></td>
+      <td style="color:var(--slate2);">${p.age||'—'}</td>
+      <td style="color:var(--slate2);">${p.club||'—'}</td>
+      <td style="color:var(--slate2);">${p.coach||'—'}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--green);">$${tierFees[p.tier]||0}/mo</td>
+      <td>${p.prospect==='yes'?'<span class="prospect-tag">⭐ PROSPECT</span>':'—'}</td>
+      <td style="color:var(--slate);font-size:11px;">${p.joined||'—'}</td>
+      <td><button onclick="deleteParticipant(${p.id})" style="background:none;border:none;color:var(--slate);cursor:pointer;font-size:13px;" title="Remove">✕</button></td>
+    </tr>`).join('') :
+    `<tr><td colspan="9" style="text-align:center;color:var(--slate);padding:20px;">No participants found</td></tr>`;
+}
+
+// ── NIL ────────────────────────────────────────────────────────────
+function saveNil() {
+  const amount = parseFloat(document.getElementById('nil-amount').value);
+  if(!amount){ showToast('Amount required'); return; }
+  const d = load();
+  d.nil.unshift({
+    id: Date.now(),
+    player: document.getElementById('nil-player').value,
+    type: document.getElementById('nil-type').value,
+    amount,
+    brand: document.getElementById('nil-brand').value,
+    date: document.getElementById('nil-date').value,
+    status: document.getElementById('nil-status').value,
+    notes: document.getElementById('nil-notes').value,
   });
-  const sorted = Object.entries(byPlayer).sort((a,b)=>b[1].total-a[1].total);
-  document.getElementById('nilRoster').innerHTML = sorted.map(([name, d]) => `
-    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(77,106,156,0.1);">
-      <div style="width:34px;height:34px;border-radius:50%;background:rgba(201,151,58,0.15);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:13px;color:var(--gold2);flex-shrink:0;">${name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+  save(d); closeModal('nilModal'); showToast('NIL deal logged ✓'); renderAll();
+}
+
+function deleteNil(id) {
+  const d = load();
+  d.nil = d.nil.filter(n=>n.id!==id);
+  save(d); renderAll(); showToast('NIL entry removed');
+}
+
+const statusCls = { Completed:'nil-completed', Pending:'nil-pending', Negotiating:'nil-negotiating' };
+
+function renderNil() {
+  const d = load();
+
+  // Deal log
+  document.getElementById('nilLog').innerHTML = d.nil.length ? d.nil.map(n=>`
+    <div class="nil-row">
+      <div class="nil-avatar">${n.player.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
       <div style="flex:1;">
-        <div class="nil-player-name" style="font-size:14px;">${name}</div>
-        <div class="nil-player-role">${d.latest} · ${d.deals} deal${d.deals!==1?'s':''}</div>
+        <div style="font-weight:700;color:var(--white);font-size:13px;">${n.player}</div>
+        <div style="font-size:11px;color:var(--slate2);">${n.type} · ${n.brand||'—'}</div>
+        <div style="font-size:10px;color:var(--slate);margin-top:2px;">${n.date||''}</div>
       </div>
-      <div class="nil-earnings">$${d.total.toLocaleString()}</div>
+      <div style="text-align:right;">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:18px;color:var(--gold2);">$${n.amount.toLocaleString()}</div>
+        <span class="nil-status ${statusCls[n.status]||''}">${n.status}</span>
+      </div>
+      <button onclick="deleteNil(${n.id})" style="background:none;border:none;color:var(--slate);cursor:pointer;font-size:12px;margin-left:4px;" title="Remove">✕</button>
+    </div>`).join('') :
+    '<div style="text-align:center;color:var(--slate);padding:24px;">No NIL deals logged yet</div>';
+
+  // By athlete
+  const byAthlete = {};
+  d.nil.forEach(n=>{
+    if(!byAthlete[n.player]) byAthlete[n.player]={total:0,deals:0};
+    if(n.status==='Completed') byAthlete[n.player].total+=n.amount;
+    byAthlete[n.player].deals++;
+  });
+  const sorted = Object.entries(byAthlete).sort((a,b)=>b[1].total-a[1].total);
+  document.getElementById('nilByAthlete').innerHTML = sorted.map(([name,info])=>`
+    <div class="nil-row">
+      <div class="nil-avatar">${name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+      <div style="flex:1;">
+        <div style="font-weight:700;color:var(--white);">${name}</div>
+        <div style="font-size:11px;color:var(--slate2);">${info.deals} deal${info.deals!==1?'s':''}</div>
+      </div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;color:var(--gold2);">$${info.total.toLocaleString()}</div>
+    </div>`).join('');
+
+  // Overview NIL panel
+  document.getElementById('pattAthleteNil').innerHTML = sorted.slice(0,4).map(([name,info])=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px;background:rgba(201,151,58,0.05);border-radius:7px;">
+      <div class="nil-avatar" style="width:28px;height:28px;font-size:10px;">${name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+      <div style="flex:1;font-size:12px;color:var(--white);">${name}</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;color:var(--gold2);">$${info.total.toLocaleString()}</div>
     </div>`).join('');
 }
 
-function renderProspects() {
-  const data = loadAcademy();
-  const defaultProspect = { name:'Sarah Miller', tier:'elite', age:'2028', club:'Steel City FC', notes:'Elite technical ability, top-5 nationally in her class. NWSL draft projection as early as 2028.' };
-  const allProspects = [defaultProspect, ...data.enrollees.filter(e=>e.prospect)];
-  document.getElementById('prospectPipeline').innerHTML = allProspects.map(p => `
-    <div class="nil-player-card" style="margin-bottom:10px;">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
-        <div>
-          <div class="nil-player-name">${p.name}</div>
-          <div class="nil-player-role">${p.club||'Unknown Club'} · Class of ${p.age||'TBD'}</div>
+// ── REVENUE ────────────────────────────────────────────────────────
+function saveRevenue() {
+  const amount = parseFloat(document.getElementById('rev-amount').value);
+  if(!amount){ showToast('Amount required'); return; }
+  const d = load();
+  d.revenue.push({ id:Date.now(), source:document.getElementById('rev-source').value, amount, date:document.getElementById('rev-date').value, desc:document.getElementById('rev-desc').value });
+  save(d); closeModal('revenueModal'); showToast('Revenue logged ✓'); updateStats();
+}
+
+// ── CURRICULUM ─────────────────────────────────────────────────────
+function saveCurriculum() {
+  const name = document.getElementById('cur-name').value.trim();
+  if(!name){ showToast('Drill name required'); return; }
+  const d = load();
+  const unitVal = document.getElementById('cur-unit').value;
+  const isNew = unitVal === 'new';
+  const unitKey = isNew ? 'custom_'+Date.now() : unitVal;
+  const unitLabel = isNew ? (document.getElementById('cur-newunit').value || 'Custom Unit') : unitVal;
+  if(!d.customUnits) d.customUnits = [];
+  if(isNew) d.customUnits.push({ unit: unitKey, unitLabel, icon:'📌', drills:[] });
+  d.curriculum.push({ unit:unitKey, unitLabel, name, duration: parseInt(document.getElementById('cur-duration').value)||20, level:document.getElementById('cur-level').value, desc:document.getElementById('cur-desc').value });
+  save(d); closeModal('curriculumModal'); showToast('Drill added to curriculum ✓'); renderCurriculum();
+}
+
+function renderCurriculum() {
+  const d = load();
+  // Merge default + custom units
+  let allUnits = [...DEFAULT_CURRICULUM];
+  if(d.customUnits) allUnits = allUnits.concat(d.customUnits);
+
+  // Inject user-added drills
+  d.curriculum.forEach(cd => {
+    const unit = allUnits.find(u=>u.unit===cd.unit);
+    if(unit) unit.drills.push(cd);
+    else allUnits.push({ unit:cd.unit, unitLabel:cd.unitLabel||cd.unit, icon:'📌', drills:[cd] });
+  });
+
+  const lvlCls = { beginner:'level-beginner', intermediate:'level-intermediate', advanced:'level-advanced' };
+
+  document.getElementById('curriculumUnits').innerHTML = allUnits.map(u=>`
+    <div class="curriculum-unit">
+      <div class="curriculum-unit-header" onclick="toggleUnit(this)">
+        <div class="curriculum-icon" style="background:rgba(201,151,58,0.1);">${u.icon||'📋'}</div>
+        <div style="flex:1;">
+          <div class="curriculum-title">${u.unitLabel}</div>
+          <div class="curriculum-meta">${u.drills.length} drill${u.drills.length!==1?'s':''} · Click to expand</div>
         </div>
-        <span class="prospect-flag">⭐ ELITE PIPELINE</span>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);">▾</div>
       </div>
-      <div style="font-size:12px;color:var(--slate2);line-height:1.6;">${p.notes||'Academy enrollee flagged as future Pitt prospect.'}</div>
-      <div style="display:flex;gap:6px;margin-top:10px;">
-        <span class="nil-badge">NIL Education ✓</span>
-        <span style="background:rgba(34,201,139,0.1);color:var(--green);border:1px solid rgba(34,201,139,0.3);font-family:'DM Mono',monospace;font-size:10px;border-radius:6px;padding:3px 9px;">Talent Pipeline</span>
+      <div class="curriculum-body">
+        ${u.drills.map((dr,i)=>`
+          <div class="drill-item">
+            <div class="drill-num">${String(i+1).padStart(2,'0')}</div>
+            <div style="flex:1;">
+              <div class="drill-name">${dr.name} <span style="font-size:11px;font-weight:400;color:var(--slate);">(${dr.duration||20} min)</span></div>
+              <div class="drill-desc">${dr.desc||''}</div>
+            </div>
+            <span class="level-badge ${lvlCls[dr.level]||'level-beginner'}">${dr.level||'beginner'}</span>
+          </div>`).join('')}
       </div>
     </div>`).join('');
 }
 
-function runStrategyAnalysis() {
-  showToast('Analyzing NIL & growth impact...');
-  const strategies = [
-    "This strategy focuses on scaling the Elite Technical Academy's financial output by integrating local corporate sponsorships to boost NIL pools. By initiating community mentorship programs and providing NIL education to elite prospects, Panther Academy will bridge the engagement gap and solidify its position as the premier destination for talent development.",
-    "Prioritizing the conversion of Elite tier enrollees to committed recruits through direct NIL pathway demonstrations. Current pool of 28 Elite participants represents the highest-value recruiting pipeline. Corporate partnership with Pittsburgh-area brands should be accelerated ahead of next recruiting cycle.",
-    "Community brand equity is the program's undervalued asset. Expanding the Foundations tier and creating visible 'Panther Legacy' content from U12 upward builds a 6-year pipeline of organically committed athletes while growing NIL deal volume through increased program visibility.",
-  ];
-  document.getElementById('strategyText').textContent = '"' + strategies[Math.floor(Math.random()*strategies.length)] + '"';
+function toggleUnit(header) {
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+// ── INIT ───────────────────────────────────────────────────────────
+function renderAll() {
+  updateStats();
+  renderParticipants();
+  renderNil();
+  renderCurriculum();
 }
 
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
-updateStats();
-renderNilRoster();
-renderProspects();
+renderAll();
 </script>
 </body>
 </html>
