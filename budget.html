@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FIS — Budget</title>
 <link rel="stylesheet" href="styles.css">
+<style>
+.progress-bar-wrap { background:rgba(0,0,0,0.3); border-radius:6px; height:8px; overflow:hidden; margin-top:6px; }
+.progress-bar-fill { height:100%; border-radius:6px; transition:width 0.5s ease; }
+.cat-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.budget-row-bar { height:4px; border-radius:2px; margin-top:4px; }
+.pill-cat { font-family:'DM Mono',monospace; font-size:9px; padding:2px 8px; border-radius:4px; font-weight:600; letter-spacing:0.05em; }
+.debug-panel { background:rgba(255,200,0,0.07); border:1px solid rgba(255,200,0,0.25); border-radius:8px; padding:12px; margin-bottom:16px; font-family:'DM Mono',monospace; font-size:10px; color:var(--gold2); }
+</style>
 </head>
 <body>
 <div class="app">
@@ -23,7 +31,7 @@
     <a href="tasks.html" class="nav-item"><span class="nav-icon">✅</span><span class="nav-label">Staff Tasks</span></a>
     <div class="nav-divider"></div>
     <div class="nav-section-label">SPORT SCIENCE</div>
-    <a href="training.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Training & Load</span></a>
+    <a href="training.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Training &amp; Load</span></a>
     <a href="opponents.html" class="nav-item"><span class="nav-icon">🔍</span><span class="nav-label">Opponents</span></a>
     <a href="tactical.html" class="nav-item"><span class="nav-icon">📊</span><span class="nav-label">Tactical Analysis</span></a>
     <div class="nav-divider"></div>
@@ -33,31 +41,101 @@
     <a href="marketing.html" class="nav-item"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
     <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
     <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+    <a href="academy.html" class="nav-item"><span class="nav-icon">🐾</span><span class="nav-label">Panther Academy</span></a>
+    <a href="staffops.html" class="nav-item"><span class="nav-icon">🛡</span><span class="nav-label">Staff Ops</span></a>
   </nav>
+
   <div class="main">
     <header class="topbar">
       <div class="topbar-title">PROGRAM <span>BUDGET</span></div>
       <div class="topbar-actions">
+        <select class="form-select" id="semFilter" onchange="loadBudget()" style="font-size:11px;padding:5px 10px;width:auto;">
+          <option value="">All Semesters</option>
+          <option>Fall 2025</option>
+          <option>Spring 2026</option>
+          <option>Fall 2024</option>
+          <option>Spring 2025</option>
+        </select>
+        <button class="btn btn-ghost" onclick="loadBudget()">↻ Refresh</button>
         <button class="btn btn-gold" onclick="openAddModal()">+ Add Line Item</button>
         <div class="avatar">HC</div>
       </div>
     </header>
+
     <div class="page">
-      <div class="stats-row" style="margin-bottom:20px;">
-        <div class="stat-card" style="--accent:var(--blue);"><div class="stat-icon">💰</div><div class="stat-label">Total Allocated</div><div class="stat-value" id="b-allocated" style="color:var(--blue);font-size:22px;">—</div></div>
-        <div class="stat-card" style="--accent:var(--red);"><div class="stat-icon">💸</div><div class="stat-label">Total Spent</div><div class="stat-value" id="b-spent" style="color:var(--red);font-size:22px;">—</div></div>
-        <div class="stat-card" style="--accent:var(--green);"><div class="stat-icon">✅</div><div class="stat-label">Remaining</div><div class="stat-value" id="b-remaining" style="color:var(--green);font-size:22px;">—</div></div>
-        <div class="stat-card" style="--accent:var(--gold);"><div class="stat-icon">📊</div><div class="stat-label">% Used</div><div class="stat-value" id="b-pct" style="color:var(--gold2);">—</div></div>
+
+      <!-- FIELD DEBUGGER (shown only if field mismatch detected) -->
+      <div class="debug-panel" id="fieldDebug" style="display:none;">
+        <div style="margin-bottom:4px;font-weight:700;">⚠ Airtable Field Names Detected:</div>
+        <div id="fieldDebugContent"></div>
+        <div style="margin-top:6px;color:var(--slate2);">If totals show $0, your Airtable field names may differ from what the app expects. Check the names above and let your developer know.</div>
       </div>
 
-      <!-- SCHOLARSHIP TRACKER -->
-      <div class="card" style="margin-bottom:20px;">
-        <div class="card-header"><div class="card-title"><div class="dot" style="background:var(--gold);"></div>Scholarship Equivalencies</div></div>
-        <div class="card-body" style="padding:0;">
-          <table class="data-table">
-            <thead><tr><th>Year</th><th>Total Equiv.</th><th>Committed</th><th>Offered (Pending)</th><th>Available</th><th>Notes</th></tr></thead>
-            <tbody id="scholarshipBody"><tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
-          </table>
+      <!-- SUMMARY STAT CARDS -->
+      <div class="stats-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:20px;">
+        <div class="stat-card" style="--accent:#4da6ff;">
+          <div class="stat-icon">💰</div><div class="stat-label">Total Allocated</div>
+          <div class="stat-value" id="b-allocated" style="color:#4da6ff;font-size:20px;">—</div>
+          <div class="stat-delta">Full budget</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--red);">
+          <div class="stat-icon">💸</div><div class="stat-label">Total Spent</div>
+          <div class="stat-value" id="b-spent" style="color:var(--red);font-size:20px;">—</div>
+          <div class="stat-delta">Actual spend</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--green);">
+          <div class="stat-icon">✅</div><div class="stat-label">Remaining</div>
+          <div class="stat-value" id="b-remaining" style="color:var(--green);font-size:20px;">—</div>
+          <div class="stat-delta">Available balance</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--gold);">
+          <div class="stat-icon">📊</div><div class="stat-label">% Used</div>
+          <div class="stat-value" id="b-pct" style="color:var(--gold2);">—</div>
+          <div class="stat-delta">Of total budget</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--white);">
+          <div class="stat-icon">📋</div><div class="stat-label">Line Items</div>
+          <div class="stat-value" id="b-count">—</div>
+          <div class="stat-delta">Budget entries</div>
+        </div>
+      </div>
+
+      <!-- OVERALL PROGRESS BAR -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-body" style="padding:14px 18px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;color:var(--white);">Overall Budget Utilization</div>
+            <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);" id="b-pct-label">—</div>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="b-progress" style="width:0%;background:var(--green);"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+
+        <!-- CATEGORY BREAKDOWN -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><div class="dot" style="background:var(--gold);"></div>By Category</div>
+          </div>
+          <div class="card-body" id="categoryBreakdown">
+            <div class="loading"><div class="spinner"></div></div>
+          </div>
+        </div>
+
+        <!-- SCHOLARSHIP EQUIVALENCIES -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><div class="dot" style="background:var(--blue);"></div>Scholarship Equivalencies</div>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <table class="data-table">
+              <thead><tr><th>Year</th><th>Total</th><th>Committed</th><th>Pending</th><th>Available</th></tr></thead>
+              <tbody id="scholarshipBody"><tr><td colspan="5"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -65,42 +143,64 @@
       <div class="card">
         <div class="card-header">
           <div class="card-title"><div class="dot"></div>Budget Line Items</div>
-          <select class="form-select" id="catFilter" onchange="loadBudget()" style="width:150px;padding:5px 8px;">
-            <option value="">All Categories</option>
-            <option>Travel</option><option>Equipment</option><option>Recruiting</option>
-            <option>Facilities</option><option>Staff</option><option>Operations</option>
-          </select>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select class="form-select" id="catFilter" onchange="loadBudget()" style="font-size:11px;padding:4px 8px;width:auto;">
+              <option value="">All Categories</option>
+              <option>Travel</option><option>Equipment</option><option>Recruiting</option>
+              <option>Facilities</option><option>Staff</option><option>Operations</option>
+              <option>Technology</option><option>Marketing</option><option>Medical</option><option>Other</option>
+            </select>
+            <input class="form-input" id="budgetSearch" placeholder="Search..." oninput="filterBudgetTable()" style="font-size:11px;padding:4px 10px;width:140px;">
+          </div>
         </div>
-        <div class="card-body" style="padding:0;">
-          <table class="data-table">
-            <thead><tr><th>Item</th><th>Category</th><th>Semester</th><th>Allocated</th><th>Spent</th><th>Remaining</th><th>Notes</th></tr></thead>
-            <tbody id="budgetBody"><tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+        <div style="overflow-x:auto;">
+          <table class="data-table" id="budgetTable">
+            <thead>
+              <tr>
+                <th>Item</th><th>Category</th><th>Semester</th>
+                <th>Allocated</th><th>Spent</th><th>Remaining</th><th>% Used</th><th>Status</th><th>Notes</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="budgetBody"><tr><td colspan="10"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
           </table>
         </div>
       </div>
-    </div>
-  </div>
-</div>
 
-<!-- ADD ITEM MODAL -->
+    </div><!-- /page -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ADD / EDIT MODAL -->
 <div class="modal-overlay" id="addModal">
   <div class="modal">
-    <div class="modal-title">💰 Add Budget Item</div>
+    <div class="modal-title" id="modalTitle">💰 Add Budget Item</div>
     <div class="grid-2">
-      <div class="form-group"><label class="form-label">Item Name *</label><input class="form-input" id="bi-name" placeholder="e.g. Away travel — Penn State"></div>
+      <div class="form-group"><label class="form-label">Item Name *</label><input class="form-input" id="bi-name" placeholder="e.g. Away Travel — Penn State"></div>
       <div class="form-group"><label class="form-label">Category</label>
-        <select class="form-select" id="bi-cat"><option>Travel</option><option>Equipment</option><option>Recruiting</option><option>Facilities</option><option>Staff</option><option>Operations</option></select>
+        <select class="form-select" id="bi-cat">
+          <option>Travel</option><option>Equipment</option><option>Recruiting</option>
+          <option>Facilities</option><option>Staff</option><option>Operations</option>
+          <option>Technology</option><option>Marketing</option><option>Medical</option><option>Other</option>
+        </select>
       </div>
       <div class="form-group"><label class="form-label">Semester</label>
-        <select class="form-select" id="bi-sem"><option>Spring 2025</option><option>Fall 2024</option></select>
+        <select class="form-select" id="bi-sem">
+          <option>Fall 2025</option><option>Spring 2026</option>
+          <option>Fall 2024</option><option>Spring 2025</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Status</label>
+        <select class="form-select" id="bi-status">
+          <option>Planned</option><option>Approved</option><option>In Progress</option><option>Completed</option><option>Cancelled</option>
+        </select>
       </div>
       <div class="form-group"><label class="form-label">Budget Allocated ($)</label><input class="form-input" id="bi-alloc" type="number" placeholder="5000"></div>
       <div class="form-group"><label class="form-label">Amount Spent ($)</label><input class="form-input" id="bi-spent" type="number" placeholder="0"></div>
     </div>
-    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="bi-notes"></textarea></div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="bi-notes" placeholder="Vendor, approval details, receipt info..."></textarea></div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-gold" onclick="addBudgetItem()">Save Item</button>
+      <button class="btn btn-gold" id="modalSaveBtn" onclick="saveBudgetItem()">Save Item</button>
     </div>
   </div>
 </div>
@@ -108,87 +208,310 @@
 <div id="toast"></div>
 <script src="config.js"></script>
 <script>
-function showToast(msg,dur=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
-function closeModal(){document.getElementById('addModal').classList.remove('open');}
-function fmt(n){return n!=null?'$'+parseFloat(n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}):'—';}
+// ── FIELD NAME RESOLVER (handles any Airtable naming) ─────────────
+// Maps what we call it → possible Airtable field names
+const FIELD_ALIASES = {
+  name:      ['Item Name','Name','Item','Description','Budget Item','Title'],
+  category:  ['Category','Cat','Type','Budget Category'],
+  semester:  ['Semester','Term','Period','Season','Time Period'],
+  allocated: ['Budget Allocated','Allocated','Budget','Amount Allocated','Total Budget','Budgeted','Budgeted Amount'],
+  spent:     ['Spent','Amount Spent','Actual','Actual Spent','Expenditure','Cost','Amount Paid'],
+  status:    ['Status','Approval Status','Budget Status'],
+  notes:     ['Notes','Note','Comments','Details','Description'],
+};
 
+let RESOLVED_FIELDS = {}; // populated after first fetch
+let ALL_RECORDS = [];      // cached for client-side filter
+let editingRecordId = null;
+
+function resolveFields(sampleFields) {
+  const resolved = {};
+  for (const [key, aliases] of Object.entries(FIELD_ALIASES)) {
+    resolved[key] = aliases.find(a => sampleFields.includes(a)) || null;
+  }
+  RESOLVED_FIELDS = resolved;
+
+  // Show debug panel if any key field is missing
+  const missing = ['name','allocated','spent'].filter(k => !resolved[k]);
+  if (missing.length > 0) {
+    document.getElementById('fieldDebug').style.display = 'block';
+    document.getElementById('fieldDebugContent').innerHTML =
+      `Detected fields: <strong>${sampleFields.join(', ')}</strong><br>` +
+      `Missing mappings for: <strong style="color:var(--red);">${missing.join(', ')}</strong>`;
+  }
+  return resolved;
+}
+
+function getF(fields, key) {
+  const fieldName = RESOLVED_FIELDS[key];
+  return fieldName ? (fields[fieldName] ?? null) : null;
+}
+
+// ── UTILITIES ─────────────────────────────────────────────────────
+function showToast(msg,dur=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function closeModal(){document.getElementById('addModal').classList.remove('open');editingRecordId=null;}
+function fmt(n){return n!=null&&n!==''?'$'+parseFloat(n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}):'—';}
+
+// Category colors
+const CAT_COLORS = {
+  Travel:'#4da6ff', Equipment:'var(--gold2)', Recruiting:'var(--green)',
+  Facilities:'#c96dff', Staff:'var(--red)', Operations:'var(--slate2)',
+  Technology:'#4df0ff', Marketing:'var(--gold)', Medical:'#ff9f4a', Other:'var(--white)'
+};
+const CAT_BG = {
+  Travel:'rgba(77,166,255,0.12)', Equipment:'rgba(201,151,58,0.12)', Recruiting:'rgba(34,201,139,0.12)',
+  Facilities:'rgba(201,109,255,0.12)', Staff:'rgba(220,50,50,0.12)', Operations:'rgba(120,130,160,0.12)',
+  Technology:'rgba(77,240,255,0.12)', Marketing:'rgba(201,151,58,0.15)', Medical:'rgba(255,159,74,0.12)', Other:'rgba(255,255,255,0.08)'
+};
+
+const STATUS_STYLE = {
+  Planned:    'background:rgba(77,106,156,0.2);color:var(--slate2);',
+  Approved:   'background:rgba(77,166,255,0.15);color:#4da6ff;',
+  'In Progress':'background:rgba(201,151,58,0.15);color:var(--gold2);',
+  Completed:  'background:rgba(34,201,139,0.15);color:var(--green);',
+  Cancelled:  'background:rgba(220,50,50,0.1);color:var(--red);',
+};
+
+// ── SCHOLARSHIPS ──────────────────────────────────────────────────
 async function loadScholarships() {
   try {
     const records = await airtableFetch(FIS_CONFIG.TABLES.SCHOLARSHIP);
     const tbody = document.getElementById('scholarshipBody');
-    tbody.innerHTML = records.length ? records.map(r => {
+    if (!records.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--slate);padding:16px;">No scholarship data</td></tr>'; return; }
+    tbody.innerHTML = records.map(r => {
       const f = r.fields;
-      const avail = (f['Available'] ?? (parseFloat(f['Total Equivalencies']||0) - parseFloat(f['Committed']||0) - parseFloat(f['Offered (Pending)']||0)));
+      const total   = parseFloat(f['Total Equivalencies']||f['Total']||0);
+      const commit  = parseFloat(f['Committed']||0);
+      const pending = parseFloat(f['Offered (Pending)']||f['Pending']||f['Offered']||0);
+      const avail   = parseFloat(f['Available']||(total - commit - pending));
       return `<tr>
         <td style="font-weight:700;color:var(--gold2);">${f['Year']||'—'}</td>
-        <td style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:var(--white);">${f['Total Equivalencies']||'—'}</td>
-        <td style="color:var(--red);">${f['Committed']||0}</td>
-        <td style="color:var(--yellow);">${f['Offered (Pending)']||0}</td>
+        <td style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:18px;color:var(--white);">${total||'—'}</td>
+        <td style="color:var(--red);">${commit||0}</td>
+        <td style="color:var(--gold2);">${pending||0}</td>
         <td style="font-weight:700;color:${avail>0?'var(--green)':'var(--red)'};">${avail.toFixed(2)}</td>
-        <td style="font-size:11px;color:var(--slate);">${f['Notes']||''}</td>
       </tr>`;
-    }).join('') : '<tr><td colspan="6"><div class="empty"><div class="empty-text">No scholarship data — add records in Airtable</div></div></td></tr>';
-  } catch(e) {}
-}
-
-async function loadBudget() {
-  const cat = document.getElementById('catFilter').value;
-  try {
-    const params = {};
-    if (cat) params.filterByFormula = `{Category}="${cat}"`;
-    const records = await airtableFetch(FIS_CONFIG.TABLES.BUDGET, params);
-
-    let totalAlloc = 0, totalSpent = 0;
-    records.forEach(r => {
-      totalAlloc += parseFloat(r.fields['Budget Allocated']||0);
-      totalSpent += parseFloat(r.fields['Spent']||0);
-    });
-    const remaining = totalAlloc - totalSpent;
-    const pct = totalAlloc > 0 ? Math.round((totalSpent/totalAlloc)*100) : 0;
-    document.getElementById('b-allocated').textContent = fmt(totalAlloc);
-    document.getElementById('b-spent').textContent = fmt(totalSpent);
-    document.getElementById('b-remaining').textContent = fmt(remaining);
-    document.getElementById('b-pct').textContent = pct + '%';
-
-    const tbody = document.getElementById('budgetBody');
-    tbody.innerHTML = records.length ? records.map(r => {
-      const f = r.fields;
-      const alloc = parseFloat(f['Budget Allocated']||0);
-      const spent = parseFloat(f['Spent']||0);
-      const rem = alloc - spent;
-      const remColor = rem >= 0 ? 'var(--green)' : 'var(--red)';
-      return `<tr>
-        <td style="font-weight:600;color:var(--white);">${f['Item Name']||'—'}</td>
-        <td><span class="pill pill-blue">${f['Category']||'—'}</span></td>
-        <td style="color:var(--slate);">${f['Semester']||'—'}</td>
-        <td style="color:var(--slate2);">${fmt(alloc)}</td>
-        <td style="color:var(--red);">${fmt(spent)}</td>
-        <td style="font-weight:700;color:${remColor};">${fmt(rem)}</td>
-        <td style="font-size:11px;color:var(--slate);">${f['Notes']||''}</td>
-      </tr>`;
-    }).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-text">No budget items yet</div></div></td></tr>';
+    }).join('');
   } catch(e) {
-    document.getElementById('budgetBody').innerHTML = `<tr><td colspan="7" style="color:var(--red);padding:16px;">Error: ${e.message}</td></tr>`;
+    document.getElementById('scholarshipBody').innerHTML = '<tr><td colspan="5" style="color:var(--slate);padding:12px;">—</td></tr>';
   }
 }
 
-function openAddModal(){document.getElementById('addModal').classList.add('open');}
-async function addBudgetItem(){
-  const name = document.getElementById('bi-name').value.trim();
-  if (!name){showToast('Item name required');return;}
+// ── BUDGET LOAD ───────────────────────────────────────────────────
+async function loadBudget() {
+  const cat = document.getElementById('catFilter').value;
+  const sem = document.getElementById('semFilter').value;
+  document.getElementById('budgetBody').innerHTML = '<tr><td colspan="10"><div class="loading"><div class="spinner"></div></div></td></tr>';
+
   try {
-    await airtableCreate(FIS_CONFIG.TABLES.BUDGET,{
-      'Item Name':name,'Category':document.getElementById('bi-cat').value,
-      'Semester':document.getElementById('bi-sem').value,
-      'Budget Allocated':parseFloat(document.getElementById('bi-alloc').value)||0,
-      'Spent':parseFloat(document.getElementById('bi-spent').value)||0,
-      'Notes':document.getElementById('bi-notes').value,
-    });
-    closeModal();showToast('Budget item saved ✓');loadBudget();
-  } catch(e){showToast(`Error: ${e.message}`);}
+    const filters = [];
+    if (cat) filters.push(`{${RESOLVED_FIELDS.category||'Category'}}="${cat}"`);
+    if (sem) filters.push(`{${RESOLVED_FIELDS.semester||'Semester'}}="${sem}"`);
+    const params = filters.length ? { filterByFormula: filters.length>1?`AND(${filters.join(',')})`:filters[0] } : {};
+
+    const records = await airtableFetchAll(FIS_CONFIG.TABLES.BUDGET, params);
+    ALL_RECORDS = records;
+
+    // Resolve field names from first record
+    if (records.length > 0 && Object.keys(RESOLVED_FIELDS).length === 0) {
+      resolveFields(Object.keys(records[0].fields));
+    }
+
+    renderBudgetTable(records);
+    renderCategoryBreakdown(records);
+
+  } catch(e) {
+    document.getElementById('budgetBody').innerHTML = `<tr><td colspan="10" style="color:var(--red);padding:16px;text-align:center;">Error loading budget: ${e.message}</td></tr>`;
+  }
 }
-document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
-loadScholarships();loadBudget();
+
+function renderBudgetTable(records) {
+  let totalAlloc = 0, totalSpent = 0;
+
+  const rows = records.map(r => {
+    const f = r.fields;
+    const alloc  = parseFloat(getF(f,'allocated') ?? f['Budget Allocated'] ?? f['Allocated'] ?? 0);
+    const spent  = parseFloat(getF(f,'spent')     ?? f['Spent'] ?? f['Amount Spent'] ?? 0);
+    const rem    = alloc - spent;
+    const pct    = alloc > 0 ? Math.round((spent/alloc)*100) : 0;
+    const cat    = getF(f,'category') || f['Category'] || 'Other';
+    const status = getF(f,'status')   || f['Status']   || '';
+    const name   = getF(f,'name')     || f['Item Name'] || f['Name'] || '—';
+    const sem    = getF(f,'semester') || f['Semester']  || '—';
+    const notes  = getF(f,'notes')    || f['Notes']     || '';
+
+    totalAlloc += alloc;
+    totalSpent += spent;
+
+    const barColor = pct > 90 ? 'var(--red)' : pct > 70 ? 'var(--gold)' : 'var(--green)';
+    const catColor = CAT_COLORS[cat] || 'var(--white)';
+    const catBg    = CAT_BG[cat]    || 'rgba(255,255,255,0.08)';
+    const statusStyle = STATUS_STYLE[status] || STATUS_STYLE['Planned'];
+
+    return `<tr data-name="${name.toLowerCase()}" data-cat="${cat}">
+      <td style="font-weight:600;color:var(--white);min-width:180px;">
+        ${name}
+        <div class="budget-row-bar" style="width:${Math.min(pct,100)}%;background:${barColor};"></div>
+      </td>
+      <td><span class="pill-cat" style="background:${catBg};color:${catColor};">${cat}</span></td>
+      <td style="color:var(--slate2);font-size:11px;white-space:nowrap;">${sem}</td>
+      <td style="color:var(--slate2);">${fmt(alloc)}</td>
+      <td style="color:var(--red);">${fmt(spent)}</td>
+      <td style="font-weight:700;color:${rem>=0?'var(--green)':'var(--red)'};">${fmt(rem)}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:${barColor};">${alloc>0?pct+'%':'—'}</td>
+      <td>${status?`<span style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:4px;${statusStyle}">${status}</span>`:''}</td>
+      <td style="font-size:11px;color:var(--slate);max-width:180px;">${notes}</td>
+      <td>
+        <button onclick="editRecord('${r.id}')" style="background:none;border:none;color:var(--slate);cursor:pointer;font-size:12px;padding:2px 5px;" title="Edit">✎</button>
+        <button onclick="deleteRecord('${r.id}')" style="background:none;border:none;color:var(--slate);cursor:pointer;font-size:12px;" title="Delete">✕</button>
+      </td>
+    </tr>`;
+  });
+
+  document.getElementById('budgetBody').innerHTML = rows.length
+    ? rows.join('')
+    : '<tr><td colspan="10" style="text-align:center;color:var(--slate);padding:24px;">No budget items found — add items above or check your Airtable data</td></tr>';
+
+  // Update totals
+  const remaining = totalAlloc - totalSpent;
+  const pct = totalAlloc > 0 ? Math.round((totalSpent/totalAlloc)*100) : 0;
+  document.getElementById('b-allocated').textContent  = fmt(totalAlloc);
+  document.getElementById('b-spent').textContent      = fmt(totalSpent);
+  document.getElementById('b-remaining').textContent  = fmt(remaining);
+  document.getElementById('b-pct').textContent        = pct + '%';
+  document.getElementById('b-count').textContent      = records.length;
+  document.getElementById('b-pct-label').textContent  = `${fmt(totalSpent)} of ${fmt(totalAlloc)} spent`;
+
+  const bar = document.getElementById('b-progress');
+  bar.style.width = Math.min(pct,100) + '%';
+  bar.style.background = pct > 90 ? 'var(--red)' : pct > 70 ? 'var(--gold)' : 'var(--green)';
+}
+
+function renderCategoryBreakdown(records) {
+  const catMap = {};
+  records.forEach(r => {
+    const f = r.fields;
+    const cat   = getF(f,'category') || f['Category'] || 'Other';
+    const alloc = parseFloat(getF(f,'allocated') ?? f['Budget Allocated'] ?? 0);
+    const spent = parseFloat(getF(f,'spent')     ?? f['Spent'] ?? 0);
+    if (!catMap[cat]) catMap[cat] = { alloc:0, spent:0 };
+    catMap[cat].alloc += alloc;
+    catMap[cat].spent += spent;
+  });
+
+  const sorted = Object.entries(catMap).sort((a,b) => b[1].alloc - a[1].alloc);
+  const maxAlloc = sorted[0]?.[1].alloc || 1;
+
+  document.getElementById('categoryBreakdown').innerHTML = sorted.length ? sorted.map(([cat, d]) => {
+    const pct = d.alloc > 0 ? Math.round((d.spent/d.alloc)*100) : 0;
+    const barColor = pct>90?'var(--red)':pct>70?'var(--gold)':'var(--green)';
+    const catColor = CAT_COLORS[cat]||'var(--white)';
+    return `<div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="cat-dot" style="background:${catColor};"></div>
+          <span style="font-size:12px;font-weight:600;color:var(--white);">${cat}</span>
+        </div>
+        <div style="text-align:right;">
+          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;color:${catColor};">${fmt(d.spent)}</span>
+          <span style="font-size:10px;color:var(--slate);"> / ${fmt(d.alloc)}</span>
+        </div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" style="width:${Math.min(pct,100)}%;background:${barColor};"></div>
+      </div>
+    </div>`;
+  }).join('') : '<div style="color:var(--slate);font-size:12px;text-align:center;padding:16px;">No data</div>';
+}
+
+// ── CLIENT-SIDE FILTER ────────────────────────────────────────────
+function filterBudgetTable() {
+  const search = document.getElementById('budgetSearch').value.toLowerCase();
+  document.querySelectorAll('#budgetBody tr[data-name]').forEach(row => {
+    const match = !search || row.dataset.name.includes(search);
+    row.style.display = match ? '' : 'none';
+  });
+}
+
+// ── ADD / EDIT / DELETE ───────────────────────────────────────────
+function openAddModal() {
+  editingRecordId = null;
+  document.getElementById('modalTitle').textContent = '💰 Add Budget Item';
+  document.getElementById('modalSaveBtn').textContent = 'Save Item';
+  ['bi-name','bi-notes'].forEach(id => document.getElementById(id).value='');
+  ['bi-alloc','bi-spent'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('addModal').classList.add('open');
+}
+
+function editRecord(id) {
+  const rec = ALL_RECORDS.find(r => r.id === id);
+  if (!rec) return;
+  const f = rec.fields;
+  editingRecordId = id;
+  document.getElementById('modalTitle').textContent = '✎ Edit Budget Item';
+  document.getElementById('modalSaveBtn').textContent = 'Update Item';
+  document.getElementById('bi-name').value   = getF(f,'name')      || f['Item Name'] || '';
+  document.getElementById('bi-notes').value  = getF(f,'notes')     || f['Notes']     || '';
+  document.getElementById('bi-alloc').value  = getF(f,'allocated') ?? f['Budget Allocated'] ?? '';
+  document.getElementById('bi-spent').value  = getF(f,'spent')     ?? f['Spent']     ?? '';
+  // Set selects
+  const cat    = getF(f,'category') || f['Category']  || 'Travel';
+  const sem    = getF(f,'semester') || f['Semester']  || 'Fall 2025';
+  const status = getF(f,'status')   || f['Status']    || 'Planned';
+  ['bi-cat','bi-sem','bi-status'].forEach((id,i) => {
+    const val = [cat,sem,status][i];
+    const el = document.getElementById(id);
+    const opt = [...el.options].find(o => o.value === val);
+    if (opt) el.value = val;
+  });
+  document.getElementById('addModal').classList.add('open');
+}
+
+async function saveBudgetItem() {
+  const name = document.getElementById('bi-name').value.trim();
+  if (!name) { showToast('Item name required'); return; }
+
+  // Use resolved field names if available, else fall back to original names
+  const R = RESOLVED_FIELDS;
+  const fields = {
+    [R.name      || 'Item Name']:         name,
+    [R.category  || 'Category']:          document.getElementById('bi-cat').value,
+    [R.semester  || 'Semester']:          document.getElementById('bi-sem').value,
+    [R.status    || 'Status']:            document.getElementById('bi-status').value,
+    [R.allocated || 'Budget Allocated']:  parseFloat(document.getElementById('bi-alloc').value)||0,
+    [R.spent     || 'Spent']:             parseFloat(document.getElementById('bi-spent').value)||0,
+    [R.notes     || 'Notes']:             document.getElementById('bi-notes').value,
+  };
+
+  // Remove null-keyed entries (fields we couldn't resolve)
+  Object.keys(fields).forEach(k => { if (!k || k==='null') delete fields[k]; });
+
+  try {
+    showToast('Saving…');
+    if (editingRecordId) {
+      await airtableUpdate(FIS_CONFIG.TABLES.BUDGET, editingRecordId, fields);
+      showToast('Budget item updated ✓');
+    } else {
+      await airtableCreate(FIS_CONFIG.TABLES.BUDGET, fields);
+      showToast('Budget item saved ✓');
+    }
+    closeModal();
+    loadBudget();
+  } catch(e) { showToast(`Error: ${e.message}`); }
+}
+
+async function deleteRecord(id) {
+  if (!confirm('Delete this budget item?')) return;
+  try {
+    await airtableDelete(FIS_CONFIG.TABLES.BUDGET, id);
+    showToast('Deleted ✓');
+    loadBudget();
+  } catch(e) { showToast(`Error: ${e.message}`); }
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeModal();}));
+loadScholarships();
+loadBudget();
 </script>
 </body>
 </html>
