@@ -3,8 +3,109 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FIS — Training</title>
+<title>FIS — Training & Load</title>
 <link rel="stylesheet" href="styles.css">
+<style>
+.tr-tabs { display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:20px; }
+.tr-tab {
+  padding:9px 20px; font-family:'Barlow Condensed',sans-serif; font-weight:700;
+  font-size:13px; letter-spacing:0.05em; text-transform:uppercase;
+  color:var(--slate); border-bottom:2px solid transparent;
+  cursor:pointer; background:none; border-top:none; border-left:none; border-right:none; transition:all 0.18s;
+}
+.tr-tab:hover { color:var(--white); }
+.tr-tab.active { color:var(--gold2); border-bottom-color:var(--gold); }
+
+/* CAULDRON STYLES */
+.score-bar-wrap { background:rgba(0,0,0,0.25); border-radius:4px; height:7px; width:100%; margin-top:3px; }
+.score-bar { height:7px; border-radius:4px; transition:width 0.5s; }
+
+.cauldron-card {
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:16px; transition:border-color 0.2s; position:relative; overflow:hidden;
+}
+.cauldron-card:hover { border-color:rgba(201,151,58,0.35); }
+.cauldron-card.rank-1 { border-color:rgba(201,151,58,0.6); background:rgba(201,151,58,0.04); }
+.cauldron-card.rank-2 { border-color:rgba(180,180,180,0.4); }
+.cauldron-card.rank-3 { border-color:rgba(180,100,50,0.4); }
+
+.rank-badge { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:28px; line-height:1; min-width:36px; text-align:center; flex-shrink:0; }
+.rank-1 .rank-badge { color:var(--gold2); }
+.rank-2 .rank-badge { color:#b0b0b0; }
+.rank-3 .rank-badge { color:#cd7f32; }
+
+.score-ring {
+  width:52px; height:52px; border-radius:50%; border:3px solid;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:18px;
+}
+
+.sub-score-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:12px; }
+.sub-score { background:rgba(0,0,0,0.2); border-radius:6px; padding:8px; display:flex; flex-direction:column; gap:3px; }
+.sub-score-label { font-family:'DM Mono',monospace; font-size:8px; color:var(--slate); letter-spacing:0.08em; text-transform:uppercase; }
+.sub-score-val { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:17px; }
+
+.flag-pill { display:inline-block; font-family:'DM Mono',monospace; font-size:9px; border-radius:4px; padding:2px 7px; margin:2px; }
+.flag-missing { background:rgba(201,151,58,0.12); color:var(--gold2); border:1px solid rgba(201,151,58,0.25); }
+.flag-limited { background:rgba(77,166,255,0.1); color:#4da6ff; border:1px solid rgba(77,166,255,0.25); }
+.flag-injured { background:rgba(220,50,50,0.12); color:var(--red); border:1px solid rgba(220,50,50,0.25); }
+.flag-note   { background:rgba(34,201,139,0.1); color:var(--green); border:1px solid rgba(34,201,139,0.25); }
+
+.cat-header {
+  font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.12em;
+  text-transform:uppercase; color:var(--slate); margin:16px 0 8px;
+  display:flex; align-items:center; gap:8px;
+}
+.cat-header::after { content:''; flex:1; height:1px; background:var(--border); }
+
+.podium-bar { display:flex; align-items:flex-end; gap:8px; justify-content:center; height:100px; margin-bottom:16px; }
+.podium-col { display:flex; flex-direction:column; align-items:center; gap:4px; width:80px; }
+.podium-block { width:100%; border-radius:6px 6px 0 0; display:flex; align-items:center; justify-content:center; }
+.podium-name { font-size:10px; color:var(--slate2); text-align:center; font-family:'DM Mono',monospace; }
+
+/* COMPETITIVE TRACKING */
+.comp-tabs { display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; }
+.comp-tab {
+  padding:6px 16px; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.06em;
+  text-transform:uppercase; border-radius:20px; border:1px solid var(--border);
+  color:var(--slate); cursor:pointer; background:none; transition:all 0.15s;
+}
+.comp-tab:hover { color:var(--white); border-color:var(--slate2); }
+.comp-tab.active { background:rgba(201,151,58,0.15); border-color:var(--gold); color:var(--gold2); }
+
+.leaderboard-row {
+  display:flex; align-items:center; gap:12px; padding:10px 16px;
+  border-bottom:1px solid rgba(77,106,156,0.1); transition:background 0.15s;
+}
+.leaderboard-row:last-child { border-bottom:none; }
+.leaderboard-row:hover { background:rgba(201,151,58,0.03); }
+.lb-rank { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:15px; min-width:30px; color:var(--slate); }
+.lb-rank.top1 { color:var(--gold2); font-size:19px; }
+.lb-rank.top2 { color:#b0b0b0; }
+.lb-rank.top3 { color:#cd7f32; }
+.lb-name { flex:1; font-weight:600; color:var(--white); font-size:13px; }
+.lb-bar-wrap { width:100px; height:5px; background:rgba(0,0,0,0.3); border-radius:3px; flex-shrink:0; }
+.lb-bar { height:5px; border-radius:3px; transition:width 0.5s; }
+.lb-val { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:20px; min-width:36px; text-align:right; }
+
+/* COUNTERS */
+.counter-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin-bottom:12px; }
+.player-counter {
+  display:flex; align-items:center; justify-content:space-between;
+  background:rgba(0,0,0,0.2); border-radius:7px; padding:7px 9px;
+  border:1px solid rgba(77,106,156,0.15);
+}
+.counter-name { font-size:11px; color:var(--white); font-weight:600; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-right:6px; }
+.counter-btns { display:flex; align-items:center; gap:5px; flex-shrink:0; }
+.counter-btn {
+  width:22px; height:22px; border-radius:50%; border:1px solid var(--border);
+  background:var(--steel); color:var(--white); cursor:pointer; font-size:14px;
+  display:flex; align-items:center; justify-content:center; transition:all 0.15s; line-height:1;
+}
+.counter-btn:hover { background:var(--gold); border-color:var(--gold); color:var(--bg); }
+.counter-val { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:17px; color:var(--gold2); min-width:20px; text-align:center; }
+.counter-active { border-color:rgba(201,151,58,0.5) !important; background:rgba(201,151,58,0.06) !important; }
+</style>
 </head>
 <body>
 <div class="app">
@@ -23,7 +124,7 @@
     <a href="tasks.html" class="nav-item"><span class="nav-icon">✅</span><span class="nav-label">Staff Tasks</span></a>
     <div class="nav-divider"></div>
     <div class="nav-section-label">SPORT SCIENCE</div>
-    <a href="training.html" class="nav-item active"><span class="nav-icon">⚡</span><span class="nav-label">Training & Load</span></a>
+    <a href="training.html" class="nav-item active"><span class="nav-icon">⚡</span><span class="nav-label">Training &amp; Load</span></a>
     <a href="opponents.html" class="nav-item"><span class="nav-icon">🔍</span><span class="nav-label">Opponents</span></a>
     <a href="tactical.html" class="nav-item"><span class="nav-icon">📊</span><span class="nav-label">Tactical Analysis</span></a>
     <div class="nav-divider"></div>
@@ -34,28 +135,42 @@
     <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
     <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
   </nav>
+
   <div class="main">
     <header class="topbar">
-      <div class="topbar-title">TRAINING <span>&amp; LOAD DATA</span></div>
+      <div class="topbar-title">TRAINING <span>&amp; LOAD</span></div>
       <div class="topbar-actions">
-        <button class="btn btn-gold" onclick="openAddSession()">+ Log Session</button>
+        <button class="btn btn-ghost" onclick="openAddSession()">+ Log Session</button>
+        <button class="btn btn-gold" onclick="switchTab('cauldron', document.querySelectorAll('.tr-tab')[2])">🔥 Competitive Cauldron</button>
         <div class="avatar">HC</div>
       </div>
     </header>
+
     <div class="page">
-      <div class="stats-row" style="margin-bottom:20px;">
+      <!-- STAT CARDS -->
+      <div class="stats-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:20px;">
         <div class="stat-card" style="--accent:var(--blue);"><div class="stat-icon">⚡</div><div class="stat-label">Total Sessions</div><div class="stat-value" id="ts-total" style="color:var(--blue);">—</div></div>
         <div class="stat-card" style="--accent:var(--gold);"><div class="stat-icon">⏱</div><div class="stat-label">This Week</div><div class="stat-value" id="ts-week" style="color:var(--gold2);">—</div></div>
         <div class="stat-card" style="--accent:var(--red);"><div class="stat-icon">🔴</div><div class="stat-label">High Load Flags</div><div class="stat-value" id="ts-flags" style="color:var(--red);">—</div></div>
         <div class="stat-card" style="--accent:var(--green);"><div class="stat-icon">📊</div><div class="stat-label">Load Records</div><div class="stat-value" id="ts-records" style="color:var(--green);">—</div></div>
+        <div class="stat-card" style="--accent:var(--gold);cursor:pointer;" onclick="switchTab('cauldron',document.querySelectorAll('.tr-tab')[2])">
+          <div class="stat-icon">🔥</div><div class="stat-label">Cauldron Leader</div>
+          <div class="stat-value" id="cauldronLeader" style="color:var(--gold2);font-size:16px;">—</div>
+          <div class="stat-delta" id="cauldronLeaderSub"></div>
+        </div>
       </div>
 
-      <div class="grid-2" style="margin-bottom:20px;">
-        <!-- SESSIONS -->
+      <!-- TABS -->
+      <div class="tr-tabs">
+        <button class="tr-tab active" onclick="switchTab('sessions',this)">⚡ Training Sessions</button>
+        <button class="tr-tab" onclick="switchTab('load',this)">📊 Player Load</button>
+        <button class="tr-tab" onclick="switchTab('cauldron',this)">🔥 Competitive Cauldron</button>
+      </div>
+
+      <!-- SESSIONS TAB -->
+      <div id="tab-sessions">
         <div class="card">
-          <div class="card-header">
-            <div class="card-title"><div class="dot"></div>Training Sessions</div>
-          </div>
+          <div class="card-header"><div class="card-title"><div class="dot"></div>Training Sessions</div></div>
           <div class="card-body" style="padding:0;">
             <table class="data-table">
               <thead><tr><th>Date</th><th>Session</th><th>Type</th><th>Duration</th><th>Intensity</th><th>Focus</th></tr></thead>
@@ -63,12 +178,12 @@
             </table>
           </div>
         </div>
+      </div>
 
-        <!-- LOAD DATA -->
+      <!-- LOAD TAB -->
+      <div id="tab-load" style="display:none;">
         <div class="card">
-          <div class="card-header">
-            <div class="card-title"><div class="dot" style="background:var(--red);"></div>Player Load Data</div>
-          </div>
+          <div class="card-header"><div class="card-title"><div class="dot" style="background:var(--red);"></div>Player Load Data</div></div>
           <div class="card-body" style="padding:0;">
             <table class="data-table">
               <thead><tr><th>Player</th><th>Distance</th><th>HSR</th><th>Max Speed</th><th>PlayerLoad</th><th>Risk</th></tr></thead>
@@ -77,6 +192,138 @@
           </div>
         </div>
       </div>
+
+      <!-- COMPETITIVE CAULDRON TAB -->
+      <div id="tab-cauldron" style="display:none;">
+
+        <!-- Sub-tabs -->
+        <div class="comp-tabs">
+          <button class="comp-tab active" onclick="switchCauldronView('leaderboard',this)">🏆 Live Leaderboard</button>
+          <button class="comp-tab" onclick="switchCauldronView('log',this)">➕ Log Activity</button>
+          <button class="comp-tab" onclick="switchCauldronView('testing',this)">📋 Physical Testing</button>
+        </div>
+
+        <!-- ── LIVE LEADERBOARD ── -->
+        <div id="cv-leaderboard">
+          <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px;" id="cauldronTotals"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><div class="dot" style="background:var(--red);"></div>⚔️ 1v1 Wins</div>
+                <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">SEASON</span>
+              </div>
+              <div class="card-body" style="padding:0;" id="lb-1v1"></div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><div class="dot" style="background:var(--blue);"></div>🔵 SSG Wins</div>
+                <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">SMALL-SIDED</span>
+              </div>
+              <div class="card-body" style="padding:0;" id="lb-ssg"></div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><div class="dot" style="background:var(--green);"></div>⚽ Training Goals</div>
+                <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">SEASON</span>
+              </div>
+              <div class="card-body" style="padding:0;" id="lb-goals"></div>
+            </div>
+          </div>
+
+          <!-- Full table -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot" style="background:var(--gold);"></div>Full Competitive Rankings</div>
+              <div style="display:flex;gap:5px;">
+                <button class="btn btn-ghost" style="font-size:10px;padding:3px 8px;" onclick="sortFull('1v1')">⚔️</button>
+                <button class="btn btn-ghost" style="font-size:10px;padding:3px 8px;" onclick="sortFull('ssg')">🔵</button>
+                <button class="btn btn-ghost" style="font-size:10px;padding:3px 8px;" onclick="sortFull('goals')">⚽</button>
+                <button class="btn btn-gold" style="font-size:10px;padding:3px 8px;" id="sort-combined" onclick="sortFull('combined')">🏆 Combined</button>
+              </div>
+            </div>
+            <div class="card-body" style="padding:0;">
+              <table class="data-table">
+                <thead><tr><th>Rank</th><th>Player</th><th>⚔️ 1v1 Wins</th><th>🔵 SSG Wins</th><th>⚽ Goals</th><th>🏆 Total</th></tr></thead>
+                <tbody id="fullRankBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── LOG ACTIVITY ── -->
+        <div id="cv-log" style="display:none;">
+          <div class="card" style="margin-bottom:14px;">
+            <div class="card-header">
+              <div class="card-title"><div class="dot" style="background:var(--gold);"></div>Log Competitive Activity</div>
+              <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">Data saved in browser · Resets each season</span>
+            </div>
+            <div class="card-body">
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;">
+                <div class="form-group">
+                  <label class="form-label">Activity Type</label>
+                  <select class="form-select" id="log-type" onchange="renderCounters()">
+                    <option value="1v1">⚔️ 1v1 Wins</option>
+                    <option value="ssg">🔵 SSG Wins</option>
+                    <option value="goals">⚽ Training Goals</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Date</label>
+                  <input class="form-input" id="log-date" type="date">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Session Note</label>
+                  <input class="form-input" id="log-notes" placeholder="e.g. 5v5 final, 1v1 block...">
+                </div>
+              </div>
+              <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">Tap +/− to set each player's count for this session:</div>
+              <div class="counter-grid" id="counterGrid"></div>
+              <div style="display:flex;gap:10px;margin-top:14px;align-items:center;">
+                <button class="btn btn-gold" onclick="saveSession()">💾 Save Session</button>
+                <button class="btn btn-ghost" style="font-size:11px;color:var(--red);" onclick="resetAllData()">⚠ Reset Season</button>
+                <span id="logStatus" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--green);"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent sessions -->
+          <div class="card">
+            <div class="card-header"><div class="card-title"><div class="dot"></div>Recent Sessions</div></div>
+            <div class="card-body" style="padding:0;">
+              <table class="data-table">
+                <thead><tr><th>Date</th><th>Type</th><th>Note</th><th>Top Performer</th><th></th></tr></thead>
+                <tbody id="sessionLogBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PHYSICAL TESTING ── -->
+        <div id="cv-testing" style="display:none;">
+          <div class="card" style="margin-bottom:16px;">
+            <div class="card-header">
+              <div class="card-title"><div class="dot" style="background:var(--gold);"></div>Spring 26-1 Performance Testing</div>
+              <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);">Pitt WSOC · Spring 2026</span>
+            </div>
+            <div class="card-body">
+              <div class="podium-bar" id="podiumBar"></div>
+              <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);text-align:center;letter-spacing:0.08em;">OVERALL · Soccer Competition · Forged Olympics · Physical Prep · Wellness</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:7px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+            <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);">SORT:</span>
+            <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px;" onclick="sortCauldron('overall')" id="cs-overall">Overall ↓</button>
+            <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px;" onclick="sortCauldron('soccer')" id="cs-soccer">Soccer Comp</button>
+            <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px;" onclick="sortCauldron('olympics')" id="cs-olympics">Forged Olympics</button>
+            <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px;" onclick="sortCauldron('physical')" id="cs-physical">Physical Prep</button>
+            <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px;" onclick="sortCauldron('wellness')" id="cs-wellness">Wellness</button>
+            <input type="text" class="form-input" id="searchCauldron" placeholder="Search player..." oninput="renderTestingCards()" style="width:150px;padding:5px 10px;margin-left:auto;">
+          </div>
+          <div id="cauldronCards"></div>
+        </div>
+
+      </div><!-- end cauldron tab -->
     </div>
   </div>
 </div>
@@ -112,107 +359,414 @@
 <div id="toast"></div>
 <script src="config.js"></script>
 <script>
+// ═══════════════════════════════════════════════════════════════════
+// SPRING 26-1 PHYSICAL TESTING DATA
+// ═══════════════════════════════════════════════════════════════════
+const TESTING_DATA = [
+  { name:"Lola Abraham",        overall:54, soccer:65, olympics:46, physical:47, wellness:58, flags:[] },
+  { name:"Lucia Wells",         overall:50, soccer:63, olympics:38, physical:44, wellness:53, flags:[] },
+  { name:"Katie Ellermeyer",    overall:49, soccer:57, olympics:41, physical:39, wellness:57, flags:[] },
+  { name:"Sofia Doheny",        overall:49, soccer:59, olympics:45, physical:38, wellness:52, flags:[] },
+  { name:"Sophie Rourke",       overall:48, soccer:51, olympics:40, physical:47, wellness:54, flags:[] },
+  { name:"Tayln Guthrie",       overall:48, soccer:53, olympics:45, physical:38, wellness:56, flags:[] },
+  { name:"Olivia Lee",          overall:48, soccer:52, olympics:40, physical:46, wellness:53, flags:['missing'], missing:"5-10-5 / 300y Shuttle" },
+  { name:"Sage Stelzer",        overall:48, soccer:55, olympics:35, physical:47, wellness:53, flags:[] },
+  { name:"Mya Archibald",       overall:47, soccer:51, olympics:34, physical:47, wellness:56, flags:[] },
+  { name:"Elli Johnson",        overall:47, soccer:17, olympics:16, physical:40, wellness:54, limited:true, flags:['limited'], note:"Soccer Comp. & F.O. Omitted from Overall" },
+  { name:"Ellie Rowlands",      overall:47, soccer:51, olympics:35, physical:44, wellness:57, flags:[] },
+  { name:"Katie Zailski",       overall:47, soccer:45, olympics:47, physical:39, wellness:56, flags:[] },
+  { name:"Adi Bianchin",        overall:47, soccer:47, olympics:47, physical:35, wellness:57, flags:[] },
+  { name:"Celine Ottah",        overall:46, soccer:49, olympics:40, physical:44, wellness:51, flags:[] },
+  { name:"Adoo Yina",           overall:46, soccer:55, olympics:46, physical:36, wellness:67, flags:['missing','note'], missing:"Belt Squat / 5-10-5 / 300y shuttle", note:"Drink T-Score = 111" },
+  { name:"Krystina Wolf",       overall:46, soccer:14, olympics:16, physical:32, wellness:59, limited:true, flags:['limited'], note:"Soccer Comp. & F.O. Omitted from Overall" },
+  { name:"Addison Roemer",      overall:45, soccer:18, olympics:16, physical:35, wellness:55, limited:true, flags:['limited'], note:"Soccer Comp. & F.O. Omitted from Overall" },
+  { name:"Claire C. Jones",     overall:45, soccer:40, olympics:46, physical:38, wellness:55, flags:[] },
+  { name:"Alia Jaidi",          overall:44, soccer:44, olympics:41, physical:43, wellness:49, flags:[] },
+  { name:"Maya Bruce",          overall:44, soccer:50, olympics:40, physical:31, wellness:55, flags:['missing'], missing:"5-10-5 / Push Up / Chin Up" },
+  { name:"Eden E. Jones",       overall:44, soccer:50, olympics:34, physical:35, wellness:57, flags:[] },
+  { name:"Mariama Dabo",        overall:42, soccer:41, olympics:39, physical:32, wellness:54, flags:[] },
+  { name:"Weslee Istone-Haupt", overall:41, soccer:16, olympics:27, physical:43, wellness:52, limited:true, flags:['limited'], note:"Soccer Comp. Score Omitted from Overall" },
+  { name:"Maya Bright",         overall:37, soccer:34, olympics:25, physical:41, wellness:47, flags:['missing'], missing:"5-10-5" },
+  { name:"Hannah Minogue",      overall:null, soccer:47, olympics:41, physical:null, wellness:52, flags:['injured'], note:"Injured" },
+];
+
+// Active roster for competitive tracking
+const ROSTER = TESTING_DATA.map(p => p.name);
+
+// ═══════════════════════════════════════════════════════════════════
+// LOCAL STORAGE — COMPETITIVE DATA
+// ═══════════════════════════════════════════════════════════════════
+const STORE_KEY = 'fis_cauldron_v1';
+
+function loadStore() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || { players:{}, sessions:[] }; }
+  catch(e) { return { players:{}, sessions:[] }; }
+}
+function saveStore(d) { localStorage.setItem(STORE_KEY, JSON.stringify(d)); }
+
+function getCompData() {
+  const store = loadStore();
+  return ROSTER.map(name => {
+    const p = store.players[name] || {};
+    return { name, '1v1': p['1v1']||0, ssg: p.ssg||0, goals: p.goals||0 };
+  }).map(p => ({ ...p, combined: p['1v1'] + p.ssg + p.goals }));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// LEADERBOARD
+// ═══════════════════════════════════════════════════════════════════
+let fullSortKey = 'combined';
+
+function renderLeaderboard() {
+  const data = getCompData();
+  const total1v1  = data.reduce((a,p)=>a+p['1v1'],0);
+  const totalSSG  = data.reduce((a,p)=>a+p.ssg,0);
+  const totalGoals= data.reduce((a,p)=>a+p.goals,0);
+  const store = loadStore();
+
+  // Update top-of-page cauldron leader stat card
+  const sorted = [...data].sort((a,b)=>b.combined-a.combined);
+  if (sorted[0] && sorted[0].combined > 0) {
+    document.getElementById('cauldronLeader').textContent = sorted[0].name.split(' ').pop();
+    document.getElementById('cauldronLeaderSub').textContent = `${sorted[0].combined} combined pts`;
+  } else {
+    document.getElementById('cauldronLeader').textContent = '—';
+    document.getElementById('cauldronLeaderSub').textContent = 'No data yet';
+  }
+
+  document.getElementById('cauldronTotals').innerHTML = `
+    <div class="stat-card" style="--accent:var(--red);">
+      <div class="stat-icon">⚔️</div><div class="stat-label">1v1 Wins</div>
+      <div class="stat-value" style="color:var(--red);">${total1v1}</div><div class="stat-delta">Season total</div>
+    </div>
+    <div class="stat-card" style="--accent:#4da6ff;">
+      <div class="stat-icon">🔵</div><div class="stat-label">SSG Wins</div>
+      <div class="stat-value" style="color:#4da6ff;">${totalSSG}</div><div class="stat-delta">Small-sided games</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--green);">
+      <div class="stat-icon">⚽</div><div class="stat-label">Training Goals</div>
+      <div class="stat-value" style="color:var(--green);">${totalGoals}</div><div class="stat-delta">Season total</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--gold);">
+      <div class="stat-icon">📋</div><div class="stat-label">Sessions Logged</div>
+      <div class="stat-value" style="color:var(--gold2);">${store.sessions.length}</div><div class="stat-delta">This season</div>
+    </div>`;
+
+  const renderLB = (id, key, color) => {
+    const rows = [...data].sort((a,b)=>b[key]-a[key]).slice(0,8);
+    const max = rows[0]?.[key] || 1;
+    document.getElementById(id).innerHTML = rows.map((p,i) => `
+      <div class="leaderboard-row">
+        <div class="lb-rank ${i===0?'top1':i===1?'top2':i===2?'top3':''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div>
+        <div class="lb-name">${p.name.split(' ').pop()}</div>
+        <div class="lb-bar-wrap"><div class="lb-bar" style="width:${max?(p[key]/max*100):0}%;background:${color};"></div></div>
+        <div class="lb-val" style="color:${p[key]>0?color:'var(--slate)'};">${p[key]}</div>
+      </div>`).join('');
+  };
+  renderLB('lb-1v1',  '1v1',   'var(--red)');
+  renderLB('lb-ssg',  'ssg',   '#4da6ff');
+  renderLB('lb-goals','goals', 'var(--green)');
+  renderFullTable(fullSortKey);
+}
+
+function sortFull(key) {
+  fullSortKey = key;
+  renderFullTable(key);
+}
+
+function renderFullTable(key) {
+  const data = [...getCompData()].sort((a,b)=>b[key]-a[key]);
+  document.getElementById('fullRankBody').innerHTML = data.map((p,i) => {
+    const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
+    const mc = i===0?'var(--gold2)':i===1?'#b0b0b0':i===2?'#cd7f32':'var(--slate)';
+    return `<tr>
+      <td style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:15px;color:${mc};">${medal}</td>
+      <td style="font-weight:600;color:var(--white);">${p.name}</td>
+      <td style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;color:${p['1v1']>0?'var(--red)':'var(--slate)'};">${p['1v1']}</td>
+      <td style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;color:${p.ssg>0?'#4da6ff':'var(--slate)'};">${p.ssg}</td>
+      <td style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;color:${p.goals>0?'var(--green)':'var(--slate)'};">${p.goals}</td>
+      <td style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:${p.combined>0?'var(--gold2)':'var(--slate)'};">${p.combined}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SESSION LOG UI
+// ═══════════════════════════════════════════════════════════════════
+let sessionCounts = {};
+
+function renderCounters() {
+  ROSTER.forEach(n => { if(sessionCounts[n]===undefined) sessionCounts[n]=0; });
+  // Reset to 0 when type changes
+  ROSTER.forEach(n => sessionCounts[n] = 0);
+
+  document.getElementById('counterGrid').innerHTML = ROSTER.map(name => {
+    const last = name.split(' ').pop();
+    const id = 'cnt_' + name.replace(/[^a-zA-Z0-9]/g,'_');
+    return `<div class="player-counter" id="pc_${id}">
+      <div class="counter-name" title="${name}">${last}</div>
+      <div class="counter-btns">
+        <button class="counter-btn" onclick="adjustCount('${name}',-1)">−</button>
+        <div class="counter-val" id="${id}">0</div>
+        <button class="counter-btn" onclick="adjustCount('${name}',1)">+</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function adjustCount(name, delta) {
+  if(sessionCounts[name]===undefined) sessionCounts[name]=0;
+  sessionCounts[name] = Math.max(0, sessionCounts[name] + delta);
+  const id = 'cnt_' + name.replace(/[^a-zA-Z0-9]/g,'_');
+  const el = document.getElementById(id);
+  const card = document.getElementById('pc_' + id);
+  if(el) el.textContent = sessionCounts[name];
+  if(card) card.classList.toggle('counter-active', sessionCounts[name] > 0);
+}
+
+function saveSession() {
+  const type  = document.getElementById('log-type').value;
+  const date  = document.getElementById('log-date').value || new Date().toISOString().split('T')[0];
+  const notes = document.getElementById('log-notes').value.trim();
+  const store = loadStore();
+
+  let changes = 0, topPlayer = '', topVal = 0;
+  ROSTER.forEach(name => {
+    const val = sessionCounts[name] || 0;
+    if(val > 0) {
+      if(!store.players[name]) store.players[name] = {'1v1':0, ssg:0, goals:0};
+      store.players[name][type] = (store.players[name][type]||0) + val;
+      changes++;
+      if(val > topVal) { topVal = val; topPlayer = name; }
+    }
+  });
+
+  if(!changes) { showToast('No scores entered yet'); return; }
+  store.sessions.unshift({ date, type, notes, topPlayer, topVal });
+  saveStore(store);
+
+  ROSTER.forEach(n => sessionCounts[n] = 0);
+  renderCounters();
+  document.getElementById('log-notes').value = '';
+  document.getElementById('logStatus').textContent = `✓ Saved ${changes} players`;
+  setTimeout(()=>document.getElementById('logStatus').textContent='', 3000);
+  renderSessionLog();
+  renderLeaderboard();
+  showToast('Session saved ✓');
+}
+
+function renderSessionLog() {
+  const store = loadStore();
+  const typeLabel = {'1v1':'⚔️ 1v1 Wins', ssg:'🔵 SSG Wins', goals:'⚽ Goals'};
+  document.getElementById('sessionLogBody').innerHTML = store.sessions.length
+    ? store.sessions.slice(0,20).map((s,i) => `<tr>
+        <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);">${s.date}</td>
+        <td><span class="pill pill-blue">${typeLabel[s.type]||s.type}</span></td>
+        <td style="font-size:12px;color:var(--slate2);">${s.notes||'—'}</td>
+        <td style="font-weight:600;color:var(--gold2);">${s.topPlayer?s.topPlayer.split(' ').pop()+' ('+s.topVal+')':'—'}</td>
+        <td><button class="btn btn-ghost" style="font-size:10px;padding:2px 7px;color:var(--red);" onclick="deleteSession(${i})">✕</button></td>
+      </tr>`).join('')
+    : '<tr><td colspan="5"><div class="empty"><div class="empty-text">No sessions logged yet — use the counters above to track 1v1s, SSGs, or goals</div></div></td></tr>';
+}
+
+function deleteSession(i) {
+  const store = loadStore();
+  store.sessions.splice(i, 1);
+  saveStore(store);
+  renderSessionLog();
+  showToast('Session removed');
+}
+
+function resetAllData() {
+  if(!confirm('Reset ALL season competitive data? This cannot be undone.')) return;
+  saveStore({ players:{}, sessions:[] });
+  renderCounters();
+  renderLeaderboard();
+  renderSessionLog();
+  showToast('Season data reset');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PHYSICAL TESTING
+// ═══════════════════════════════════════════════════════════════════
+function scoreColor(s) {
+  if(s===null||s===undefined) return 'var(--slate)';
+  if(s>=52) return 'var(--green)';
+  if(s>=47) return '#4da6ff';
+  if(s>=43) return 'var(--gold2)';
+  if(s>=38) return '#ff9a3c';
+  return 'var(--red)';
+}
+
+function renderPodium() {
+  const ranked = [...TESTING_DATA].filter(p=>p.overall!==null).sort((a,b)=>b.overall-a.overall).slice(0,3);
+  const order = [ranked[1], ranked[0], ranked[2]];
+  const heights=[70,100,55], colors=['#b0b0b0','var(--gold2)','#cd7f32'], medals=['🥈','🥇','🥉'];
+  document.getElementById('podiumBar').innerHTML = order.map((p,i)=>`
+    <div class="podium-col">
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:${colors[i]};font-weight:700;">${p.overall}</div>
+      <div class="podium-block" style="height:${heights[i]}px;background:${colors[i]};opacity:0.25;"><span style="font-size:20px;">${medals[i]}</span></div>
+      <div class="podium-name">${p.name.split(' ').pop()}</div>
+    </div>`).join('');
+}
+
+let testingSort = 'overall';
+function sortCauldron(mode) {
+  testingSort = mode;
+  document.querySelectorAll('[id^="cs-"]').forEach(b=>b.classList.remove('btn-gold'));
+  document.getElementById('cs-'+mode)?.classList.add('btn-gold');
+  renderTestingCards();
+}
+
+function renderTestingCards() {
+  const q = (document.getElementById('searchCauldron')?.value||'').toLowerCase();
+  let data = [...TESTING_DATA].filter(p=>p.name.toLowerCase().includes(q));
+  const injured = data.filter(p=>p.overall===null);
+  const active  = data.filter(p=>p.overall!==null);
+  active.sort((a,b)=>(b[testingSort]??-1)-(a[testingSort]??-1));
+
+  const ranked = [...TESTING_DATA].filter(p=>p.overall!==null).sort((a,b)=>b.overall-a.overall);
+  const rankMap = {}; ranked.forEach((p,i)=>rankMap[p.name]=i+1);
+
+  const renderCard = p => {
+    const rank = rankMap[p.name];
+    const rankClass = rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'';
+    const rc = p.overall!==null?scoreColor(p.overall):'var(--slate)';
+    const flags = [
+      p.flags.includes('missing')?`<span class="flag-pill flag-missing">⚠ Missing: ${p.missing}</span>`:'',
+      p.flags.includes('limited')?`<span class="flag-pill flag-limited">ℹ Limited 1v1 Opps</span>`:'',
+      p.flags.includes('injured')?`<span class="flag-pill flag-injured">🚑 Injured</span>`:'',
+      (p.note&&!p.flags.includes('limited')&&!p.flags.includes('injured'))?`<span class="flag-pill flag-note">★ ${p.note}</span>`:'',
+    ].filter(Boolean).join('');
+    const subs = [
+      {label:'Soccer Comp',    val:p.soccer},
+      {label:'Forged Olympics',val:p.olympics},
+      {label:'Physical Prep',  val:p.physical},
+      {label:'Wellness',       val:p.wellness},
+    ];
+    return `<div class="cauldron-card ${rankClass}" style="margin-bottom:10px;">
+      <div style="display:flex;align-items:flex-start;gap:12px;">
+        <div class="rank-badge">${rank<=3?['🥇','🥈','🥉'][rank-1]:'#'+rank}</div>
+        <div class="score-ring" style="border-color:${rc};color:${rc};">${p.overall??'—'}</div>
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:var(--white);">${p.name}</div>
+            ${p.limited?'<span style="font-family:\'DM Mono\',monospace;font-size:9px;color:var(--slate);">SCORES OMITTED FROM OVERALL</span>':''}
+          </div>
+          ${flags?`<div style="margin-bottom:5px;">${flags}</div>`:''}
+        </div>
+      </div>
+      <div class="sub-score-grid">
+        ${subs.map(s=>`<div class="sub-score">
+          <div class="sub-score-label">${s.label}</div>
+          <div class="sub-score-val" style="color:${scoreColor(s.val)};">${s.val??'—'}</div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:${s.val?Math.min(100,(s.val/80)*100):0}%;background:${scoreColor(s.val)};"></div></div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  };
+
+  let html = '';
+  if(testingSort==='overall'&&!q) {
+    const elite = active.filter(p=>p.overall>=50);
+    const strong = active.filter(p=>p.overall>=47&&p.overall<50);
+    const developing = active.filter(p=>p.overall<47);
+    if(elite.length)     { html+=`<div class="cat-header" style="color:var(--green);">🏆 Top Performers — 50+</div>`; html+=elite.map(renderCard).join(''); }
+    if(strong.length)    { html+=`<div class="cat-header" style="color:#4da6ff;">💪 Strong — 47–49</div>`; html+=strong.map(renderCard).join(''); }
+    if(developing.length){ html+=`<div class="cat-header" style="color:var(--gold2);">📈 Developing — Below 47</div>`; html+=developing.map(renderCard).join(''); }
+    if(injured.length)   { html+=`<div class="cat-header" style="color:var(--red);">🚑 Injured / Incomplete</div>`; html+=injured.map(renderCard).join(''); }
+  } else {
+    html = active.map(renderCard).join('') + (injured.length?`<div class="cat-header" style="color:var(--red);">🚑 Injured</div>${injured.map(renderCard).join('')}`:'');
+  }
+  document.getElementById('cauldronCards').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════════════════════════════
+function switchTab(tab, btn) {
+  ['sessions','load','cauldron'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'':'none');
+  document.querySelectorAll('.tr-tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  if(tab==='cauldron') {
+    renderLeaderboard();
+    renderSessionLog();
+    renderPodium();
+    renderTestingCards();
+  }
+}
+
+function switchCauldronView(view, btn) {
+  ['leaderboard','log','testing'].forEach(v=>document.getElementById('cv-'+v).style.display=v===view?'':'none');
+  document.querySelectorAll('.comp-tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  if(view==='log') renderCounters();
+  if(view==='leaderboard') renderLeaderboard();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// AIRTABLE — SESSIONS & LOAD
+// ═══════════════════════════════════════════════════════════════════
 function showToast(msg,dur=2800){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
-
-function riskPill(risk) {
-  if (!risk) return '';
-  if (risk.includes('HIGH')) return '<span class="pill pill-red">HIGH</span>';
-  if (risk.includes('MOD')) return '<span class="pill pill-yellow">MOD</span>';
-  return '<span class="pill pill-green">OK</span>';
-}
-
-function intensityPill(i) {
-  if (!i) return '—';
-  if (i.includes('High') || i.includes('Match')) return `<span class="pill pill-red">${i}</span>`;
-  if (i.includes('Medium')) return `<span class="pill pill-yellow">${i}</span>`;
-  return `<span class="pill pill-green">${i}</span>`;
-}
+function intensityPill(i){if(!i)return'—';if(i.includes('High')||i.includes('Match'))return`<span class="pill pill-red">${i}</span>`;if(i.includes('Medium'))return`<span class="pill pill-yellow">${i}</span>`;return`<span class="pill pill-green">${i}</span>`;}
+function riskPill(r){if(!r)return'';if(r.includes('HIGH'))return'<span class="pill pill-red">HIGH</span>';if(r.includes('MOD'))return'<span class="pill pill-yellow">MOD</span>';return'<span class="pill pill-green">OK</span>';}
 
 async function loadSessions() {
   try {
-    const sessions = await airtableFetch(FIS_CONFIG.TABLES.TRAINING, {
-      maxRecords: 30
-    });
-    // Stats
-    const now = new Date();
-    const weekAgo = new Date(now - 7*86400000).toISOString().split('T')[0];
-    const thisWeek = sessions.filter(s => (s.fields['Date']||'') >= weekAgo);
+    const sessions = await airtableFetch(FIS_CONFIG.TABLES.TRAINING, {maxRecords:30});
+    const weekAgo = new Date(Date.now()-7*86400000).toISOString().split('T')[0];
     document.getElementById('ts-total').textContent = sessions.length;
-    document.getElementById('ts-week').textContent = thisWeek.length;
-
+    document.getElementById('ts-week').textContent = sessions.filter(s=>(s.fields['Date']||'')>=weekAgo).length;
     const tbody = document.getElementById('sessionsBody');
-    tbody.innerHTML = sessions.length ? sessions.map(s => {
-      const f = s.fields;
-      return `<tr>
-        <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);">${f['Date']||'—'}</td>
-        <td style="font-weight:600;color:var(--white);">${f['Session Name']||'—'}</td>
-        <td><span class="pill pill-blue">${f['Type']||'—'}</span></td>
-        <td style="color:var(--slate2);">${f['Duration (min)'] ? f['Duration (min)']+'m' : '—'}</td>
-        <td>${intensityPill(f['Intensity'])}</td>
-        <td style="color:var(--slate);font-size:12px;">${f['Focus']||'—'}</td>
-      </tr>`;
-    }).join('') : '<tr><td colspan="6"><div class="empty"><div class="empty-text">No sessions logged yet</div></div></td></tr>';
-  } catch(e) {
-    document.getElementById('sessionsBody').innerHTML = `<tr><td colspan="6" style="color:var(--red);padding:16px;">Error: ${e.message}</td></tr>`;
-  }
+    tbody.innerHTML = sessions.length ? sessions.map(s=>{const f=s.fields;return`<tr>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--slate);">${f['Date']||'—'}</td>
+      <td style="font-weight:600;color:var(--white);">${f['Session Name']||'—'}</td>
+      <td><span class="pill pill-blue">${f['Type']||'—'}</span></td>
+      <td style="color:var(--slate2);">${f['Duration (min)']?f['Duration (min)']+'m':'—'}</td>
+      <td>${intensityPill(f['Intensity'])}</td>
+      <td style="color:var(--slate);font-size:12px;">${f['Focus']||'—'}</td>
+    </tr>`;}).join(''):'<tr><td colspan="6"><div class="empty"><div class="empty-text">No sessions logged yet</div></div></td></tr>';
+  } catch(e){document.getElementById('sessionsBody').innerHTML=`<tr><td colspan="6" style="color:var(--red);padding:16px;">Error: ${e.message}</td></tr>`;}
 }
 
 async function loadLoadData() {
   try {
-    const records = await airtableFetch(FIS_CONFIG.TABLES.LOAD, {
-      maxRecords: 30
-    });
-    const flags = records.filter(r => (r.fields['Load Risk Flag']||'').includes('HIGH'));
+    const records = await airtableFetch(FIS_CONFIG.TABLES.LOAD, {maxRecords:30});
+    const flags = records.filter(r=>(r.fields['Load Risk Flag']||'').includes('HIGH'));
     document.getElementById('ts-flags').textContent = flags.length;
     document.getElementById('ts-records').textContent = records.length;
-
     const tbody = document.getElementById('loadBody');
-    tbody.innerHTML = records.length ? records.map(r => {
-      const f = r.fields;
-      const player = Array.isArray(f['Player']) ? f['Player'][0] : (f['Player']||'—');
-      const load = f['PlayerLoad'];
-      let risk = load > 800 ? '🔴 HIGH' : load > 600 ? '🟡 MODERATE' : '🟢 NORMAL';
-      return `<tr>
-        <td style="font-weight:600;color:var(--white);">${player}</td>
-        <td style="color:var(--slate2);">${f['Total Distance (m)'] ? (f['Total Distance (m)']/1000).toFixed(1)+'km' : '—'}</td>
-        <td style="color:var(--blue);">${f['HSR Distance (m)'] ? f['HSR Distance (m)']+'m' : '—'}</td>
-        <td style="color:var(--gold2);">${f['Max Speed (km/h)'] ? f['Max Speed (km/h)']+'km/h' : '—'}</td>
-        <td style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;color:var(--white);">${load||'—'}</td>
-        <td>${riskPill(risk)}</td>
-      </tr>`;
-    }).join('') : '<tr><td colspan="6"><div class="empty"><div class="empty-text">No load data yet. Upload Catapult CSV to Airtable to populate.</div></div></td></tr>';
-  } catch(e) {
-    document.getElementById('loadBody').innerHTML = `<tr><td colspan="6" style="color:var(--red);padding:16px;">Error: ${e.message}</td></tr>`;
-  }
+    tbody.innerHTML = records.length ? records.map(r=>{const f=r.fields;const player=Array.isArray(f['Player'])?f['Player'][0]:(f['Player']||'—');const load=f['PlayerLoad'];const risk=load>800?'🔴 HIGH':load>600?'🟡 MODERATE':'🟢 NORMAL';return`<tr>
+      <td style="font-weight:600;color:var(--white);">${player}</td>
+      <td style="color:var(--slate2);">${f['Total Distance (m)']?(f['Total Distance (m)']/1000).toFixed(1)+'km':'—'}</td>
+      <td style="color:var(--blue);">${f['HSR Distance (m)']?f['HSR Distance (m)']+'m':'—'}</td>
+      <td style="color:var(--gold2);">${f['Max Speed (km/h)']?f['Max Speed (km/h)']+'km/h':'—'}</td>
+      <td style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;">${load||'—'}</td>
+      <td>${riskPill(risk)}</td>
+    </tr>`;}).join(''):'<tr><td colspan="6"><div class="empty"><div class="empty-text">No load data yet.</div></div></td></tr>';
+  } catch(e){document.getElementById('loadBody').innerHTML=`<tr><td colspan="6" style="color:var(--red);padding:16px;">Error: ${e.message}</td></tr>`;}
 }
 
-function openAddSession() {
-  document.getElementById('s-date').value = new Date().toISOString().split('T')[0];
-  document.getElementById('addSessionModal').classList.add('open');
+function openAddSession(){document.getElementById('s-date').value=new Date().toISOString().split('T')[0];document.getElementById('addSessionModal').classList.add('open');}
+async function addSession(){
+  const name=document.getElementById('s-name').value.trim();
+  if(!name){showToast('Session name required');return;}
+  try{
+    await airtableCreate(FIS_CONFIG.TABLES.TRAINING,{'Session Name':name,'Date':document.getElementById('s-date').value,'Type':document.getElementById('s-type').value,'Duration (min)':parseInt(document.getElementById('s-duration').value)||null,'Intensity':document.getElementById('s-intensity').value,'Focus':document.getElementById('s-focus').value,'Notes':document.getElementById('s-notes').value});
+    closeModal('addSessionModal');showToast('Session logged ✓');loadSessions();
+  }catch(e){showToast(`Error: ${e.message}`);}
 }
 
-async function addSession() {
-  const name = document.getElementById('s-name').value.trim();
-  if (!name) { showToast('Session name required'); return; }
-  try {
-    await airtableCreate(FIS_CONFIG.TABLES.TRAINING, {
-      'Session Name': name,
-      'Date': document.getElementById('s-date').value,
-      'Type': document.getElementById('s-type').value,
-      'Duration (min)': parseInt(document.getElementById('s-duration').value)||null,
-      'Intensity': document.getElementById('s-intensity').value,
-      'Focus': document.getElementById('s-focus').value,
-      'Notes': document.getElementById('s-notes').value,
-    });
-    closeModal('addSessionModal');
-    showToast('Session logged ✓');
-    loadSessions();
-  } catch(e) { showToast(`Error: ${e.message}`); }
-}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 
-document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
-loadSessions(); loadLoadData();
+// ═══════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════
+document.getElementById('log-date').value = new Date().toISOString().split('T')[0];
+loadSessions();
+loadLoadData();
+renderLeaderboard(); // also updates the stat card leader
 </script>
 </body>
 </html>
