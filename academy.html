@@ -475,64 +475,49 @@
 
 <div id="toast"></div>
 <script src="config.js"></script>
+<script src="config.js"></script>
 <script>
-// ── STORAGE ──────────────────────────────────────────────────────
-const KEY = 'fis_academy_v2';
-function load() {
-  try { return JSON.parse(localStorage.getItem(KEY)) || getDefaults(); }
-  catch(e) { return getDefaults(); }
-}
-function save(d) { localStorage.setItem(KEY, JSON.stringify(d)); }
+// ═══════════════════════════════════════════════════════════════════
+// AIRTABLE-CONNECTED ACADEMY — Participants, NIL, Audience Groups
+// Revenue + Curriculum still use localStorage (no multi-user need)
+// ═══════════════════════════════════════════════════════════════════
 
-function getDefaults() {
-  return {
-    participants: [
-      { id:1, first:'Sarah', last:'Miller', age:'14 / 2029', tier:'elite', club:'Steel City FC', coach:'Lola Abraham', prospect:'yes', joined:'2025-09-01', notes:'Elite technical ability, top-5 nationally in her class. NWSL draft projection.' },
-      { id:2, first:'Ava', last:'Thompson', age:'13 / 2030', tier:'elite', club:'Riverhounds Academy', coach:'Lucia Wells', prospect:'no', joined:'2025-09-01', notes:'' },
-      { id:3, first:'Chloe', last:'Martinez', age:'15 / 2028', tier:'elite', club:'FC Pittsburgh', coach:'Katie Ellermeyer', prospect:'yes', joined:'2025-09-01', notes:'Technically gifted central midfielder. High recruiting interest.' },
-      { id:4, first:'Emma', last:'Davis', age:'11 / 2032', tier:'standard', club:'None', coach:'Sophie Rourke', prospect:'no', joined:'2025-10-01', notes:'' },
-      { id:5, first:'Lily', last:'Johnson', age:'12 / 2031', tier:'standard', club:'North Hills SC', coach:'Mya Archibald', prospect:'no', joined:'2025-10-01', notes:'' },
-      { id:6, first:'Zoe', last:'Wilson', age:'9 / 2034', tier:'youth', club:'None', coach:'', prospect:'no', joined:'2025-11-01', notes:'' },
-    ],
-    nil: [
-      { id:1, player:'Lola Abraham', type:'Academy Coaching Fee', amount:1200, brand:'Panther Academy', date:'2026-02-01', status:'Completed', notes:'' },
-      { id:2, player:'Lucia Wells', type:'Academy Coaching Fee', amount:800, brand:'Panther Academy', date:'2026-02-01', status:'Completed', notes:'' },
-      { id:3, player:'Sophie Rourke', type:'Academy Coaching Fee', amount:600, brand:'Panther Academy', date:'2026-02-01', status:'Completed', notes:'' },
-      { id:4, player:'Katie Ellermeyer', type:'Social Media Post', amount:400, brand:'Pittsburgh Gear Co', date:'2026-01-15', status:'Completed', notes:'' },
-      { id:5, player:'Sofia Doheny', type:'Appearance / Event', amount:500, brand:'Community Event', date:'2026-02-10', status:'Pending', notes:'' },
-      { id:6, player:'Mya Archibald', type:'Academy Coaching Fee', amount:700, brand:'Panther Academy', date:'2026-02-01', status:'Completed', notes:'' },
-    ],
-    revenue: [],
-    curriculum: [],
-  };
-}
+// ── IN-MEMORY STATE (loaded from Airtable) ────────────────────────
+let AT_PARTICIPANTS = [];  // [{id: airtableRecordId, fields:{...}}, ...]
+let AT_NIL = [];
 
+// ── LOCAL CACHE for Revenue & Curriculum (single-user OK) ────────
+const LOCAL_KEY = 'fis_academy_local_v1';
+function loadLocal() { try { return JSON.parse(localStorage.getItem(LOCAL_KEY)) || {revenue:[], curriculum:[]}; } catch(e) { return {revenue:[], curriculum:[]}; } }
+function saveLocal(d) { localStorage.setItem(LOCAL_KEY, JSON.stringify(d)); }
+
+// ── DEFAULT CURRICULUM (built-in coach modules) ───────────────────
 const DEFAULT_CURRICULUM = [
   { unit:'technical', unitLabel:'Technical Foundation', icon:'⚽', drills:[
-    { name:'Rondo 4v2', duration:15, level:'intermediate', desc:'Keep-away game in a circle. Focus on one-touch passing, body shape on reception, and pressure resistance. Progress to 5v2 with directional passes.' },
-    { name:'Passing Patterns (Y-Shape)', duration:20, level:'beginner', desc:'Three-player patterns: Y and L shapes. Emphasis on passing weight, timing of runs, and communication. Add movement to balls to progress.' },
-    { name:'1v1 Technical Duel', duration:15, level:'advanced', desc:'Player attacks, defender defends a 3-yard gate. Teach cuts: inside/outside, Cruyff turn, body feints. Score by dribbling through the gate.' },
+    { name:'Rondo 4v2', duration:15, level:'intermediate', desc:'Keep-away in a circle. One-touch passing, body shape on reception, pressure resistance. Progress to 5v2.' },
+    { name:'Passing Patterns (Y-Shape)', duration:20, level:'beginner', desc:'Three-player Y and L patterns. Passing weight, timing of runs, communication.' },
+    { name:'1v1 Technical Duel', duration:15, level:'advanced', desc:'Attacker vs defender on a 3-yard gate. Inside/outside cuts, Cruyff turn, body feints.' },
   ]},
   { unit:'tactical', unitLabel:'Tactical Development', icon:'🧠', drills:[
-    { name:'3v2 +1 Transition', duration:20, level:'intermediate', desc:'Attacking team of 3 vs 2 defenders with a neutral joker. After winning the ball, defenders transition to attack immediately. Coach compactness and pressing triggers.' },
-    { name:'Shadow Play — Build-Up', duration:25, level:'advanced', desc:'11v0 shape rehearsal focusing on GK distribution, CB splits, and midfielder support angles. Repeat until automatic. Add passive then active opposition.' },
-    { name:'Positional Rotation Game', duration:20, level:'beginner', desc:'4v4 in a grid. Players must occupy all 4 zones when team has the ball. Teaches positional awareness and spacing concepts.' },
+    { name:'3v2 +1 Transition', duration:20, level:'intermediate', desc:'3 attackers vs 2 defenders + neutral joker. Immediate transition on turnover.' },
+    { name:'Shadow Play — Build-Up', duration:25, level:'advanced', desc:'11v0 shape rehearsal: GK distribution, CB splits, midfielder angles. Add passive then active opposition.' },
+    { name:'Positional Rotation Game', duration:20, level:'beginner', desc:'4v4. Players must occupy all 4 zones when in possession. Positional awareness and spacing.' },
   ]},
   { unit:'physical', unitLabel:'Physical Preparation', icon:'💪', drills:[
-    { name:'SAQ Circuit', duration:15, level:'intermediate', desc:'Speed, agility, quickness: ladder drills, cone weaves, 5-10-5 shuttles. Run 3 rounds of 5 min. Focus on foot strike and deceleration mechanics.' },
-    { name:'Plyometric Power Block', duration:12, level:'advanced', desc:'Box jumps, lateral bounds, hurdle hops, depth drops. 3 sets of 6 reps each. Rest 90 sec between sets. Not suitable for U12 and below.' },
+    { name:'SAQ Circuit', duration:15, level:'intermediate', desc:'Ladder drills, cone weaves, 5-10-5 shuttles. 3 rounds × 5 min. Foot strike and deceleration mechanics.' },
+    { name:'Plyometric Power Block', duration:12, level:'advanced', desc:'Box jumps, lateral bounds, hurdle hops, depth drops. 3 sets × 6 reps. Rest 90s. U12 and below skip.' },
   ]},
   { unit:'goalkeeper', unitLabel:'Goalkeeper Specific', icon:'🧤', drills:[
-    { name:'Footwork & Set Position', duration:15, level:'beginner', desc:'Goalkeeper footwork patterns: shuffle, crossover, drop step. Emphasize set position timing relative to the shot. Use tennis balls for reaction speed.' },
-    { name:'Cross Command Training', duration:20, level:'intermediate', desc:'GK calls "KEEPER!" and catches or punches served crosses. Progress from static server to dynamic wide player. Teach take-off timing and dominant hand catch.' },
+    { name:'Footwork & Set Position', duration:15, level:'beginner', desc:'Shuffle, crossover, drop step patterns. Set position timing relative to shot. Use tennis balls for reaction.' },
+    { name:'Cross Command Training', duration:20, level:'intermediate', desc:'"KEEPER!" calls for crosses. Static → dynamic server. Take-off timing and dominant hand catch.' },
   ]},
   { unit:'small_sided', unitLabel:'Small-Sided Games', icon:'🏟', drills:[
-    { name:'4v4 End Zone Game', duration:20, level:'beginner', desc:'Score by dribbling or passing into the end zone. No goalkeepers. Encourages combination play, forward runs, and pressing. Fantastic for U10–U13.' },
-    { name:'Transition 5v5+2', duration:25, level:'intermediate', desc:'5 attackers vs 5 defenders with 2 neutral wide players always with attacking team. Immediate transition on turnover. Award bonus goal for quick counter within 6 seconds.' },
+    { name:'4v4 End Zone Game', duration:20, level:'beginner', desc:'Score by dribbling/passing into end zone. No GK. Combination play, forward runs, pressing. U10–U13.' },
+    { name:'Transition 5v5+2', duration:25, level:'intermediate', desc:'5v5 + 2 neutral wide players with attacking team. Bonus goal for counter within 6 seconds.' },
   ]},
   { unit:'mental', unitLabel:'Mental Performance', icon:'🧘', drills:[
-    { name:'Pressure Penalty Shoot-out', duration:15, level:'intermediate', desc:'Team split in half, each player takes 1 penalty. Score by team. Simulate pressure of high-stakes moments. Debrief breathing and routine afterward.' },
-    { name:'Decision-Making Under Fatigue', duration:20, level:'advanced', desc:'Players sprint 40 yards then immediately receive a pass and must choose: shoot, pass, or dribble — based on live defenders. Builds executive function under physiological stress.' },
+    { name:'Pressure Penalty Shoot-out', duration:15, level:'intermediate', desc:'Team split in half. Each player takes 1 penalty. Debrief breathing and routine afterward.' },
+    { name:'Decision-Making Under Fatigue', duration:20, level:'advanced', desc:'Sprint 40 yd then receive pass — shoot, pass, or dribble vs live defenders. Builds executive function under stress.' },
   ]},
 ];
 
@@ -544,6 +529,11 @@ function openNilModal(){document.getElementById('nil-date').value=new Date().toI
 function openRevenueModal(){document.getElementById('rev-date').value=new Date().toISOString().split('T')[0];document.getElementById('revenueModal').classList.add('open');}
 function openCurriculumModal(){document.getElementById('curriculumModal').classList.add('open');}
 
+function setLoading(id, cols) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = `<tr><td colspan="${cols}" style="text-align:center;padding:20px;"><div class="loading"><div class="spinner"></div></div></td></tr>`;
+}
+
 function switchTab(name) {
   document.querySelectorAll('.tab-btn').forEach((b,i)=>{
     const tabs=['overview','participants','nil','curriculum'];
@@ -553,146 +543,201 @@ function switchTab(name) {
   document.getElementById('tab-'+name).classList.add('active');
 }
 
+// ── AIRTABLE LOADERS ──────────────────────────────────────────────
+async function loadParticipants() {
+  try {
+    const records = await airtableFetchAll(FIS_CONFIG.TABLES.ACADEMY_PARTICIPANTS);
+    AT_PARTICIPANTS = records;
+  } catch(e) {
+    console.warn('Academy_Participants table not found yet — using empty set. Create the table in Airtable first.', e.message);
+    AT_PARTICIPANTS = [];
+  }
+}
+
+async function loadNIL() {
+  try {
+    const records = await airtableFetchAll(FIS_CONFIG.TABLES.ACADEMY_NIL);
+    AT_NIL = records;
+  } catch(e) {
+    console.warn('Academy_NIL table not found yet.', e.message);
+    AT_NIL = [];
+  }
+}
+
 // ── STATS ─────────────────────────────────────────────────────────
 function updateStats() {
-  const d = load();
-  const total = 85 + d.participants.length - 6; // 6 defaults already counted
-  const eliteC = d.participants.filter(p=>p.tier==='elite').length;
-  const stdC   = d.participants.filter(p=>p.tier==='standard').length;
-  const youthC = d.participants.filter(p=>p.tier==='youth').length;
-  const prospects = d.participants.filter(p=>p.prospect==='yes').length;
+  const tierFees = { 'Elite Technical':250, 'Youth Skills':100, 'Foundations':50 };
+  const eliteC    = AT_PARTICIPANTS.filter(p=>p.fields['Tier']==='Elite Technical').length;
+  const stdC      = AT_PARTICIPANTS.filter(p=>p.fields['Tier']==='Youth Skills').length;
+  const youthC    = AT_PARTICIPANTS.filter(p=>p.fields['Tier']==='Foundations').length;
+  const total     = eliteC + stdC + youthC;
+  const prospects = AT_PARTICIPANTS.filter(p=>p.fields['Prospect']).length;
 
-  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statTotal').textContent     = total;
   document.getElementById('tierEliteCount').textContent = eliteC;
   document.getElementById('tierStandardCount').textContent = stdC;
-  document.getElementById('tierYouthCount').textContent = youthC;
-  document.getElementById('statProspects').textContent = prospects;
+  document.getElementById('tierYouthCount').textContent  = youthC;
+  document.getElementById('statProspects').textContent  = prospects;
 
-  // Revenue
-  const nilTotal = d.nil.filter(n=>n.status==='Completed').reduce((a,n)=>a+n.amount,0);
-  const extraRev = d.revenue.reduce((a,r)=>a+r.amount,0);
+  const nilTotal = AT_NIL.filter(n=>n.fields['Status']==='Completed').reduce((a,n)=>a+(n.fields['Amount']||0),0);
+  const extraRev = loadLocal().revenue.reduce((a,r)=>a+r.amount,0);
   const baseRev  = eliteC*250 + stdC*100 + youthC*50;
   const totalRev = baseRev + extraRev;
 
-  document.getElementById('statNil').textContent = '$' + nilTotal.toLocaleString();
+  document.getElementById('statNil').textContent    = '$' + nilTotal.toLocaleString();
   document.getElementById('nilImpactTotal').textContent = '$' + nilTotal.toLocaleString();
   document.getElementById('statRevenue').textContent = '$' + totalRev.toLocaleString();
-  document.getElementById('revTotal').textContent = '$' + totalRev.toLocaleString();
-  document.getElementById('revElite').textContent = '$' + (eliteC*250).toLocaleString();
+  document.getElementById('revTotal').textContent    = '$' + totalRev.toLocaleString();
+  document.getElementById('revElite').textContent    = '$' + (eliteC*250).toLocaleString();
   document.getElementById('revStandard').textContent = '$' + (stdC*100).toLocaleString();
-  document.getElementById('revYouth').textContent = '$' + (youthC*50).toLocaleString();
+  document.getElementById('revYouth').textContent    = '$' + (youthC*50).toLocaleString();
+
+  // NIL overview panel
+  const byAthlete = {};
+  AT_NIL.forEach(n=>{
+    const player = n.fields['Player'] || 'Unknown';
+    if (!byAthlete[player]) byAthlete[player] = 0;
+    if (n.fields['Status']==='Completed') byAthlete[player] += (n.fields['Amount']||0);
+  });
+  const sorted = Object.entries(byAthlete).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('pattAthleteNil').innerHTML = sorted.slice(0,4).map(([name,total])=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px;background:rgba(201,151,58,0.05);border-radius:7px;">
+      <div class="nil-avatar" style="width:28px;height:28px;font-size:10px;">${name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+      <div style="flex:1;font-size:12px;color:var(--white);">${name}</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;color:var(--gold2);">$${total.toLocaleString()}</div>
+    </div>`).join('') || '<div style="color:var(--slate);font-size:12px;padding:8px;">No NIL deals logged yet</div>';
 }
 
 // ── PARTICIPANTS ───────────────────────────────────────────────────
-function saveParticipant() {
+async function saveParticipant() {
   const first = document.getElementById('enr-first').value.trim();
   if(!first){ showToast('Name required'); return; }
-  const d = load();
-  const newId = Date.now();
-  d.participants.push({
-    id: newId,
-    first, last: document.getElementById('enr-last').value.trim(),
-    age: document.getElementById('enr-age').value,
-    tier: document.getElementById('enr-tier').value,
-    club: document.getElementById('enr-club').value,
-    coach: document.getElementById('enr-coach').value,
-    prospect: document.getElementById('enr-prospect').value,
-    joined: document.getElementById('enr-date').value,
-    notes: document.getElementById('enr-notes').value,
-  });
-  save(d);
-  closeModal('enrollModal');
-  showToast('Participant added ✓');
-  renderAll();
+  const tierMap = { elite:'Elite Technical', standard:'Youth Skills', youth:'Foundations' };
+  const tierVal = tierMap[document.getElementById('enr-tier').value] || 'Foundations';
+  const tierFees = { 'Elite Technical':250, 'Youth Skills':100, 'Foundations':50 };
+  const fields = {
+    'Name': `${first} ${document.getElementById('enr-last').value.trim()}`,
+    'Tier': tierVal,
+    'Age / Grad Year': document.getElementById('enr-age').value,
+    'Club': document.getElementById('enr-club').value,
+    'Assigned Coach': document.getElementById('enr-coach').value,
+    'Prospect': document.getElementById('enr-prospect').value === 'yes',
+    'Date Joined': document.getElementById('enr-date').value || null,
+    'Monthly Fee': tierFees[tierVal],
+    'Notes': document.getElementById('enr-notes').value,
+  };
+  try {
+    showToast('Saving to Airtable…');
+    await airtableCreate(FIS_CONFIG.TABLES.ACADEMY_PARTICIPANTS, fields);
+    closeModal('enrollModal');
+    await loadParticipants();
+    renderAll();
+    showToast('Participant saved to Airtable ✓');
+  } catch(e) { showToast(`Error: ${e.message}`); }
 }
 
-function deleteParticipant(id) {
-  const d = load();
-  d.participants = d.participants.filter(p=>p.id!==id);
-  save(d); renderAll(); showToast('Participant removed');
+async function deleteParticipant(recordId) {
+  try {
+    await airtableDelete(FIS_CONFIG.TABLES.ACADEMY_PARTICIPANTS, recordId);
+    await loadParticipants();
+    renderAll();
+    showToast('Participant removed');
+  } catch(e) { showToast(`Error: ${e.message}`); }
 }
 
 function renderParticipants() {
-  const d = load();
   const filter = document.getElementById('tierFilter')?.value || 'all';
   const search = (document.getElementById('participantSearch')?.value || '').toLowerCase();
-  const tierFees = { elite:250, standard:100, youth:50 };
-  const tierLabels = { elite:'Elite Technical', standard:'Youth Skills', youth:'Foundations' };
+  const tierMap = { elite:'Elite Technical', standard:'Youth Skills', youth:'Foundations' };
+  const tierCls = { 'Elite Technical':'tier-elite', 'Youth Skills':'tier-standard', 'Foundations':'tier-youth' };
 
-  let rows = d.participants;
-  if(filter !== 'all') rows = rows.filter(p=>p.tier===filter);
-  if(search) rows = rows.filter(p=>(p.first+' '+p.last+' '+p.club).toLowerCase().includes(search));
+  let rows = [...AT_PARTICIPANTS];
+  if (filter !== 'all') rows = rows.filter(p=>p.fields['Tier']===tierMap[filter]);
+  if (search) rows = rows.filter(p=>((p.fields['Name']||'')+(p.fields['Club']||'')).toLowerCase().includes(search));
 
-  document.getElementById('participantBody').innerHTML = rows.length ? rows.map(p => `
-    <tr>
-      <td style="font-weight:700;color:var(--white);">${p.first} ${p.last}</td>
-      <td><span class="tier-badge tier-${p.tier}">${tierLabels[p.tier]||p.tier}</span></td>
-      <td style="color:var(--slate2);">${p.age||'—'}</td>
-      <td style="color:var(--slate2);">${p.club||'—'}</td>
-      <td style="color:var(--slate2);">${p.coach||'—'}</td>
-      <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--green);">$${tierFees[p.tier]||0}/mo</td>
-      <td>${p.prospect==='yes'?'<span class="prospect-tag">⭐ PROSPECT</span>':'—'}</td>
-      <td style="color:var(--slate);font-size:11px;">${p.joined||'—'}</td>
-      <td><button onclick="deleteParticipant(${p.id})" style="background:none;border:none;color:var(--slate);cursor:pointer;font-size:13px;" title="Remove">✕</button></td>
-    </tr>`).join('') :
-    `<tr><td colspan="9" style="text-align:center;color:var(--slate);padding:20px;">No participants found</td></tr>`;
+  document.getElementById('participantBody').innerHTML = rows.length ? rows.map(p => {
+    const f = p.fields;
+    const tierLabel = f['Tier'] || '—';
+    const tierClass = tierCls[tierLabel] || 'tier-youth';
+    const fee = f['Monthly Fee'] ? `$${f['Monthly Fee']}/mo` : '—';
+    return `<tr>
+      <td style="font-weight:700;color:var(--white);">${f['Name']||'—'}</td>
+      <td><span class="tier-badge ${tierClass}">${tierLabel}</span></td>
+      <td style="color:var(--slate2);">${f['Age / Grad Year']||'—'}</td>
+      <td style="color:var(--slate2);">${f['Club']||'—'}</td>
+      <td style="color:var(--slate2);">${f['Assigned Coach']||'—'}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--green);">${fee}</td>
+      <td>${f['Prospect']?'<span class="prospect-tag">⭐ PROSPECT</span>':'—'}</td>
+      <td style="color:var(--slate);font-size:11px;">${f['Date Joined']||'—'}</td>
+      <td><button onclick="deleteParticipant('${p.id}')" style="background:none;border:none;color:var(--slate);cursor:pointer;font-size:13px;" title="Remove">✕</button></td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="9" style="text-align:center;color:var(--slate);padding:20px;">No participants found${AT_PARTICIPANTS.length===0?' — create the Academy_Participants table in Airtable first':''}</td></tr>`;
 }
 
 // ── NIL ────────────────────────────────────────────────────────────
-function saveNil() {
+async function saveNil() {
   const amount = parseFloat(document.getElementById('nil-amount').value);
   if(!amount){ showToast('Amount required'); return; }
-  const d = load();
-  d.nil.unshift({
-    id: Date.now(),
-    player: document.getElementById('nil-player').value,
-    type: document.getElementById('nil-type').value,
-    amount,
-    brand: document.getElementById('nil-brand').value,
-    date: document.getElementById('nil-date').value,
-    status: document.getElementById('nil-status').value,
-    notes: document.getElementById('nil-notes').value,
-  });
-  save(d); closeModal('nilModal'); showToast('NIL deal logged ✓'); renderAll();
+  const fields = {
+    'Player': document.getElementById('nil-player').value,
+    'Deal Type': document.getElementById('nil-type').value,
+    'Amount': amount,
+    'Partner': document.getElementById('nil-brand').value,
+    'Date': document.getElementById('nil-date').value || null,
+    'Status': document.getElementById('nil-status').value,
+    'Notes': document.getElementById('nil-notes').value,
+  };
+  try {
+    showToast('Saving to Airtable…');
+    await airtableCreate(FIS_CONFIG.TABLES.ACADEMY_NIL, fields);
+    closeModal('nilModal');
+    await loadNIL();
+    renderAll();
+    showToast('NIL deal saved to Airtable ✓');
+  } catch(e) { showToast(`Error: ${e.message}`); }
 }
 
-function deleteNil(id) {
-  const d = load();
-  d.nil = d.nil.filter(n=>n.id!==id);
-  save(d); renderAll(); showToast('NIL entry removed');
+async function deleteNil(recordId) {
+  try {
+    await airtableDelete(FIS_CONFIG.TABLES.ACADEMY_NIL, recordId);
+    await loadNIL();
+    renderAll();
+    showToast('NIL entry removed');
+  } catch(e) { showToast(`Error: ${e.message}`); }
 }
 
 const statusCls = { Completed:'nil-completed', Pending:'nil-pending', Negotiating:'nil-negotiating' };
 
 function renderNil() {
-  const d = load();
-
-  // Deal log
-  document.getElementById('nilLog').innerHTML = d.nil.length ? d.nil.map(n=>`
-    <div class="nil-row">
-      <div class="nil-avatar">${n.player.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+  // Deal log (most recent first)
+  const sorted = [...AT_NIL].sort((a,b)=>new Date(b.fields['Date']||0)-new Date(a.fields['Date']||0));
+  document.getElementById('nilLog').innerHTML = sorted.length ? sorted.map(n=>{
+    const f = n.fields;
+    return `<div class="nil-row">
+      <div class="nil-avatar">${(f['Player']||'?').split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
       <div style="flex:1;">
-        <div style="font-weight:700;color:var(--white);font-size:13px;">${n.player}</div>
-        <div style="font-size:11px;color:var(--slate2);">${n.type} · ${n.brand||'—'}</div>
-        <div style="font-size:10px;color:var(--slate);margin-top:2px;">${n.date||''}</div>
+        <div style="font-weight:700;color:var(--white);font-size:13px;">${f['Player']||'—'}</div>
+        <div style="font-size:11px;color:var(--slate2);">${f['Deal Type']||''} · ${f['Partner']||'—'}</div>
+        <div style="font-size:10px;color:var(--slate);margin-top:2px;">${f['Date']||''}</div>
       </div>
       <div style="text-align:right;">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:18px;color:var(--gold2);">$${n.amount.toLocaleString()}</div>
-        <span class="nil-status ${statusCls[n.status]||''}">${n.status}</span>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:18px;color:var(--gold2);">$${(f['Amount']||0).toLocaleString()}</div>
+        <span class="nil-status ${statusCls[f['Status']]||''}">${f['Status']||''}</span>
       </div>
-      <button onclick="deleteNil(${n.id})" style="background:none;border:none;color:var(--slate);cursor:pointer;font-size:12px;margin-left:4px;" title="Remove">✕</button>
-    </div>`).join('') :
-    '<div style="text-align:center;color:var(--slate);padding:24px;">No NIL deals logged yet</div>';
+      <button onclick="deleteNil('${n.id}')" style="background:none;border:none;color:var(--slate);cursor:pointer;font-size:12px;margin-left:4px;" title="Remove">✕</button>
+    </div>`;
+  }).join('') : '<div style="text-align:center;color:var(--slate);padding:24px;">No NIL deals logged yet — or create the Academy_NIL table in Airtable</div>';
 
   // By athlete
   const byAthlete = {};
-  d.nil.forEach(n=>{
-    if(!byAthlete[n.player]) byAthlete[n.player]={total:0,deals:0};
-    if(n.status==='Completed') byAthlete[n.player].total+=n.amount;
-    byAthlete[n.player].deals++;
+  AT_NIL.forEach(n=>{
+    const player = n.fields['Player'] || 'Unknown';
+    if (!byAthlete[player]) byAthlete[player] = {total:0, deals:0};
+    if (n.fields['Status']==='Completed') byAthlete[player].total += (n.fields['Amount']||0);
+    byAthlete[player].deals++;
   });
-  const sorted = Object.entries(byAthlete).sort((a,b)=>b[1].total-a[1].total);
-  document.getElementById('nilByAthlete').innerHTML = sorted.map(([name,info])=>`
+  const byAthleteArr = Object.entries(byAthlete).sort((a,b)=>b[1].total-a[1].total);
+  document.getElementById('nilByAthlete').innerHTML = byAthleteArr.map(([name,info])=>`
     <div class="nil-row">
       <div class="nil-avatar">${name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
       <div style="flex:1;">
@@ -700,56 +745,43 @@ function renderNil() {
         <div style="font-size:11px;color:var(--slate2);">${info.deals} deal${info.deals!==1?'s':''}</div>
       </div>
       <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;color:var(--gold2);">$${info.total.toLocaleString()}</div>
-    </div>`).join('');
-
-  // Overview NIL panel
-  document.getElementById('pattAthleteNil').innerHTML = sorted.slice(0,4).map(([name,info])=>`
-    <div style="display:flex;align-items:center;gap:10px;padding:8px;background:rgba(201,151,58,0.05);border-radius:7px;">
-      <div class="nil-avatar" style="width:28px;height:28px;font-size:10px;">${name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
-      <div style="flex:1;font-size:12px;color:var(--white);">${name}</div>
-      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;color:var(--gold2);">$${info.total.toLocaleString()}</div>
-    </div>`).join('');
+    </div>`).join('') || '<div style="color:var(--slate);padding:16px;text-align:center;">No completed deals yet</div>';
 }
 
-// ── REVENUE ────────────────────────────────────────────────────────
+// ── REVENUE (localStorage — single user OK) ───────────────────────
 function saveRevenue() {
   const amount = parseFloat(document.getElementById('rev-amount').value);
   if(!amount){ showToast('Amount required'); return; }
-  const d = load();
-  d.revenue.push({ id:Date.now(), source:document.getElementById('rev-source').value, amount, date:document.getElementById('rev-date').value, desc:document.getElementById('rev-desc').value });
-  save(d); closeModal('revenueModal'); showToast('Revenue logged ✓'); updateStats();
+  const local = loadLocal();
+  local.revenue.push({ id:Date.now(), source:document.getElementById('rev-source').value, amount, date:document.getElementById('rev-date').value, desc:document.getElementById('rev-desc').value });
+  saveLocal(local); closeModal('revenueModal'); showToast('Revenue logged ✓'); updateStats();
 }
 
-// ── CURRICULUM ─────────────────────────────────────────────────────
+// ── CURRICULUM (localStorage — single user OK) ────────────────────
 function saveCurriculum() {
   const name = document.getElementById('cur-name').value.trim();
   if(!name){ showToast('Drill name required'); return; }
-  const d = load();
+  const local = loadLocal();
   const unitVal = document.getElementById('cur-unit').value;
   const isNew = unitVal === 'new';
   const unitKey = isNew ? 'custom_'+Date.now() : unitVal;
   const unitLabel = isNew ? (document.getElementById('cur-newunit').value || 'Custom Unit') : unitVal;
-  if(!d.customUnits) d.customUnits = [];
-  if(isNew) d.customUnits.push({ unit: unitKey, unitLabel, icon:'📌', drills:[] });
-  d.curriculum.push({ unit:unitKey, unitLabel, name, duration: parseInt(document.getElementById('cur-duration').value)||20, level:document.getElementById('cur-level').value, desc:document.getElementById('cur-desc').value });
-  save(d); closeModal('curriculumModal'); showToast('Drill added to curriculum ✓'); renderCurriculum();
+  if(!local.customUnits) local.customUnits = [];
+  if(isNew) local.customUnits.push({ unit:unitKey, unitLabel, icon:'📌', drills:[] });
+  local.curriculum.push({ unit:unitKey, unitLabel, name, duration:parseInt(document.getElementById('cur-duration').value)||20, level:document.getElementById('cur-level').value, desc:document.getElementById('cur-desc').value });
+  saveLocal(local); closeModal('curriculumModal'); showToast('Drill added ✓'); renderCurriculum();
 }
 
 function renderCurriculum() {
-  const d = load();
-  // Merge default + custom units
+  const local = loadLocal();
   let allUnits = [...DEFAULT_CURRICULUM];
-  if(d.customUnits) allUnits = allUnits.concat(d.customUnits);
-
-  // Inject user-added drills
-  d.curriculum.forEach(cd => {
+  if(local.customUnits) allUnits = allUnits.concat(local.customUnits);
+  local.curriculum.forEach(cd => {
     const unit = allUnits.find(u=>u.unit===cd.unit);
     if(unit) unit.drills.push(cd);
     else allUnits.push({ unit:cd.unit, unitLabel:cd.unitLabel||cd.unit, icon:'📌', drills:[cd] });
   });
-
   const lvlCls = { beginner:'level-beginner', intermediate:'level-intermediate', advanced:'level-advanced' };
-
   document.getElementById('curriculumUnits').innerHTML = allUnits.map(u=>`
     <div class="curriculum-unit">
       <div class="curriculum-unit-header" onclick="toggleUnit(this)">
@@ -774,10 +806,7 @@ function renderCurriculum() {
     </div>`).join('');
 }
 
-function toggleUnit(header) {
-  const body = header.nextElementSibling;
-  body.classList.toggle('open');
-}
+function toggleUnit(header) { header.nextElementSibling.classList.toggle('open'); }
 
 // ── INIT ───────────────────────────────────────────────────────────
 function renderAll() {
@@ -787,8 +816,14 @@ function renderAll() {
   renderCurriculum();
 }
 
+async function init() {
+  setLoading('participantBody', 9);
+  await Promise.all([loadParticipants(), loadNIL()]);
+  renderAll();
+}
+
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
-renderAll();
+init();
 </script>
 </body>
 </html>

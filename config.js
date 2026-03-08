@@ -16,7 +16,10 @@ const FIS_CONFIG = {
     ALUMNI: 'Alumni',
     CAMPS: 'Camp_Participants',
     MARKETING: 'Marketing_KPIs',
-    BUDGET: 'Budget_Items'
+    BUDGET: 'Budget_Items',
+    ACADEMY_PARTICIPANTS: 'Academy_Participants',
+    ACADEMY_NIL: 'Academy_NIL',
+    AUDIENCE_GROUPS: 'Audience_Groups'
   }
 };
 
@@ -64,4 +67,34 @@ async function airtableUpdate(table, recordId, fields) {
   });
   if (!res.ok) throw new Error(`Airtable update error: ${res.status}`);
   return res.json();
+}
+
+async function airtableDelete(table, recordId) {
+  const res = await fetch(`https://api.airtable.com/v0/${FIS_CONFIG.BASE_ID}/${encodeURIComponent(table)}/${recordId}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${FIS_CONFIG.AIRTABLE_TOKEN}` }
+  });
+  if (!res.ok) throw new Error(`Airtable delete error: ${res.status}`);
+  return res.json();
+}
+
+// Fetch ALL records across paginated responses
+async function airtableFetchAll(table, params = {}) {
+  const allRecords = [];
+  let offset = null;
+  do {
+    const base = `https://api.airtable.com/v0/${FIS_CONFIG.BASE_ID}/${encodeURIComponent(table)}`;
+    const url = new URL(base);
+    if (params.filterByFormula) url.searchParams.set('filterByFormula', params.filterByFormula);
+    if (params.maxRecords) url.searchParams.set('maxRecords', params.maxRecords);
+    if (offset) url.searchParams.set('offset', offset);
+    const res = await fetch(url.toString(), {
+      headers: { 'Authorization': `Bearer ${FIS_CONFIG.AIRTABLE_TOKEN}` }
+    });
+    if (!res.ok) throw new Error(`Airtable error: ${res.status} — Table: ${table}`);
+    const data = await res.json();
+    allRecords.push(...(data.records || []));
+    offset = data.offset || null;
+  } while (offset);
+  return allRecords;
 }

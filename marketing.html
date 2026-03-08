@@ -99,6 +99,8 @@
     <a href="marketing.html" class="nav-item active"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
     <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
     <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+    <a href="academy.html" class="nav-item"><span class="nav-icon">🐾</span><span class="nav-label">Panther Academy</span></a>
+    <a href="staffops.html" class="nav-item"><span class="nav-icon">🛡</span><span class="nav-label">Staff Ops</span></a>
   </nav>
   <div class="main">
     <header class="topbar">
@@ -140,6 +142,7 @@
         <button class="mkt-tab active" onclick="switchTab('kpi',this)">📊 KPI Dashboard</button>
         <button class="mkt-tab" onclick="switchTab('growth',this)">🚀 Growth Playbook</button>
         <button class="mkt-tab" onclick="switchTab('ai',this)">🤖 AI Campaign Bot</button>
+        <button class="mkt-tab" onclick="switchTab('attendance',this)">🏟 Attendance & Audience</button>
       </div>
 
       <!-- KPI TAB -->
@@ -292,11 +295,220 @@
         <div id="savedCampaigns"></div>
       </div>
 
+      <!-- ATTENDANCE & AUDIENCE TAB -->
+      <div id="tab-attendance" style="display:none;">
+
+        <!-- TOP STAT CARDS -->
+        <div class="stats-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:20px;">
+          <div class="stat-card" style="--accent:var(--gold);">
+            <div class="stat-icon">🏟</div><div class="stat-label">2025 Avg Att.</div>
+            <div class="stat-value" style="color:var(--gold2);">470</div>
+            <div class="stat-delta">11 home games</div>
+          </div>
+          <div class="stat-card" style="--accent:var(--green);">
+            <div class="stat-icon">📈</div><div class="stat-label">Peak Season</div>
+            <div class="stat-value" style="color:var(--green);">903</div>
+            <div class="stat-delta">2023 — 10 games</div>
+          </div>
+          <div class="stat-card" style="--accent:#4da6ff;">
+            <div class="stat-icon">🎟</div><div class="stat-label">5-Year Total</div>
+            <div class="stat-value" style="color:#4da6ff;" id="att-5yr-total">—</div>
+            <div class="stat-delta">All home games</div>
+          </div>
+          <div class="stat-card" style="--accent:var(--red);">
+            <div class="stat-icon">📉</div><div class="stat-label">vs. Peak Gap</div>
+            <div class="stat-value" style="color:var(--red);">-48%</div>
+            <div class="stat-delta">2025 vs. 2023</div>
+          </div>
+          <div class="stat-card" style="--accent:var(--white);">
+            <div class="stat-icon">👥</div><div class="stat-label">Group Segments</div>
+            <div class="stat-value" id="att-groups-count">0</div>
+            <div class="stat-delta">Tracked audiences</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+
+          <!-- HISTORICAL CHART -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot" style="background:var(--gold);"></div>Historical Attendance Trends</div>
+            </div>
+            <div class="card-body">
+              <!-- BAR CHART -->
+              <div style="display:flex;align-items:flex-end;gap:18px;height:160px;margin-bottom:16px;padding:0 8px;">
+                <!-- Each year pair: gray=total attendance, gold=avg per game (scaled) -->
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;">
+                  <div style="display:flex;align-items:flex-end;gap:4px;height:140px;">
+                    <div style="width:22px;background:rgba(255,255,255,0.12);border-radius:4px 4px 0 0;" title="2025 Total: ~5,170" data-height="52"></div>
+                    <div style="width:22px;background:var(--gold);border-radius:4px 4px 0 0;opacity:0.85;" title="2025 Avg: 470/game" data-height="47"></div>
+                  </div>
+                  <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">2025</div>
+                </div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;">
+                  <div style="display:flex;align-items:flex-end;gap:4px;height:140px;">
+                    <div style="width:22px;background:rgba(255,255,255,0.12);border-radius:4px 4px 0 0;" data-height="63"></div>
+                    <div style="width:22px;background:var(--gold);border-radius:4px 4px 0 0;opacity:0.85;" data-height="79"></div>
+                  </div>
+                  <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">2024</div>
+                </div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;">
+                  <div style="display:flex;align-items:flex-end;gap:4px;height:140px;">
+                    <div style="width:22px;background:rgba(255,255,255,0.12);border-radius:4px 4px 0 0;" data-height="90"></div>
+                    <div style="width:22px;background:var(--gold);border-radius:4px 4px 0 0;opacity:0.85;" data-height="100"></div>
+                  </div>
+                  <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">2023</div>
+                </div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;">
+                  <div style="display:flex;align-items:flex-end;gap:4px;height:140px;">
+                    <div style="width:22px;background:rgba(255,255,255,0.12);border-radius:4px 4px 0 0;" data-height="66"></div>
+                    <div style="width:22px;background:var(--gold);border-radius:4px 4px 0 0;opacity:0.85;" data-height="63"></div>
+                  </div>
+                  <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">2022</div>
+                </div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;">
+                  <div style="display:flex;align-items:flex-end;gap:4px;height:140px;">
+                    <div style="width:22px;background:rgba(255,255,255,0.12);border-radius:4px 4px 0 0;" data-height="63"></div>
+                    <div style="width:22px;background:var(--gold);border-radius:4px 4px 0 0;opacity:0.85;" data-height="61"></div>
+                  </div>
+                  <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">2021</div>
+                </div>
+              </div>
+
+              <!-- LEGEND -->
+              <div style="display:flex;gap:14px;margin-bottom:14px;">
+                <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--slate2);">
+                  <div style="width:12px;height:12px;background:rgba(255,255,255,0.12);border-radius:2px;"></div>Total Fans
+                </div>
+                <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--slate2);">
+                  <div style="width:12px;height:12px;background:var(--gold);border-radius:2px;opacity:0.85;"></div>Avg/Game
+                </div>
+              </div>
+
+              <!-- YEAR CARDS -->
+              <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">
+                <div style="background:rgba(201,151,58,0.1);border:1px solid rgba(201,151,58,0.3);border-radius:7px;padding:8px;text-align:center;">
+                  <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">2025</div>
+                  <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;color:var(--gold2);">470</div>
+                  <div style="font-size:9px;color:var(--slate);">11 games</div>
+                </div>
+                <div style="background:rgba(77,106,156,0.15);border:1px solid var(--border);border-radius:7px;padding:8px;text-align:center;">
+                  <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">2024</div>
+                  <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;color:var(--gold2);">793</div>
+                  <div style="font-size:9px;color:var(--slate);">8 games</div>
+                </div>
+                <div style="background:rgba(34,201,139,0.08);border:1px solid rgba(34,201,139,0.25);border-radius:7px;padding:8px;text-align:center;">
+                  <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">2023</div>
+                  <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;color:var(--green);">903</div>
+                  <div style="font-size:9px;color:var(--slate);">10 games</div>
+                </div>
+                <div style="background:rgba(77,106,156,0.15);border:1px solid var(--border);border-radius:7px;padding:8px;text-align:center;">
+                  <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">2022</div>
+                  <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;color:var(--gold2);">633</div>
+                  <div style="font-size:9px;color:var(--slate);">10 games</div>
+                </div>
+                <div style="background:rgba(77,106,156,0.15);border:1px solid var(--border);border-radius:7px;padding:8px;text-align:center;">
+                  <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">2021</div>
+                  <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;color:var(--gold2);">606</div>
+                  <div style="font-size:9px;color:var(--slate);">10 games</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STRATEGIC CONTEXT -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot" style="background:#4da6ff;"></div>📊 Attendance Intelligence</div>
+            </div>
+            <div class="card-body">
+              <div style="border-left:3px solid var(--gold);padding:12px 14px;background:rgba(201,151,58,0.05);border-radius:0 8px 8px 0;font-style:italic;color:var(--slate2);font-size:12px;line-height:1.7;margin-bottom:14px;">
+                2023 was the program's peak at 903 avg — nearly 2× what 2025 is tracking. The drop coincides with fewer home games in 2024. Rebuilding toward 800+ requires a structured group sales and community outreach strategy.
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="background:rgba(34,201,139,0.06);border:1px solid rgba(34,201,139,0.2);border-radius:8px;padding:10px 12px;">
+                  <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--green);text-transform:uppercase;margin-bottom:4px;">🎯 Target: 700 Avg by 2026</div>
+                  <div style="font-size:12px;color:var(--slate2);">Requires approx. +230 fans per home game above 2025 baseline. Achievable through youth club groups, student orgs, and season ticket growth.</div>
+                </div>
+                <div style="background:rgba(77,166,255,0.06);border:1px solid rgba(77,166,255,0.2);border-radius:8px;padding:10px 12px;">
+                  <div style="font-family:'DM Mono',monospace;font-size:9px;color:#4da6ff;text-transform:uppercase;margin-bottom:4px;">📅 Schedule Factor</div>
+                  <div style="font-size:12px;color:var(--slate2);">2024's higher avg (793) with fewer games shows quality scheduling matters — bigger matchups drive spikes. Prioritize ACC home games for group promotions.</div>
+                </div>
+                <div style="background:rgba(201,151,58,0.06);border:1px solid rgba(201,151,58,0.2);border-radius:8px;padding:10px 12px;">
+                  <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--gold2);text-transform:uppercase;margin-bottom:4px;">🏟 Venue: Ambrose Urbanic Field</div>
+                  <div style="font-size:12px;color:var(--slate2);">Home of Pitt Soccer. Capacity ~3,000. At 470 avg we're at ~16% capacity — a massive growth opportunity with the right promotional engine.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GROUP AUDIENCE TRACKER -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-header">
+            <div class="card-title"><div class="dot" style="background:var(--green);"></div>👥 Audience Group Tracker</div>
+            <button class="btn btn-gold" style="font-size:11px;" onclick="openGroupModal()">+ Add Group</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:12px;" id="att-group-table">
+              <thead>
+                <tr>
+                  <th style="background:rgba(0,0,0,0.25);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--slate2);padding:9px 12px;text-align:left;">Group / Organization</th>
+                  <th style="background:rgba(0,0,0,0.25);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--slate2);padding:9px 12px;text-align:left;">Type</th>
+                  <th style="background:rgba(0,0,0,0.25);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--slate2);padding:9px 12px;text-align:left;">Est. Size</th>
+                  <th style="background:rgba(0,0,0,0.25);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--slate2);padding:9px 12px;text-align:left;">Ticket Priority</th>
+                  <th style="background:rgba(0,0,0,0.25);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--slate2);padding:9px 12px;text-align:left;">Content Priority</th>
+                  <th style="background:rgba(0,0,0,0.25);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--slate2);padding:9px 12px;text-align:left;">Contact / Lead</th>
+                  <th style="background:rgba(0,0,0,0.25);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--slate2);padding:9px 12px;text-align:left;">Status</th>
+                  <th style="background:rgba(0,0,0,0.25);padding:9px 12px;"></th>
+                </tr>
+              </thead>
+              <tbody id="att-group-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PROMO STRATEGY BY SEGMENT -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><div class="dot" style="background:var(--gold);"></div>📣 Promotional Strategy by Segment</div>
+          </div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+
+              <div style="background:rgba(201,151,58,0.06);border:1px solid rgba(201,151,58,0.2);border-radius:10px;padding:14px;">
+                <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;color:var(--gold2);margin-bottom:8px;">⚽ Youth Soccer Clubs</div>
+                <div style="font-size:12px;color:var(--slate2);line-height:1.7;margin-bottom:10px;">Best ROI group for ticket sales. Young players dream of playing D1. A group night with a meet & greet with Pitt players converts directly into season ticket families.</div>
+                <div style="font-size:11px;color:var(--green);">→ Offer 10+ ticket group discount</div>
+                <div style="font-size:11px;color:var(--green);">→ "Play on the Field" halftime experience</div>
+                <div style="font-size:11px;color:var(--green);">→ Panther Academy cross-sell</div>
+              </div>
+
+              <div style="background:rgba(77,166,255,0.06);border:1px solid rgba(77,166,255,0.2);border-radius:10px;padding:14px;">
+                <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;color:#4da6ff;margin-bottom:8px;">🎓 Student Organizations</div>
+                <div style="font-size:12px;color:var(--slate2);line-height:1.7;margin-bottom:10px;">High volume, low cost. Pitt has 500+ registered student orgs. Greek life, club sports, and academic orgs can each drive 20-50 students per game with the right offer.</div>
+                <div style="font-size:11px;color:var(--green);">→ Free/discounted block tickets via Pitt ID</div>
+                <div style="font-size:11px;color:var(--green);">→ Org of the Game recognition on scoreboard</div>
+                <div style="font-size:11px;color:var(--green);">→ Social media shoutout packages</div>
+              </div>
+
+              <div style="background:rgba(34,201,139,0.06);border:1px solid rgba(34,201,139,0.2);border-radius:10px;padding:14px;">
+                <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;color:var(--green);margin-bottom:8px;">🏘 Community Groups</div>
+                <div style="font-size:12px;color:var(--slate2);line-height:1.7;margin-bottom:10px;">Churches, neighborhoods, and non-profits around Pittsburgh are an untapped base. "Community Night" themes tied to causes build loyalty and press coverage.</div>
+                <div style="font-size:11px;color:var(--green);">→ Cause-based game night (charity partnership)</div>
+                <div style="font-size:11px;color:var(--green);">→ Neighborhood spotlight promotions</div>
+                <div style="font-size:11px;color:var(--green);">→ Family pack pricing ($5/person groups)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end attendance tab -->
+
     </div>
   </div>
 </div>
-
-<!-- LOG KPI MODAL -->
 <div class="modal-overlay" id="addModal">
   <div class="modal">
     <div class="modal-title">📣 Log Weekly KPIs</div>
@@ -318,6 +530,61 @@
   </div>
 </div>
 
+<!-- GROUP MODAL -->
+<div class="modal-overlay" id="groupModal">
+  <div class="modal">
+    <div class="modal-title">👥 Add Audience Group</div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Group / Org Name *</label><input class="form-input" id="grp-name" placeholder="e.g. Steel City FC U14s"></div>
+      <div class="form-group"><label class="form-label">Type</label>
+        <select class="form-select" id="grp-type">
+          <option>Youth Soccer Club</option>
+          <option>High School Team</option>
+          <option>Student Organization</option>
+          <option>Greek Life</option>
+          <option>Community Group</option>
+          <option>Church / Religious Org</option>
+          <option>Corporate / Business</option>
+          <option>Season Ticket Holder</option>
+          <option>Alumni Group</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Estimated Size</label><input class="form-input" id="grp-size" type="number" placeholder="25"></div>
+      <div class="form-group"><label class="form-label">Contact / Lead</label><input class="form-input" id="grp-contact" placeholder="Name or email"></div>
+      <div class="form-group"><label class="form-label">Ticket Priority</label>
+        <select class="form-select" id="grp-ticket">
+          <option value="high">🔥 High</option>
+          <option value="medium">⚡ Medium</option>
+          <option value="low">📌 Low</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Content Priority</label>
+        <select class="form-select" id="grp-content">
+          <option value="high">🔥 High</option>
+          <option value="medium">⚡ Medium</option>
+          <option value="low">📌 Low</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Status</label>
+        <select class="form-select" id="grp-status">
+          <option>Prospect</option>
+          <option>In Conversation</option>
+          <option>Committed</option>
+          <option>Attended</option>
+          <option>Repeat Partner</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Games Attended</label><input class="form-input" id="grp-games" type="number" placeholder="0"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Notes / Outreach Strategy</label><textarea class="form-textarea" id="grp-notes" placeholder="Best way to reach them, deal offered, history..."></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('groupModal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-gold" onclick="saveGroup()">Add Group</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 <script src="config.js"></script>
 <script>
@@ -335,10 +602,134 @@ function openAddModal(){document.getElementById('m-week').value=new Date().toISO
 
 // ── TABS ──────────────────────────────────────────────────────────
 function switchTab(tab, btn) {
-  ['kpi','growth','ai'].forEach(t => document.getElementById('tab-'+t).style.display = t===tab?'':'none');
+  ['kpi','growth','ai','attendance'].forEach(t => document.getElementById('tab-'+t).style.display = t===tab?'':'none');
   document.querySelectorAll('.mkt-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  if (tab === 'attendance') { attInit(); }
 }
+
+// ── ATTENDANCE: 5-YEAR DATA ───────────────────────────────────────
+const ATT_HISTORY = [
+  { year:2025, avg:470, games:11, total:5170 },
+  { year:2024, avg:793, games:8,  total:6344 },
+  { year:2023, avg:903, games:10, total:9030 },
+  { year:2022, avg:633, games:10, total:6330 },
+  { year:2021, avg:606, games:10, total:6060 },
+];
+
+// Apply bar heights from data-height attributes
+function drawAttBars() {
+  document.querySelectorAll('[data-height]').forEach(el => {
+    el.style.height = el.dataset.height + '%';
+  });
+}
+
+// ── GROUPS STORAGE ────────────────────────────────────────────────
+// ── AUDIENCE GROUPS — AIRTABLE CONNECTED ─────────────────────────
+let AT_GROUPS = [];
+
+async function loadAudienceGroups() {
+  try {
+    const records = await airtableFetchAll(FIS_CONFIG.TABLES.AUDIENCE_GROUPS);
+    AT_GROUPS = records;
+  } catch(e) {
+    console.warn('Audience_Groups table not found yet.', e.message);
+    AT_GROUPS = [];
+  }
+}
+
+async function saveGroup() {
+  const name = document.getElementById('grp-name').value.trim();
+  if (!name) { showToast('Group name required'); return; }
+  const priMap = { high:'High', medium:'Medium', low:'Low' };
+  const fields = {
+    'Group Name': name,
+    'Type': document.getElementById('grp-type').value,
+    'Est Size': parseInt(document.getElementById('grp-size').value)||0,
+    'Contact': document.getElementById('grp-contact').value,
+    'Ticket Priority': priMap[document.getElementById('grp-ticket').value] || 'Medium',
+    'Content Priority': priMap[document.getElementById('grp-content').value] || 'Medium',
+    'Status': document.getElementById('grp-status').value,
+    'Games Attended': parseInt(document.getElementById('grp-games').value)||0,
+    'Notes': document.getElementById('grp-notes').value,
+  };
+  try {
+    showToast('Saving to Airtable…');
+    await airtableCreate(FIS_CONFIG.TABLES.AUDIENCE_GROUPS, fields);
+    document.getElementById('groupModal').classList.remove('open');
+    await loadAudienceGroups();
+    renderGroups();
+    showToast('Group saved to Airtable ✓');
+  } catch(e) { showToast(`Error: ${e.message}`); }
+}
+
+async function deleteGroup(recordId) {
+  try {
+    await airtableDelete(FIS_CONFIG.TABLES.AUDIENCE_GROUPS, recordId);
+    await loadAudienceGroups();
+    renderGroups();
+    showToast('Group removed');
+  } catch(e) { showToast(`Error: ${e.message}`); }
+}
+
+function openGroupModal() {
+  ['grp-name','grp-contact','grp-notes'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('grp-size').value='';
+  document.getElementById('grp-games').value='';
+  document.getElementById('groupModal').classList.add('open');
+}
+
+const PRI_BADGE = {
+  High:   '<span style="background:rgba(220,50,50,0.12);color:var(--red);font-family:\'DM Mono\',monospace;font-size:9px;padding:2px 7px;border-radius:4px;border:1px solid rgba(220,50,50,0.3);">🔥 High</span>',
+  Medium: '<span style="background:rgba(201,151,58,0.12);color:var(--gold2);font-family:\'DM Mono\',monospace;font-size:9px;padding:2px 7px;border-radius:4px;border:1px solid rgba(201,151,58,0.3);">⚡ Medium</span>',
+  Low:    '<span style="background:rgba(77,106,156,0.2);color:var(--slate2);font-family:\'DM Mono\',monospace;font-size:9px;padding:2px 7px;border-radius:4px;border:1px solid var(--border);">📌 Low</span>',
+};
+const STATUS_BADGE = {
+  'Prospect':       'rgba(77,106,156,0.2)',
+  'In Conversation':'rgba(201,151,58,0.15)',
+  'Committed':      'rgba(77,166,255,0.15)',
+  'Attended':       'rgba(34,201,139,0.15)',
+  'Repeat Partner': 'rgba(34,201,139,0.25)',
+};
+
+function renderGroups() {
+  document.getElementById('att-groups-count').textContent = AT_GROUPS.length;
+  const tbody = document.getElementById('att-group-body');
+  if (!AT_GROUPS.length) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--slate);">No groups yet — create the Audience_Groups table in Airtable, then click + Add Group</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = AT_GROUPS.map(rec => {
+    const g = rec.fields;
+    const notes = g['Notes'] || '';
+    return `<tr>
+      <td style="padding:9px 12px;border-bottom:1px solid rgba(77,106,156,0.08);">
+        <div style="font-weight:700;color:var(--white);">${g['Group Name']||'—'}</div>
+        ${notes?`<div style="font-size:10px;color:var(--slate);margin-top:2px;">${notes.slice(0,60)}${notes.length>60?'...':''}</div>`:''}
+      </td>
+      <td style="padding:9px 12px;border-bottom:1px solid rgba(77,106,156,0.08);font-size:11px;color:var(--slate2);">${g['Type']||'—'}</td>
+      <td style="padding:9px 12px;border-bottom:1px solid rgba(77,106,156,0.08);font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:var(--white);">${g['Est Size']||'—'}</td>
+      <td style="padding:9px 12px;border-bottom:1px solid rgba(77,106,156,0.08);">${PRI_BADGE[g['Ticket Priority']]||''}</td>
+      <td style="padding:9px 12px;border-bottom:1px solid rgba(77,106,156,0.08);">${PRI_BADGE[g['Content Priority']]||''}</td>
+      <td style="padding:9px 12px;border-bottom:1px solid rgba(77,106,156,0.08);font-size:11px;color:var(--slate2);">${g['Contact']||'—'}</td>
+      <td style="padding:9px 12px;border-bottom:1px solid rgba(77,106,156,0.08);">
+        <span style="background:${STATUS_BADGE[g['Status']]||'rgba(77,106,156,0.2)'};font-family:'DM Mono',monospace;font-size:9px;padding:3px 8px;border-radius:5px;color:var(--white);">${g['Status']||'—'}</span>
+      </td>
+      <td style="padding:9px 12px;border-bottom:1px solid rgba(77,106,156,0.08);">
+        <button onclick="deleteGroup('${rec.id}')" style="background:none;border:none;color:var(--slate);cursor:pointer;font-size:12px;" title="Remove">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function attInit() {
+  const total = ATT_HISTORY.reduce((a,y) => a + y.total, 0);
+  document.getElementById('att-5yr-total').textContent = total.toLocaleString();
+  drawAttBars();
+  await loadAudienceGroups();
+  renderGroups();
+}
+
 
 // ── LOAD KPIs FROM AIRTABLE ───────────────────────────────────────
 async function loadMarketing() {
