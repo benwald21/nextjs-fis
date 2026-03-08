@@ -34,6 +34,9 @@ async function airtableFetch(table, params = {}) {
   });
   if (params.maxRecords) url.searchParams.set('maxRecords', params.maxRecords);
   if (params.view) url.searchParams.set('view', params.view);
+  if (params.cellFormat) url.searchParams.set('cellFormat', params.cellFormat);
+  if (params.timeZone) url.searchParams.set('timeZone', params.timeZone);
+  if (params.userLocale) url.searchParams.set('userLocale', params.userLocale);
 
   const res = await fetch(url.toString(), {
     headers: { 'Authorization': `Bearer ${FIS_CONFIG.AIRTABLE_TOKEN}` }
