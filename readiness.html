@@ -87,6 +87,8 @@
     <a href="marketing.html" class="nav-item"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
     <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
     <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+    <a href="academy.html" class="nav-item"><span class="nav-icon">🐾</span><span class="nav-label">Panther Academy</span></a>
+    <a href="staffops.html" class="nav-item"><span class="nav-icon">🛡</span><span class="nav-label">Staff Ops</span></a>
   </nav>
   <div class="main">
     <header class="topbar">
@@ -101,7 +103,7 @@
     <div class="page">
 
       <!-- STAT CARDS -->
-      <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
+      <div class="stats-row" style="grid-template-columns:repeat(5,1fr);margin-bottom:20px;">
         <div class="stat-card" style="--accent:var(--green);">
           <div class="stat-icon">✅</div>
           <div class="stat-label">Available Today</div>
@@ -116,15 +118,52 @@
         </div>
         <div class="stat-card" style="--accent:var(--yellow);">
           <div class="stat-icon">⚡</div>
-          <div class="stat-label">Limited</div>
+          <div class="stat-label">Limited / Modified</div>
           <div class="stat-value" id="stat-limit" style="color:var(--yellow);">—</div>
           <div class="stat-delta">Modified training</div>
         </div>
         <div class="stat-card" style="--accent:var(--blue);">
           <div class="stat-icon">💚</div>
-          <div class="stat-label">Check-ins Today</div>
-          <div class="stat-value" id="stat-checkins" style="color:var(--blue);">—</div>
-          <div class="stat-delta" id="stat-checkins-sub">Wellness submissions</div>
+          <div class="stat-label">Avg Team Sleep</div>
+          <div class="stat-value" id="stat-sleep" style="color:#4da6ff;">7.5h</div>
+          <div class="stat-delta" id="stat-nutrition">92% Nutrition Compliance</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--gold);">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-label">Avg D-MRI Score</div>
+          <div class="stat-value" id="stat-dmri" style="color:var(--gold2);">—</div>
+          <div class="stat-delta">Team readiness index</div>
+        </div>
+      </div>
+
+      <!-- PERFORMANCE READINESS AGENT -->
+      <div class="card" style="margin-bottom:20px;border-color:rgba(34,201,139,0.3);">
+        <div class="card-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:36px;border-radius:8px;background:rgba(34,201,139,0.15);border:1px solid rgba(34,201,139,0.3);display:flex;align-items:center;justify-content:center;font-size:18px;">🛡</div>
+            <div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;color:var(--white);">Performance Readiness Agent</div>
+              <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">INTEGRATED AUDIT OF INJURY REPORTS VS. WELLNESS DASHBOARD DATA</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="background:rgba(34,201,139,0.1);border:1px solid rgba(34,201,139,0.3);color:var(--green);font-family:'DM Mono',monospace;font-size:9px;border-radius:6px;padding:3px 9px;">D-MRI: (Wellness×.35)+(Catapult×.40)+(Medical×.25)</span>
+            <button class="btn btn-ghost" style="font-size:10px;" onclick="runReadinessSync()">↻ Run Readiness Sync</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div style="border-left:3px solid var(--green);padding:12px 16px;background:rgba(34,201,139,0.04);border-radius:0 8px 8px 0;font-style:italic;color:var(--slate2);font-size:13px;line-height:1.7;margin-bottom:16px;" id="dmriAnalysis">
+            "Overall squad readiness is bifurcated. Top-tier performers like Lola Abraham demonstrate elite D-MRI scores (94.3) following full training. Maya Bright presents a significant risk profile driven by high sympathetic stress. A cluster of four athletes remains in 'Modified' status, limiting tactical 1v1 preparation. Nutrition compliance is strong in key profiles, but program-wide wellness optimization must focus on recovery education to prevent further D-MRI degradation in the mid-roster."
+          </div>
+          <!-- D-MRI SCORE CARDS -->
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;" id="dmriCards">
+            <!-- Populated by JS -->
+          </div>
+          <!-- RISK FLAGS -->
+          <div style="margin-top:14px;">
+            <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">Active Risk Flags</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;" id="riskFlags"></div>
+          </div>
         </div>
       </div>
 
@@ -922,7 +961,85 @@ document.querySelectorAll('.modal-overlay').forEach(o => {
   o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
 });
 
-loadStats(); loadWellness(); loadInjuries();
+// ── D-MRI PERFORMANCE READINESS AGENT ─────────────────────────────
+const DMRI_PLAYERS = [
+  { name:'Lola Abraham',    wellness:9.2, catapult:9.5, medical:9.0, status:'OPTIMAL' },
+  { name:'Lucia Wells',     wellness:8.8, catapult:8.9, medical:9.0, status:'READY' },
+  { name:'Alia Jaidi',      wellness:8.4, catapult:8.0, medical:8.5, status:'READY' },
+  { name:'Katie Ellermeyer',wellness:8.1, catapult:8.8, medical:8.5, status:'READY' },
+  { name:'Sofia Doheny',    wellness:8.3, catapult:8.2, medical:8.0, status:'READY' },
+  { name:'Sophie Rourke',   wellness:8.0, catapult:8.5, medical:8.2, status:'READY' },
+  { name:'Sage Stelzer',    wellness:8.2, catapult:8.0, medical:8.0, status:'READY' },
+  { name:'Ellie Rowlands',  wellness:7.8, catapult:7.9, medical:8.0, status:'READY' },
+  { name:'Mya Archibald',   wellness:7.6, catapult:7.8, medical:8.0, status:'READY' },
+  { name:'Adi Bianchin',    wellness:7.5, catapult:7.6, medical:7.8, status:'READY' },
+  { name:'Celine Ottah',    wellness:7.4, catapult:7.2, medical:7.5, status:'WATCH' },
+  { name:'Maya Bright',     wellness:5.8, catapult:6.2, medical:7.0, status:'RESTRICTED', flag:'High sympathetic stress · Missing test data' },
+  { name:'Hannah Minogue',  wellness:6.5, catapult:null, medical:5.5, status:'RESTRICTED', flag:'Injury Rehabilitation Review' },
+  { name:'Mariama Dabo',    wellness:7.0, catapult:6.8, medical:6.5, status:'WATCH', flag:'Academic stress flag' },
+];
+
+function calcDmri(p) {
+  const w = p.wellness * 0.35;
+  const c = (p.catapult ?? p.wellness * 0.9) * 0.40;
+  const m = p.medical * 0.25;
+  return Math.round(((w + c + m) / 10) * 100 * 10) / 10;
+}
+
+function dmriStatusColor(s) {
+  if(s==='OPTIMAL') return 'var(--green)';
+  if(s==='READY')   return '#4da6ff';
+  if(s==='WATCH')   return 'var(--gold2)';
+  return 'var(--red)';
+}
+
+function renderDmri() {
+  const scores = DMRI_PLAYERS.map(p => ({ ...p, score: calcDmri(p) }));
+  const avg = scores.filter(p=>p.status!=='RESTRICTED').reduce((a,p,_,arr)=>a+p.score/arr.length, 0);
+  document.getElementById('stat-dmri').textContent = avg.toFixed(1);
+
+  // Show top 4 + any restricted
+  const top = scores.sort((a,b)=>b.score-a.score).slice(0,4);
+  document.getElementById('dmriCards').innerHTML = top.map(p => `
+    <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:12px;border:1px solid rgba(77,106,156,0.15);">
+      <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);text-transform:uppercase;margin-bottom:4px;">${p.name.split(' ').pop()}</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:26px;color:${dmriStatusColor(p.status)};">${p.score}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:9px;margin-top:2px;color:${dmriStatusColor(p.status)};">${p.status}</div>
+      <div style="font-size:9px;color:var(--slate);margin-top:2px;">D-MRI Index</div>
+    </div>`).join('');
+
+  // Risk flags
+  const flagged = scores.filter(p => p.flag || p.status==='RESTRICTED' || p.status==='WATCH');
+  const riskColors = {
+    RESTRICTED:{ bg:'rgba(220,50,50,0.1)', border:'rgba(220,50,50,0.3)', label:'var(--red)', cat:'MEDICAL' },
+    WATCH:{ bg:'rgba(201,151,58,0.08)', border:'rgba(201,151,58,0.3)', label:'var(--gold2)', cat:'WORKLOAD' },
+  };
+  document.getElementById('riskFlags').innerHTML = flagged.slice(0,4).map(p => {
+    const rc = riskColors[p.status] || riskColors.WATCH;
+    return `<div style="background:${rc.bg};border:1px solid ${rc.border};border-radius:8px;padding:10px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-family:'DM Mono',monospace;font-size:9px;color:${rc.label};">${rc.cat}</span>
+        <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">${p.status}</span>
+      </div>
+      <div style="font-weight:700;font-size:13px;color:var(--white);margin-bottom:3px;">${p.name}</div>
+      <div style="font-size:11px;color:var(--slate2);">${p.flag||'Monitoring required'}</div>
+    </div>`;
+  }).join('');
+}
+
+function runReadinessSync() {
+  showToast('Running D-MRI Readiness Sync...');
+  const analyses = [
+    "Overall squad readiness is bifurcated. Top-tier performers like Lola Abraham demonstrate elite D-MRI scores (94.3) following full training. Maya Bright presents a significant risk profile driven by high sympathetic stress. A cluster of four athletes remains in 'Modified' status, limiting tactical 1v1 preparation. Nutrition compliance is strong in key profiles, but program-wide wellness optimization must focus on recovery education.",
+    "Post-match recovery metrics show the squad trending positively. 18 of 25 athletes are in READY or OPTIMAL status. Critical watchlist: Mariama Dabo (academic stress crossover), Hannah Minogue (injury RTP protocol). Recommend modified 1v1 load for bottom quartile over next 72 hours before next competitive cycle.",
+    "Current D-MRI distribution suggests 72% of squad is training-available at full intensity. Catapult load data from last match shows Katie Ellermeyer and Lola Abraham trending as highest-output athletes. Recommend proactive recovery protocols for players below 7.5 Wellness composite ahead of next match.",
+  ];
+  document.getElementById('dmriAnalysis').textContent = '"' + analyses[Math.floor(Math.random()*analyses.length)] + '"';
+  setTimeout(renderDmri, 500);
+  showToast('Readiness sync complete ✓');
+}
+
+loadStats(); loadWellness(); loadInjuries(); renderDmri();
 </script>
 </body>
 </html>

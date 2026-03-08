@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIS — Staff Ops</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.staff-card {
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:14px 16px; cursor:pointer; transition:border-color 0.2s;
+}
+.staff-card:hover { border-color:rgba(201,151,58,0.4); }
+.staff-card.active { border-color:var(--gold); background:rgba(201,151,58,0.06); }
+.staff-icon { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; margin-bottom:8px; }
+.staff-title { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:14px; color:var(--white); }
+.staff-role { font-family:'DM Mono',monospace; font-size:9px; color:var(--slate); letter-spacing:0.08em; text-transform:uppercase; margin-top:2px; }
+
+.task-item {
+  background:var(--card); border:1px solid var(--border); border-radius:9px;
+  padding:13px 14px; margin-bottom:8px; transition:border-color 0.2s;
+  cursor:pointer;
+}
+.task-item:hover { border-color:rgba(201,151,58,0.3); }
+.task-item.done { opacity:0.5; }
+.task-item.done .task-title { text-decoration:line-through; color:var(--slate); }
+
+.task-title { font-weight:600; color:var(--white); font-size:13px; margin-bottom:4px; }
+.task-meta { display:flex; align-items:center; gap:8px; }
+.task-assignee { font-family:'DM Mono',monospace; font-size:10px; color:var(--slate2); }
+.task-due { font-family:'DM Mono',monospace; font-size:10px; }
+.task-due.overdue { color:var(--red); }
+.task-due.soon { color:var(--gold2); }
+.task-due.ok { color:var(--slate); }
+
+.task-check { width:18px; height:18px; border-radius:50%; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.15s; }
+.task-check:hover { border-color:var(--gold); }
+.task-check.checked { background:var(--green); border-color:var(--green); }
+
+.board-col { flex:1; min-width:0; }
+.board-col-header {
+  font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.1em;
+  text-transform:uppercase; color:var(--slate2); margin-bottom:12px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.board-col-count { background:rgba(77,106,156,0.2); border-radius:10px; padding:2px 7px; font-size:9px; }
+
+.priority-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.priority-high { background:var(--red); }
+.priority-med  { background:var(--gold2); }
+.priority-low  { background:var(--green); }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="logo-mark">FIS</div>
+    <div class="nav-section-label">MAIN</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">⬡</span><span class="nav-label">Dashboard</span></a>
+    <a href="readiness.html" class="nav-item"><span class="nav-icon">💚</span><span class="nav-label">Player Readiness</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">OPERATIONS</div>
+    <a href="roster.html" class="nav-item"><span class="nav-icon">👥</span><span class="nav-label">Roster</span></a>
+    <a href="recruiting.html" class="nav-item"><span class="nav-icon">🎯</span><span class="nav-label">Recruiting</span></a>
+    <a href="depthchart.html" class="nav-item"><span class="nav-icon">⚽</span><span class="nav-label">Depth Chart</span></a>
+    <a href="scholarship.html" class="nav-item"><span class="nav-icon">💵</span><span class="nav-label">Scholarship</span></a>
+    <a href="schedule.html" class="nav-item"><span class="nav-icon">📅</span><span class="nav-label">Schedule</span></a>
+    <a href="tasks.html" class="nav-item"><span class="nav-icon">✅</span><span class="nav-label">Staff Tasks</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">SPORT SCIENCE</div>
+    <a href="training.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Training &amp; Load</span></a>
+    <a href="opponents.html" class="nav-item"><span class="nav-icon">🔍</span><span class="nav-label">Opponents</span></a>
+    <a href="tactical.html" class="nav-item"><span class="nav-icon">📊</span><span class="nav-label">Tactical Analysis</span></a>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">PROGRAM</div>
+    <a href="academics.html" class="nav-item"><span class="nav-icon">🎓</span><span class="nav-label">Academics</span></a>
+    <a href="budget.html" class="nav-item"><span class="nav-icon">💰</span><span class="nav-label">Budget</span></a>
+    <a href="marketing.html" class="nav-item"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
+    <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
+    <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+    <a href="academy.html" class="nav-item"><span class="nav-icon">🐾</span><span class="nav-label">Panther Academy</span></a>
+    <a href="staffops.html" class="nav-item active"><span class="nav-icon">🛡</span><span class="nav-label">Staff Ops</span></a>
+  </nav>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title">STAFF <span>ACCOUNTABILITY LOOP</span></div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost" onclick="openAccessModal()">👥 Manage Access</button>
+        <button class="btn btn-gold" onclick="openTaskModal()">+ Assign Project</button>
+        <div class="avatar">HC</div>
+      </div>
+    </header>
+
+    <div class="page">
+
+      <!-- STAT CARDS -->
+      <div class="stats-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
+        <div class="stat-card" style="--accent:var(--gold);">
+          <div class="stat-icon">✅</div><div class="stat-label">Open Tasks</div>
+          <div class="stat-value" id="openCount" style="color:var(--gold2);">—</div><div class="stat-delta">Across all boards</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--red);">
+          <div class="stat-icon">🔴</div><div class="stat-label">Overdue</div>
+          <div class="stat-value" id="overdueCount" style="color:var(--red);">—</div><div class="stat-delta">Need attention</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--green);">
+          <div class="stat-icon">✓</div><div class="stat-label">Completed</div>
+          <div class="stat-value" id="doneCount" style="color:var(--green);">—</div><div class="stat-delta">This week</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--blue);">
+          <div class="stat-icon">👤</div><div class="stat-label">Active Staff</div>
+          <div class="stat-value" style="color:#4da6ff;">5</div><div class="stat-delta">Technical + Support</div>
+        </div>
+      </div>
+
+      <!-- STAFF GRID -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="dot" style="background:var(--gold);"></div>🛡 Technical Staff (Coaches)</div></div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div class="staff-card" onclick="filterBoard('HC')">
+                <div class="staff-icon" style="background:rgba(201,151,58,0.15);">👤</div>
+                <div class="staff-title">Head Coach</div>
+                <div class="staff-role">Program Vision</div>
+              </div>
+              <div class="staff-card" onclick="filterBoard('TD')">
+                <div class="staff-icon" style="background:rgba(77,77,255,0.1);">🛡</div>
+                <div class="staff-title">Technical Advisor</div>
+                <div class="staff-role">Opponent Analysis</div>
+              </div>
+              <div class="staff-card" onclick="filterBoard('AC')">
+                <div class="staff-icon" style="background:rgba(77,166,255,0.1);">📋</div>
+                <div class="staff-title">Assistant Coach</div>
+                <div class="staff-role">Recruiting Coord.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="dot" style="background:var(--blue);"></div>📊 Support Staff</div></div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div class="staff-card" onclick="filterBoard('AA')">
+                <div class="staff-icon" style="background:rgba(34,201,139,0.1);">🎓</div>
+                <div class="staff-title">Academic Advisor</div>
+                <div class="staff-role">Wellness & Studies</div>
+              </div>
+              <div class="staff-card" onclick="filterBoard('MM')">
+                <div class="staff-icon" style="background:rgba(220,50,50,0.1);">📣</div>
+                <div class="staff-title">Marketing Manager</div>
+                <div class="staff-role">Brand & Revenue</div>
+              </div>
+              <div class="staff-card" onclick="filterBoard('SS')">
+                <div class="staff-icon" style="background:rgba(201,151,58,0.1);">⚡</div>
+                <div class="staff-title">Sports Scientist</div>
+                <div class="staff-role">Load Monitoring</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TASK BOARDS -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="dot"></div>Task Boards</div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-ghost" style="font-size:10px;padding:3px 8px;" onclick="filterBoard('all')">All</button>
+            <button class="btn btn-ghost" style="font-size:10px;padding:3px 8px;" onclick="filterBoard('HC')">HC</button>
+            <button class="btn btn-ghost" style="font-size:10px;padding:3px 8px;" onclick="filterBoard('TD')">TD</button>
+            <button class="btn btn-ghost" style="font-size:10px;padding:3px 8px;" onclick="filterBoard('AC')">AC</button>
+            <button class="btn btn-ghost" style="font-size:10px;padding:3px 8px;" onclick="filterBoard('SS')">SS</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;gap:16px;" id="taskBoards"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ADD TASK MODAL -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal">
+    <div class="modal-title">+ Assign Staff Project</div>
+    <div class="grid-2">
+      <div class="form-group"><label class="form-label">Task Title *</label><input class="form-input" id="t-title" placeholder="e.g. Scout upcoming opponent"></div>
+      <div class="form-group"><label class="form-label">Assigned To</label>
+        <select class="form-select" id="t-assign">
+          <option value="HC">Head Coach (HC)</option>
+          <option value="TD">Technical Advisor (TD)</option>
+          <option value="AC">Assistant Coach (AC)</option>
+          <option value="AA">Academic Advisor (AA)</option>
+          <option value="MM">Marketing Manager (MM)</option>
+          <option value="SS">Sports Scientist (SS)</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Board</label>
+        <select class="form-select" id="t-board">
+          <option value="technical">Technical Board</option>
+          <option value="support">Support Board</option>
+          <option value="recruiting">Recruiting Board</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Due Date</label><input class="form-input" id="t-due" type="date"></div>
+      <div class="form-group"><label class="form-label">Priority</label>
+        <select class="form-select" id="t-priority">
+          <option value="high">🔴 High</option>
+          <option value="med">🟡 Medium</option>
+          <option value="low">🟢 Low</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="t-notes"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('taskModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="addTask()">Assign Task</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="accessModal">
+  <div class="modal">
+    <div class="modal-title">👥 Manage Staff Access</div>
+    <div style="color:var(--slate2);font-size:13px;padding:8px 0;">Staff role permissions are managed through your program's admin panel. Contact your system administrator to add, remove, or modify staff access levels.</div>
+    <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:12px;margin-top:10px;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);margin-bottom:8px;">CURRENT ACCESS LEVELS</div>
+      ${['Head Coach — Full Access','Technical Advisor — Sport Science + Ops','Assistant Coach — Recruiting + Schedule','Academic Advisor — Academics + Wellness','Marketing Manager — Marketing + Budget','Sports Scientist — Training + Load'].map(r=>`<div style="padding:6px 0;border-bottom:1px solid rgba(77,106,156,0.1);font-size:12px;color:var(--white);">${r}</div>`).join('')}
+    </div>
+    <div class="modal-footer"><button class="btn btn-gold" onclick="closeModal('accessModal')">Close</button></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="config.js"></script>
+<script>
+const STAFF_KEY = 'fis_staffops_v1';
+const DEFAULT_TASKS = [
+  { id:1, title:'Scout upcoming opponent',   assignee:'TD', board:'technical', due:'2026-03-15', priority:'high', done:false, notes:'' },
+  { id:2, title:'Review medical reports',     assignee:'SS', board:'support',   due:'2026-03-11', priority:'med',  done:false, notes:'' },
+  { id:3, title:'Major Camp Email Blast — 2 weeks out from ID Camp', assignee:'AC', board:'recruiting', due:'2026-03-20', priority:'high', done:false, notes:'' },
+  { id:4, title:'Finalize spring schedule',   assignee:'HC', board:'technical', due:'2026-03-12', priority:'med',  done:false, notes:'' },
+  { id:5, title:'Academic check-ins for at-risk players', assignee:'AA', board:'support', due:'2026-03-14', priority:'high', done:false, notes:'' },
+  { id:6, title:'Post-match social content',  assignee:'MM', board:'support',   due:'2026-03-08', priority:'med',  done:true,  notes:'' },
+  { id:7, title:'Catapult load report submission', assignee:'SS', board:'technical', due:'2026-03-10', priority:'high', done:false, notes:'' },
+  { id:8, title:'Contact top 5 recruited prospects', assignee:'AC', board:'recruiting', due:'2026-03-18', priority:'high', done:false, notes:'' },
+];
+
+function loadTasks() {
+  try { return JSON.parse(localStorage.getItem(STAFF_KEY)) || DEFAULT_TASKS; }
+  catch(e) { return DEFAULT_TASKS; }
+}
+function saveTasks(t) { localStorage.setItem(STAFF_KEY, JSON.stringify(t)); }
+
+function showToast(m,d=2800){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d);}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function openAccessModal(){document.getElementById('accessModal').classList.add('open');}
+function openTaskModal(){document.getElementById('t-due').value=new Date().toISOString().split('T')[0];document.getElementById('taskModal').classList.add('open');}
+
+let activeFilter = 'all';
+function filterBoard(f) { activeFilter=f; renderBoards(); }
+
+function dueClass(due) {
+  if(!due) return 'ok';
+  const d = new Date(due), today = new Date();
+  today.setHours(0,0,0,0);
+  if(d < today) return 'overdue';
+  const diff = (d-today)/(1000*60*60*24);
+  return diff <= 3 ? 'soon' : 'ok';
+}
+
+function renderBoards() {
+  const tasks = loadTasks().filter(t => activeFilter==='all' || t.assignee===activeFilter);
+  const boards = ['technical','support','recruiting'];
+  const labels = { technical:'Technical Board', support:'Support Board', recruiting:'Recruiting Board' };
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  let open=0, overdue=0, done=0;
+  loadTasks().forEach(t => {
+    if(t.done) done++;
+    else {
+      open++;
+      if(t.due && new Date(t.due) < today) overdue++;
+    }
+  });
+  document.getElementById('openCount').textContent = open;
+  document.getElementById('overdueCount').textContent = overdue;
+  document.getElementById('doneCount').textContent = done;
+
+  document.getElementById('taskBoards').innerHTML = boards.map(board => {
+    const boardTasks = tasks.filter(t=>t.board===board);
+    const activeTasks = boardTasks.filter(t=>!t.done);
+    return `<div class="board-col">
+      <div class="board-col-header">
+        ${labels[board]}
+        <span class="board-col-count">${activeTasks.length} Active</span>
+      </div>
+      ${boardTasks.map(t => `
+        <div class="task-item ${t.done?'done':''}" onclick="toggleTask(${t.id})">
+          <div style="display:flex;align-items:flex-start;gap:8px;">
+            <div class="task-check ${t.done?'checked':''}">
+              ${t.done?'<span style="color:white;font-size:10px;">✓</span>':''}
+            </div>
+            <div style="flex:1;">
+              <div class="task-title">${t.title}</div>
+              <div class="task-meta">
+                <div style="width:24px;height:24px;border-radius:50%;background:rgba(201,151,58,0.15);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:8px;color:var(--gold2);">${t.assignee}</div>
+                <span class="task-assignee">${t.assignee}</span>
+                <div class="priority-dot priority-${t.priority}"></div>
+                ${t.due ? `<span class="task-due ${dueClass(t.due)}">${dueClass(t.due)==='overdue'?'OVERDUE · ':''}Due ${t.due}</span>` : ''}
+              </div>
+            </div>
+          </div>
+        </div>`).join('')}
+      <div style="text-align:center;padding:8px;">
+        <button class="btn btn-ghost" style="font-size:10px;width:100%;" onclick="openTaskModal()">+ ADD TO ${labels[board].toUpperCase().split(' ')[0]}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleTask(id) {
+  const tasks = loadTasks();
+  const t = tasks.find(t=>t.id===id);
+  if(t) t.done = !t.done;
+  saveTasks(tasks);
+  showToast(t.done ? '✓ Task completed' : 'Task reopened');
+  renderBoards();
+}
+
+function addTask() {
+  const title = document.getElementById('t-title').value.trim();
+  if(!title){ showToast('Task title required'); return; }
+  const tasks = loadTasks();
+  tasks.unshift({
+    id: Date.now(),
+    title,
+    assignee: document.getElementById('t-assign').value,
+    board: document.getElementById('t-board').value,
+    due: document.getElementById('t-due').value,
+    priority: document.getElementById('t-priority').value,
+    done: false,
+    notes: document.getElementById('t-notes').value,
+  });
+  saveTasks(tasks);
+  closeModal('taskModal');
+  showToast('Task assigned ✓');
+  renderBoards();
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+renderBoards();
+</script>
+</body>
+</html>
