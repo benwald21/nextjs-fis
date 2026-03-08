@@ -33,6 +33,8 @@
     <a href="marketing.html" class="nav-item"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
     <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
     <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+    <a href="academy.html" class="nav-item"><span class="nav-icon">🐾</span><span class="nav-label">Panther Academy</span></a>
+    <a href="staffops.html" class="nav-item"><span class="nav-icon">🛡</span><span class="nav-label">Staff Ops</span></a>
   </nav>
 
   <div class="main">
@@ -207,7 +209,7 @@ function renderTable(players) {
   document.getElementById('rosterBody').innerHTML = players.map(p => {
     const f = p.fields;
     const status = f['Team Status'] || f['Status'] || 'Active';
-    const medical = f['Medical Clearance'] ? '<span class="pill pill-green">Cleared</span>' : '<span class="pill pill-red">Not Cleared</span>';
+    const medVal = f['Medical Clearance']; const notCleared = (medVal === false || medVal === 'No' || medVal === 'Not Cleared' || medVal === 0); const medical = notCleared ? '<span class="pill pill-red">Not Cleared</span>' : '<span class="pill pill-green">Cleared</span>';
     return `<tr style="cursor:pointer;" onclick="openDetail('${p.id}')">
       <td style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;color:var(--gold2);">${f['Jersey #'] || '—'}</td>
       <td>
@@ -258,7 +260,7 @@ function openDetail(id) {
   document.getElementById('modalEmail').textContent = f['Email'] || '—';
   document.getElementById('modalPhone').textContent = f['Phone'] || '—';
   document.getElementById('modalScholarship').textContent = f['Scholarship Status'] || '—';
-  document.getElementById('modalMedical').innerHTML = f['Medical Clearance'] ? '<span class="pill pill-green">Cleared</span>' : '<span class="pill pill-red">Not Cleared</span>';
+  const mVal = f['Medical Clearance']; const mNotCleared = (mVal === false || mVal === 'No' || mVal === 'Not Cleared' || mVal === 0); document.getElementById('modalMedical').innerHTML = mNotCleared ? '<span class="pill pill-red">Not Cleared</span>' : '<span class="pill pill-green">Cleared</span>';
   document.getElementById('modalHeight').textContent = f['Height'] || '—';
   document.getElementById('modalWeight').textContent = f['Weight (lbs)'] ? `${f['Weight (lbs)']} lbs` : '—';
   document.getElementById('modalFoot').textContent = f['Dominant Foot'] || '—';
