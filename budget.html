@@ -50,11 +50,11 @@
       <div class="topbar-title">PROGRAM <span>BUDGET</span></div>
       <div class="topbar-actions">
         <select class="form-select" id="semFilter" onchange="loadBudget()" style="font-size:11px;padding:5px 10px;width:auto;">
-          <option value="">All Semesters</option>
-          <option>Fall 2025</option>
-          <option>Spring 2026</option>
-          <option>Fall 2024</option>
-          <option>Spring 2025</option>
+          <option value="">All Fiscal Years</option>
+          <option>2026</option>
+          <option>2025</option>
+          <option>2024</option>
+          <option>2023</option>
         </select>
         <button class="btn btn-ghost" onclick="loadBudget()">↻ Refresh</button>
         <button class="btn btn-gold" onclick="openAddModal()">+ Add Line Item</button>
@@ -113,6 +113,40 @@
         </div>
       </div>
 
+      <!-- FY2026 PITT ATHLETICS OFFICIAL SUMMARY -->
+      <div class="card" style="margin-bottom:16px;border-color:rgba(201,151,58,0.3);">
+        <div class="card-body" style="padding:14px 18px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+            <div>
+              <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);text-transform:uppercase;margin-bottom:4px;">Pitt Athletics Budget Dashboard · FY2026 · Women's Soccer</div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;color:var(--gold2);">$142,893 <span style="font-size:16px;font-weight:600;color:var(--slate);">Available Balance</span></div>
+            </div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;">
+              <div style="text-align:center;">
+                <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">LEDGER BALANCE</div>
+                <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:var(--white);">$161,196</div>
+              </div>
+              <div style="text-align:center;">
+                <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">BUDGET AMOUNT</div>
+                <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:#4da6ff;">$355,277</div>
+              </div>
+              <div style="text-align:center;">
+                <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">ACTUAL SPEND</div>
+                <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:var(--red);">$194,081</div>
+              </div>
+              <div style="text-align:center;">
+                <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">TOTAL ENCUMBRANCE</div>
+                <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:var(--gold2);">$18,303</div>
+              </div>
+              <div style="text-align:center;">
+                <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);">PATHER EXPRESS</div>
+                <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:var(--white);">$45</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
 
         <!-- CATEGORY BREAKDOWN -->
@@ -146,9 +180,12 @@
           <div style="display:flex;gap:8px;align-items:center;">
             <select class="form-select" id="catFilter" onchange="loadBudget()" style="font-size:11px;padding:4px 8px;width:auto;">
               <option value="">All Categories</option>
-              <option>Travel</option><option>Equipment</option><option>Recruiting</option>
-              <option>Facilities</option><option>Staff</option><option>Operations</option>
-              <option>Technology</option><option>Marketing</option><option>Medical</option><option>Other</option>
+              <option>Team Travel</option><option>Recruiting</option><option>Equipment &amp; Supplies</option>
+              <option>Professional Services &amp; Consulting</option><option>General Travel &amp; Meetings</option>
+              <option>Computer &amp; Video Supplies</option><option>Telecommunications</option>
+              <option>Mail, Printing, &amp; Stationary</option><option>Insurance</option>
+              <option>Dues, Memberships &amp; Publications</option><option>Equipment Rental</option>
+              <option>Repairs, Maint &amp; Other Facilities Costs</option><option>Other Costs</option>
             </select>
             <input class="form-input" id="budgetSearch" placeholder="Search..." oninput="filterBudgetTable()" style="font-size:11px;padding:4px 10px;width:140px;">
           </div>
@@ -157,8 +194,8 @@
           <table class="data-table" id="budgetTable">
             <thead>
               <tr>
-                <th>Item</th><th>Category</th><th>Semester</th>
-                <th>Allocated</th><th>Spent</th><th>Remaining</th><th>% Used</th><th>Status</th><th>Notes</th><th></th>
+                <th>Line Item</th><th>Category</th><th>Fiscal Year</th>
+                <th>Allocated</th><th>Actual Spend</th><th>Balance</th><th>% Used</th><th>Description</th><th>Notes</th><th></th>
               </tr>
             </thead>
             <tbody id="budgetBody"><tr><td colspan="10"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
@@ -176,22 +213,22 @@
     <div class="modal-title" id="modalTitle">💰 Add Budget Item</div>
     <div class="grid-2">
       <div class="form-group"><label class="form-label">Item Name *</label><input class="form-input" id="bi-name" placeholder="e.g. Away Travel — Penn State"></div>
-      <div class="form-group"><label class="form-label">Category</label>
-        <select class="form-select" id="bi-cat">
-          <option>Travel</option><option>Equipment</option><option>Recruiting</option>
-          <option>Facilities</option><option>Staff</option><option>Operations</option>
-          <option>Technology</option><option>Marketing</option><option>Medical</option><option>Other</option>
-        </select>
+      <div class="form-group"><label class="form-label">Description</label>
+        <input class="form-input" id="bi-desc" placeholder="Detail or sub-description">
       </div>
-      <div class="form-group"><label class="form-label">Semester</label>
+      <div class="form-group"><label class="form-label">Fiscal Year</label>
         <select class="form-select" id="bi-sem">
-          <option>Fall 2025</option><option>Spring 2026</option>
-          <option>Fall 2024</option><option>Spring 2025</option>
+          <option>2026</option><option>2025</option><option>2024</option><option>2023</option>
         </select>
       </div>
-      <div class="form-group"><label class="form-label">Status</label>
-        <select class="form-select" id="bi-status">
-          <option>Planned</option><option>Approved</option><option>In Progress</option><option>Completed</option><option>Cancelled</option>
+      <div class="form-group"><label class="form-label">Budget Category</label>
+        <select class="form-select" id="bi-cat">
+          <option>Team Travel</option><option>Recruiting</option><option>Equipment &amp; Supplies</option>
+          <option>Professional Services &amp; Consulting</option><option>General Travel &amp; Meetings</option>
+          <option>Computer &amp; Video Supplies</option><option>Telecommunications</option>
+          <option>Mail, Printing, &amp; Stationary</option><option>Insurance</option>
+          <option>Dues, Memberships &amp; Publications</option><option>Equipment Rental</option>
+          <option>Repairs, Maint &amp; Other Facilities Costs</option><option>Other Costs</option>
         </select>
       </div>
       <div class="form-group"><label class="form-label">Budget Allocated ($)</label><input class="form-input" id="bi-alloc" type="number" placeholder="5000"></div>
@@ -208,16 +245,17 @@
 <div id="toast"></div>
 <script src="config.js"></script>
 <script>
-// ── FIELD NAME RESOLVER (handles any Airtable naming) ─────────────
-// Maps what we call it → possible Airtable field names
+// ── FIELD NAME RESOLVER — mapped to YOUR exact Airtable fields ────
+// Primary name first, fallbacks after
 const FIELD_ALIASES = {
-  name:      ['Item Name','Name','Item','Description','Budget Item','Title'],
-  category:  ['Category','Cat','Type','Budget Category'],
-  semester:  ['Semester','Term','Period','Season','Time Period'],
-  allocated: ['Budget Allocated','Allocated','Budget','Amount Allocated','Total Budget','Budgeted','Budgeted Amount'],
-  spent:     ['Spent','Amount Spent','Actual','Actual Spent','Expenditure','Cost','Amount Paid'],
-  status:    ['Status','Approval Status','Budget Status'],
-  notes:     ['Notes','Note','Comments','Details','Description'],
+  name:        ['Line item','Line Item','Item Name','Name','Item','Budget Item','Title'],
+  category:    ['Budget Category','Category','Cat','Type'],
+  description: ['Description','Desc','Details'],
+  allocated:   ['Budget Allocated','Allocated','Budget','Amount Allocated','Total Budget','Budgeted'],
+  spent:       ['Amount','Spent','Amount Spent','Actual','Expenditure','Cost'],
+  fiscalyear:  ['Fiscal Year','Fiscal','Year','FY','Period'],
+  notes:       ['Notes','Note','Comments'],
+  source:      ['Source (from Tableau export)','Source','Tableau Source'],
 };
 
 let RESOLVED_FIELDS = {}; // populated after first fetch
@@ -232,7 +270,7 @@ function resolveFields(sampleFields) {
   RESOLVED_FIELDS = resolved;
 
   // Show debug panel if any key field is missing
-  const missing = ['name','allocated','spent'].filter(k => !resolved[k]);
+  const missing = ['name','allocated','spent'].filter(k => !resolved[k] && k !== 'spent');
   if (missing.length > 0) {
     document.getElementById('fieldDebug').style.display = 'block';
     document.getElementById('fieldDebugContent').innerHTML =
@@ -254,14 +292,36 @@ function fmt(n){return n!=null&&n!==''?'$'+parseFloat(n).toLocaleString('en-US',
 
 // Category colors
 const CAT_COLORS = {
-  Travel:'#4da6ff', Equipment:'var(--gold2)', Recruiting:'var(--green)',
-  Facilities:'#c96dff', Staff:'var(--red)', Operations:'var(--slate2)',
-  Technology:'#4df0ff', Marketing:'var(--gold)', Medical:'#ff9f4a', Other:'var(--white)'
+  'Team Travel':'#4da6ff',
+  'Recruiting':'var(--green)',
+  'Equipment & Supplies':'var(--gold2)',
+  'Professional Services & Consulting':'#c96dff',
+  'General Travel & Meetings':'#4df0ff',
+  'Computer & Video Supplies':'#ff9f4a',
+  'Telecommunications':'var(--slate2)',
+  'Mail, Printing, & Stationary':'#a8b4cc',
+  'Insurance':'var(--red)',
+  'Dues, Memberships & Publications':'#f0c040',
+  'Equipment Rental':'#88ccaa',
+  'Repairs, Maint & Other Facilities Costs':'#cc8844',
+  'Other Costs':'var(--white)',
+  'Other':'var(--white)',
 };
 const CAT_BG = {
-  Travel:'rgba(77,166,255,0.12)', Equipment:'rgba(201,151,58,0.12)', Recruiting:'rgba(34,201,139,0.12)',
-  Facilities:'rgba(201,109,255,0.12)', Staff:'rgba(220,50,50,0.12)', Operations:'rgba(120,130,160,0.12)',
-  Technology:'rgba(77,240,255,0.12)', Marketing:'rgba(201,151,58,0.15)', Medical:'rgba(255,159,74,0.12)', Other:'rgba(255,255,255,0.08)'
+  'Team Travel':'rgba(77,166,255,0.12)',
+  'Recruiting':'rgba(34,201,139,0.12)',
+  'Equipment & Supplies':'rgba(201,151,58,0.12)',
+  'Professional Services & Consulting':'rgba(201,109,255,0.12)',
+  'General Travel & Meetings':'rgba(77,240,255,0.12)',
+  'Computer & Video Supplies':'rgba(255,159,74,0.12)',
+  'Telecommunications':'rgba(120,130,160,0.12)',
+  'Mail, Printing, & Stationary':'rgba(168,180,204,0.12)',
+  'Insurance':'rgba(220,50,50,0.12)',
+  'Dues, Memberships & Publications':'rgba(240,192,64,0.12)',
+  'Equipment Rental':'rgba(136,204,170,0.12)',
+  'Repairs, Maint & Other Facilities Costs':'rgba(204,136,68,0.12)',
+  'Other Costs':'rgba(255,255,255,0.08)',
+  'Other':'rgba(255,255,255,0.08)',
 };
 
 const STATUS_STYLE = {
@@ -305,8 +365,8 @@ async function loadBudget() {
 
   try {
     const filters = [];
-    if (cat) filters.push(`{${RESOLVED_FIELDS.category||'Category'}}="${cat}"`);
-    if (sem) filters.push(`{${RESOLVED_FIELDS.semester||'Semester'}}="${sem}"`);
+    if (cat) filters.push(`{Budget Category}="${cat}"`);
+    if (sem) filters.push(`{Fiscal Year}="${sem}"`);
     const params = filters.length ? { filterByFormula: filters.length>1?`AND(${filters.join(',')})`:filters[0] } : {};
 
     const records = await airtableFetchAll(FIS_CONFIG.TABLES.BUDGET, params);
@@ -330,37 +390,37 @@ function renderBudgetTable(records) {
 
   const rows = records.map(r => {
     const f = r.fields;
-    const alloc  = parseFloat(getF(f,'allocated') ?? f['Budget Allocated'] ?? f['Allocated'] ?? 0);
-    const spent  = parseFloat(getF(f,'spent')     ?? f['Spent'] ?? f['Amount Spent'] ?? 0);
+    // Use YOUR exact Airtable field names as primary, fallbacks for safety
+    const name   = f['Line item']  || f['Line Item']  || getF(f,'name')   || '—';
+    const cat    = f['Budget Category'] || getF(f,'category') || 'Other';
+    const desc   = f['Description'] || getF(f,'description') || '';
+    const alloc  = parseFloat(f['Budget Allocated'] || getF(f,'allocated') || 0);
+    const spent  = parseFloat(f['Amount'] || getF(f,'spent') || 0);
+    const fy     = f['Fiscal Year'] || getF(f,'fiscalyear') || '—';
+    const notes  = f['Notes'] || getF(f,'notes') || '';
     const rem    = alloc - spent;
     const pct    = alloc > 0 ? Math.round((spent/alloc)*100) : 0;
-    const cat    = getF(f,'category') || f['Category'] || 'Other';
-    const status = getF(f,'status')   || f['Status']   || '';
-    const name   = getF(f,'name')     || f['Item Name'] || f['Name'] || '—';
-    const sem    = getF(f,'semester') || f['Semester']  || '—';
-    const notes  = getF(f,'notes')    || f['Notes']     || '';
 
     totalAlloc += alloc;
     totalSpent += spent;
 
-    const barColor = pct > 90 ? 'var(--red)' : pct > 70 ? 'var(--gold)' : 'var(--green)';
-    const catColor = CAT_COLORS[cat] || 'var(--white)';
-    const catBg    = CAT_BG[cat]    || 'rgba(255,255,255,0.08)';
-    const statusStyle = STATUS_STYLE[status] || STATUS_STYLE['Planned'];
+    const barColor = pct > 100 ? 'var(--red)' : pct > 80 ? 'var(--gold)' : 'var(--green)';
+    const catColor = CAT_COLORS[cat] || CAT_COLORS['Other'];
+    const catBg    = CAT_BG[cat]    || CAT_BG['Other'];
 
     return `<tr data-name="${name.toLowerCase()}" data-cat="${cat}">
-      <td style="font-weight:600;color:var(--white);min-width:180px;">
+      <td style="font-weight:600;color:var(--white);min-width:200px;">
         ${name}
         <div class="budget-row-bar" style="width:${Math.min(pct,100)}%;background:${barColor};"></div>
       </td>
-      <td><span class="pill-cat" style="background:${catBg};color:${catColor};">${cat}</span></td>
-      <td style="color:var(--slate2);font-size:11px;white-space:nowrap;">${sem}</td>
+      <td><span class="pill-cat" style="background:${catBg};color:${catColor};white-space:nowrap;">${cat}</span></td>
+      <td style="color:var(--slate2);font-size:11px;white-space:nowrap;text-align:center;">FY${fy}</td>
       <td style="color:var(--slate2);">${fmt(alloc)}</td>
-      <td style="color:var(--red);">${fmt(spent)}</td>
+      <td style="color:${spent>alloc?'var(--red)':'var(--slate2)'};">${fmt(spent)}</td>
       <td style="font-weight:700;color:${rem>=0?'var(--green)':'var(--red)'};">${fmt(rem)}</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:${barColor};">${alloc>0?pct+'%':'—'}</td>
-      <td>${status?`<span style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:4px;${statusStyle}">${status}</span>`:''}</td>
-      <td style="font-size:11px;color:var(--slate);max-width:180px;">${notes}</td>
+      <td style="font-size:11px;color:var(--slate2);max-width:160px;">${desc}</td>
+      <td style="font-size:11px;color:var(--slate);max-width:140px;">${notes}</td>
       <td>
         <button onclick="editRecord('${r.id}')" style="background:none;border:none;color:var(--slate);cursor:pointer;font-size:12px;padding:2px 5px;" title="Edit">✎</button>
         <button onclick="deleteRecord('${r.id}')" style="background:none;border:none;color:var(--slate);cursor:pointer;font-size:12px;" title="Delete">✕</button>
@@ -391,9 +451,9 @@ function renderCategoryBreakdown(records) {
   const catMap = {};
   records.forEach(r => {
     const f = r.fields;
-    const cat   = getF(f,'category') || f['Category'] || 'Other';
-    const alloc = parseFloat(getF(f,'allocated') ?? f['Budget Allocated'] ?? 0);
-    const spent = parseFloat(getF(f,'spent')     ?? f['Spent'] ?? 0);
+    const cat   = f['Budget Category'] || getF(f,'category') || 'Other';
+    const alloc = parseFloat(f['Budget Allocated'] || getF(f,'allocated') || 0);
+    const spent = parseFloat(f['Amount'] || getF(f,'spent') || 0);
     if (!catMap[cat]) catMap[cat] = { alloc:0, spent:0 };
     catMap[cat].alloc += alloc;
     catMap[cat].spent += spent;
@@ -450,17 +510,18 @@ function editRecord(id) {
   editingRecordId = id;
   document.getElementById('modalTitle').textContent = '✎ Edit Budget Item';
   document.getElementById('modalSaveBtn').textContent = 'Update Item';
-  document.getElementById('bi-name').value   = getF(f,'name')      || f['Item Name'] || '';
-  document.getElementById('bi-notes').value  = getF(f,'notes')     || f['Notes']     || '';
-  document.getElementById('bi-alloc').value  = getF(f,'allocated') ?? f['Budget Allocated'] ?? '';
-  document.getElementById('bi-spent').value  = getF(f,'spent')     ?? f['Spent']     ?? '';
+  document.getElementById('bi-name').value   = f['Line item']  || f['Line Item'] || '';
+  document.getElementById('bi-notes').value  = f['Notes']     || '';
+  document.getElementById('bi-alloc').value  = f['Budget Allocated'] ?? '';
+  document.getElementById('bi-spent').value  = f['Amount'] ?? '';
+  if (document.getElementById('bi-desc')) document.getElementById('bi-desc').value = f['Description'] || '';
   // Set selects
-  const cat    = getF(f,'category') || f['Category']  || 'Travel';
-  const sem    = getF(f,'semester') || f['Semester']  || 'Fall 2025';
-  const status = getF(f,'status')   || f['Status']    || 'Planned';
-  ['bi-cat','bi-sem','bi-status'].forEach((id,i) => {
-    const val = [cat,sem,status][i];
+  const fy  = String(f['Fiscal Year'] || '2026');
+  const cat = f['Budget Category'] || 'Team Travel';
+  ['bi-sem','bi-cat'].forEach((id,i) => {
+    const val = [fy,cat][i];
     const el = document.getElementById(id);
+    if (!el) return;
     const opt = [...el.options].find(o => o.value === val);
     if (opt) el.value = val;
   });
@@ -471,20 +532,16 @@ async function saveBudgetItem() {
   const name = document.getElementById('bi-name').value.trim();
   if (!name) { showToast('Item name required'); return; }
 
-  // Use resolved field names if available, else fall back to original names
-  const R = RESOLVED_FIELDS;
+  // Use YOUR exact Airtable field names
   const fields = {
-    [R.name      || 'Item Name']:         name,
-    [R.category  || 'Category']:          document.getElementById('bi-cat').value,
-    [R.semester  || 'Semester']:          document.getElementById('bi-sem').value,
-    [R.status    || 'Status']:            document.getElementById('bi-status').value,
-    [R.allocated || 'Budget Allocated']:  parseFloat(document.getElementById('bi-alloc').value)||0,
-    [R.spent     || 'Spent']:             parseFloat(document.getElementById('bi-spent').value)||0,
-    [R.notes     || 'Notes']:             document.getElementById('bi-notes').value,
+    'Line item':        name,
+    'Budget Category':  document.getElementById('bi-cat') ? document.getElementById('bi-cat').value : document.getElementById('bi-sem').value,
+    'Fiscal Year':      document.getElementById('bi-sem').value,
+    'Budget Allocated': parseFloat(document.getElementById('bi-alloc').value)||0,
+    'Amount':           parseFloat(document.getElementById('bi-spent').value)||0,
+    'Description':      document.getElementById('bi-desc') ? document.getElementById('bi-desc').value : '',
+    'Notes':            document.getElementById('bi-notes').value,
   };
-
-  // Remove null-keyed entries (fields we couldn't resolve)
-  Object.keys(fields).forEach(k => { if (!k || k==='null') delete fields[k]; });
 
   try {
     showToast('Saving…');
