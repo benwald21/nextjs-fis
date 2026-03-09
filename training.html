@@ -73,6 +73,18 @@
 .comp-tab:hover { color:var(--white); border-color:var(--slate2); }
 .comp-tab.active { background:rgba(201,151,58,0.15); border-color:var(--gold); color:var(--gold2); }
 
+/* ── MATCH PERFORMANCE UPLOAD ── */
+.upload-zone {
+  border: 2px dashed rgba(77,166,255,0.35);
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  background: rgba(77,166,255,0.03);
+}
+.upload-zone:hover { border-color: var(--gold); background: rgba(201,151,58,0.04); }
+
 .leaderboard-row {
   display:flex; align-items:center; gap:12px; padding:10px 16px;
   border-bottom:1px solid rgba(77,106,156,0.1); transition:background 0.15s;
@@ -134,6 +146,8 @@
     <a href="marketing.html" class="nav-item"><span class="nav-icon">📣</span><span class="nav-label">Marketing</span></a>
     <a href="alumni.html" class="nav-item"><span class="nav-icon">🤝</span><span class="nav-label">Alumni</span></a>
     <a href="camps.html" class="nav-item"><span class="nav-icon">⛺</span><span class="nav-label">Camps</span></a>
+    <a href="academy.html" class="nav-item"><span class="nav-icon">🐾</span><span class="nav-label">Panther Academy</span></a>
+    <a href="staffops.html" class="nav-item"><span class="nav-icon">🛡</span><span class="nav-label">Staff Ops</span></a>
   </nav>
 
   <div class="main">
@@ -165,6 +179,7 @@
         <button class="tr-tab active" onclick="switchTab('sessions',this)">⚡ Training Sessions</button>
         <button class="tr-tab" onclick="switchTab('load',this)">📊 Player Load</button>
         <button class="tr-tab" onclick="switchTab('cauldron',this)">🔥 Competitive Cauldron</button>
+        <button class="tr-tab" onclick="switchTab('matchperf',this)">📡 Match Performance</button>
       </div>
 
       <!-- SESSIONS TAB -->
@@ -324,6 +339,136 @@
         </div>
 
       </div><!-- end cauldron tab -->
+
+      <!-- ═══ MATCH PERFORMANCE TAB ═══ -->
+      <div id="tab-matchperf" style="display:none;">
+
+        <!-- TOP STAT CARDS — populated after upload -->
+        <div class="stats-row" id="mp-stats" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;display:none;"></div>
+
+        <!-- UPLOAD ZONE -->
+        <div id="mp-upload-section">
+          <div class="card" style="border-color:rgba(77,166,255,0.3);">
+            <div class="card-header">
+              <div class="card-title"><div class="dot" style="background:#4da6ff;"></div>📡 Catapult CSV Importer</div>
+              <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);padding:3px 8px;background:rgba(77,166,255,0.08);border:1px solid rgba(77,166,255,0.2);border-radius:5px;">CATAPULT HIGH FIDELITY · NO AIRTABLE NEEDED</div>
+            </div>
+            <div class="card-body">
+              <div style="font-size:12px;color:var(--slate2);margin-bottom:16px;line-height:1.7;">
+                Export your match or training session data directly from <strong style="color:var(--white);">Catapult</strong> as a CSV, then drop it here. The app will parse every player's load metrics automatically — no Airtable, no manual entry.
+              </div>
+
+              <!-- FORMAT GUIDE -->
+              <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:12px;margin-bottom:16px;font-size:11px;">
+                <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--slate);text-transform:uppercase;margin-bottom:8px;">Expected CSV Columns (flexible — app auto-detects)</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                  ${['Player Name','Total Player Load','Player Load / Min','High Speed Distance (yd)','Total Distance (yd)','Max Velocity (mph)','Accelerations','Decelerations','Sprint Count','Session Duration (min)'].map(c=>`<span style="background:rgba(77,166,255,0.1);color:#4da6ff;font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:4px;border:1px solid rgba(77,166,255,0.2);">${c}</span>`).join('')}
+                </div>
+                <div style="color:var(--slate);font-size:10px;margin-top:8px;">Column names don't have to match exactly — the importer uses smart fuzzy matching.</div>
+              </div>
+
+              <!-- DROP ZONE -->
+              <div class="upload-zone" id="mp-dropzone"
+                onclick="document.getElementById('mp-file-input').click()"
+                ondragover="mpDragOver(event)" ondragleave="mpDragLeave(event)" ondrop="mpDrop(event)">
+                <div style="font-size:32px;margin-bottom:8px;">📡</div>
+                <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;color:var(--white);">Drop Catapult CSV here</div>
+                <div style="font-size:11px;color:var(--slate);margin-top:4px;">or click to browse · .csv files only</div>
+                <input type="file" id="mp-file-input" accept=".csv" style="display:none" onchange="mpFileSelect(event)">
+              </div>
+
+              <!-- SESSION META INPUTS -->
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px;">
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Opponent / Session Label</label>
+                  <input class="form-input" id="mp-label" placeholder="e.g. v. Buffalo · Spring Scrimmage">
+                </div>
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Date</label>
+                  <input class="form-input" id="mp-date" type="date">
+                </div>
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Session Type</label>
+                  <select class="form-select" id="mp-type">
+                    <option value="match">🏆 Match</option>
+                    <option value="training">⚡ Training</option>
+                    <option value="scrimmage">🔵 Scrimmage</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RESULTS SECTION (shown after parse) -->
+        <div id="mp-results" style="display:none;margin-top:16px;">
+
+          <!-- SESSION HEADER -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px;color:var(--white);" id="mp-session-title">Match Performance</div>
+              <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);" id="mp-session-sub"></div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-ghost" style="font-size:11px;" onclick="mpClearSession()">← New Import</button>
+              <button class="btn btn-ghost" style="font-size:11px;" onclick="mpExportCSV()">↓ Export Summary</button>
+              <button class="btn btn-gold" style="font-size:11px;" onclick="mpSaveSession()">💾 Save Session</button>
+            </div>
+          </div>
+
+          <!-- TEAM AVG CARDS -->
+          <div class="stats-row" id="mp-avg-cards" style="grid-template-columns:repeat(5,1fr);margin-bottom:16px;"></div>
+
+          <!-- PERFORMANCE TABLE -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><div class="dot" style="background:#4da6ff;"></div>Player Performance Data</div>
+              <div style="display:flex;gap:6px;align-items:center;">
+                <input class="form-input" id="mp-search" placeholder="Filter players..." oninput="mpFilterTable()" style="font-size:11px;padding:4px 10px;width:140px;">
+                <select class="form-select" id="mp-sort" onchange="mpSortTable()" style="font-size:11px;padding:4px 8px;width:auto;">
+                  <option value="pl">Sort: Player Load</option>
+                  <option value="plmin">Sort: PL/Min</option>
+                  <option value="hsd">Sort: HSD</option>
+                  <option value="dist">Sort: Distance</option>
+                  <option value="vel">Sort: Max Velocity</option>
+                  <option value="name">Sort: Name</option>
+                </select>
+              </div>
+            </div>
+            <div style="overflow-x:auto;">
+              <table style="width:100%;border-collapse:collapse;font-size:12px;" id="mp-table">
+                <thead id="mp-thead"></thead>
+                <tbody id="mp-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- HIGH / LOW PERFORMERS -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;">
+            <div class="card">
+              <div class="card-header"><div class="card-title"><div class="dot" style="background:var(--gold);"></div>🏆 Top Performers</div></div>
+              <div id="mp-top" class="card-body" style="padding:0;"></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div class="card-title"><div class="dot" style="background:var(--red);"></div>⚠ Load Watch List</div></div>
+              <div id="mp-watch" class="card-body" style="padding:0;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SAVED SESSIONS HISTORY -->
+        <div class="card" style="margin-top:16px;" id="mp-history-card">
+          <div class="card-header">
+            <div class="card-title"><div class="dot"></div>Session History</div>
+            <button class="btn btn-ghost" style="font-size:10px;" onclick="mpClearAllHistory()">Clear All</button>
+          </div>
+          <div id="mp-history-list">
+            <div style="text-align:center;color:var(--slate);padding:24px;font-size:12px;">No sessions saved yet — import a Catapult CSV to get started.</div>
+          </div>
+        </div>
+
+      </div><!-- end matchperf tab -->
+
     </div>
   </div>
 </div>
@@ -685,7 +830,7 @@ function renderTestingCards() {
 // TAB SWITCHING
 // ═══════════════════════════════════════════════════════════════════
 function switchTab(tab, btn) {
-  ['sessions','load','cauldron'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'':'none');
+  ['sessions','load','cauldron','matchperf'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'':'none');
   document.querySelectorAll('.tr-tab').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
   if(tab==='cauldron') {
@@ -693,6 +838,9 @@ function switchTab(tab, btn) {
     renderSessionLog();
     renderPodium();
     renderTestingCards();
+  }
+  if(tab==='matchperf') {
+    mpRenderHistory();
   }
 }
 
@@ -759,6 +907,356 @@ async function addSession(){
 }
 
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
+// ═══════════════════════════════════════════════════════════════════
+// MATCH PERFORMANCE — CATAPULT CSV IMPORTER
+// ═══════════════════════════════════════════════════════════════════
+
+const MP_KEY = 'fis_matchperf_v1';
+let mpCurrentData = null; // parsed session in-memory
+
+// ── COLUMN ALIASES (fuzzy match Catapult export variations) ────────
+const MP_COL_MAP = {
+  name:     ['player name','player','name','athlete','athlete name','full name'],
+  pl:       ['total player load','player load','total load','pl','tpl','playerload'],
+  plmin:    ['player load per minute','pl/min','pl per min','load/min','plpm','player load / min','player load/min'],
+  hsd:      ['high speed distance','hsd','high speed running','hsr','high speed dist','high-speed distance (yd)','high speed distance (yd)','high speed distance (m)'],
+  dist:     ['total distance','distance','dist','total dist','total distance (yd)','total distance (m)','distance (yd)'],
+  maxvel:   ['max velocity','max speed','top speed','maximum velocity','max vel','max velocity (mph)','max velocity (m/s)','max speed (mph)'],
+  accel:    ['accelerations','accel','total accelerations','number of accelerations','accel count'],
+  decel:    ['decelerations','decel','total decelerations','number of decelerations','decel count'],
+  sprints:  ['sprint count','sprints','total sprints','number of sprints','sprint entries'],
+  duration: ['duration','session duration','time on field','minutes played','duration (min)','playing time','time played'],
+  impacts:  ['total impacts','impacts','high impacts','impact count'],
+};
+
+function mpFindCol(headers, aliases) {
+  const norm = h => h.toLowerCase().replace(/[^a-z0-9\/]/g,' ').replace(/\s+/g,' ').trim();
+  for (const alias of aliases) {
+    const idx = headers.findIndex(h => norm(h) === alias);
+    if (idx !== -1) return idx;
+  }
+  // partial match fallback
+  for (const alias of aliases) {
+    const idx = headers.findIndex(h => norm(h).includes(alias) || alias.includes(norm(h)));
+    if (idx !== -1) return idx;
+  }
+  return -1;
+}
+
+function mpParseCSV(text) {
+  const lines = text.trim().split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) throw new Error('CSV too short — need header + data rows');
+
+  // Detect delimiter
+  const delim = lines[0].includes('\t') ? '\t' : ',';
+  const parseRow = row => {
+    const result = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < row.length; i++) {
+      const ch = row[i];
+      if (ch === '"') { inQ = !inQ; continue; }
+      if (ch === delim && !inQ) { result.push(cur.trim()); cur = ''; continue; }
+      cur += ch;
+    }
+    result.push(cur.trim());
+    return result;
+  };
+
+  const headers = parseRow(lines[0]);
+  const colIdx = {};
+  for (const [key, aliases] of Object.entries(MP_COL_MAP)) {
+    colIdx[key] = mpFindCol(headers, aliases);
+  }
+
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const vals = parseRow(lines[i]);
+    if (!vals.length || !vals.some(v => v)) continue;
+
+    const name = colIdx.name !== -1 ? vals[colIdx.name] : `Player ${i}`;
+    if (!name || name.toLowerCase().includes('team') || name.toLowerCase().includes('average')) continue;
+
+    const get = (key, def = null) => {
+      const idx = colIdx[key];
+      if (idx === -1 || idx >= vals.length) return def;
+      const v = parseFloat(vals[idx]);
+      return isNaN(v) ? def : v;
+    };
+
+    rows.push({
+      name: name.trim(),
+      pl:       get('pl'),
+      plmin:    get('plmin'),
+      hsd:      get('hsd'),
+      dist:     get('dist'),
+      maxvel:   get('maxvel'),
+      accel:    get('accel'),
+      decel:    get('decel'),
+      sprints:  get('sprints'),
+      duration: get('duration'),
+      impacts:  get('impacts'),
+    });
+  }
+
+  if (!rows.length) throw new Error('No valid player rows found — check your CSV format');
+  return { headers, colIdx, rows };
+}
+
+// ── FILE HANDLING ──────────────────────────────────────────────────
+function mpDragOver(e)  { e.preventDefault(); document.getElementById('mp-dropzone').style.borderColor='var(--gold)'; }
+function mpDragLeave(e) { document.getElementById('mp-dropzone').style.borderColor=''; }
+function mpDrop(e) {
+  e.preventDefault();
+  mpDragLeave(e);
+  const file = e.dataTransfer.files[0];
+  if (file) mpReadFile(file);
+}
+function mpFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) mpReadFile(file);
+}
+function mpReadFile(file) {
+  if (!file.name.endsWith('.csv') && !file.name.endsWith('.txt')) {
+    showToast('Please upload a .csv file'); return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const { rows } = mpParseCSV(e.target.result);
+      const label  = document.getElementById('mp-label').value || file.name.replace('.csv','');
+      const date   = document.getElementById('mp-date').value || new Date().toISOString().split('T')[0];
+      const type   = document.getElementById('mp-type').value || 'match';
+      mpCurrentData = { label, date, type, rows, importedAt: new Date().toISOString() };
+      mpRenderResults(mpCurrentData);
+      showToast(`✓ ${rows.length} players loaded from ${file.name}`);
+    } catch(err) {
+      showToast(`Parse error: ${err.message}`);
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ── RENDER RESULTS ─────────────────────────────────────────────────
+let mpSortKey = 'pl';
+
+function mpRenderResults(data) {
+  document.getElementById('mp-upload-section').style.display = 'none';
+  document.getElementById('mp-results').style.display = 'block';
+
+  const typeLabel = { match:'🏆 Match', training:'⚡ Training', scrimmage:'🔵 Scrimmage' };
+  document.getElementById('mp-session-title').textContent = data.label || 'Match Performance';
+  document.getElementById('mp-session-sub').textContent =
+    `${data.date} · ${typeLabel[data.type]||data.type} · ${data.rows.length} players`;
+
+  mpBuildAvgCards(data.rows);
+  mpRenderTable(data.rows, mpSortKey);
+  mpRenderHighLow(data.rows);
+  mpRenderHistory();
+}
+
+function avg(rows, key) {
+  const vals = rows.map(r => r[key]).filter(v => v !== null && v !== undefined);
+  return vals.length ? (vals.reduce((a,b) => a+b, 0) / vals.length) : null;
+}
+function fmt(v, dec=1) { return v !== null && v !== undefined ? v.toFixed(dec) : '—'; }
+function fmtInt(v) { return v !== null && v !== undefined ? Math.round(v) : '—'; }
+
+function mpBuildAvgCards(rows) {
+  const cards = [
+    { label:'Avg Player Load', val: fmt(avg(rows,'pl')), icon:'⚡', color:'var(--gold2)' },
+    { label:'Avg PL/Min',      val: fmt(avg(rows,'plmin'),2), icon:'⏱', color:'#4da6ff' },
+    { label:'Avg HSD (yd)',    val: fmtInt(avg(rows,'hsd')), icon:'💨', color:'var(--green)' },
+    { label:'Avg Distance',    val: fmtInt(avg(rows,'dist')), icon:'📏', color:'var(--white)' },
+    { label:'Avg Max Vel',     val: fmt(avg(rows,'maxvel')), icon:'🚀', color:'var(--red)' },
+  ];
+  document.getElementById('mp-avg-cards').innerHTML = cards.map(c => `
+    <div class="stat-card">
+      <div class="stat-icon">${c.icon}</div>
+      <div class="stat-label">${c.label}</div>
+      <div class="stat-value" style="color:${c.color};font-size:22px;">${c.val}</div>
+      <div class="stat-delta">Team average</div>
+    </div>`).join('');
+}
+
+function mpRenderTable(rows, sortKey) {
+  mpSortKey = sortKey;
+  const sorted = [...rows].sort((a,b) => {
+    if (sortKey === 'name') return a.name.localeCompare(b.name);
+    const av = a[sortKey] ?? -1, bv = b[sortKey] ?? -1;
+    return bv - av;
+  });
+
+  const cols = [
+    { key:'name',    label:'Player',       fmt: v => `<strong style="color:var(--white);">${v}</strong>` },
+    { key:'pl',      label:'Player Load',  fmt: v => v !== null ? `<span style="color:var(--gold2);font-weight:700;">${v.toFixed(1)}</span>` : '—' },
+    { key:'plmin',   label:'PL/Min',       fmt: v => v !== null ? v.toFixed(2) : '—' },
+    { key:'duration',label:'Duration',     fmt: v => v !== null ? `${Math.round(v)} min` : '—' },
+    { key:'dist',    label:'Distance (yd)',fmt: v => v !== null ? Math.round(v).toLocaleString() : '—' },
+    { key:'hsd',     label:'HSD (yd)',     fmt: v => v !== null ? `<span style="color:var(--green);">${Math.round(v).toLocaleString()}</span>` : '—' },
+    { key:'maxvel',  label:'Max Vel',      fmt: v => v !== null ? `<span style="color:var(--red);">${v.toFixed(1)}</span>` : '—' },
+    { key:'accel',   label:'Accels',       fmt: v => v !== null ? Math.round(v) : '—' },
+    { key:'decel',   label:'Decels',       fmt: v => v !== null ? Math.round(v) : '—' },
+    { key:'sprints', label:'Sprints',      fmt: v => v !== null ? Math.round(v) : '—' },
+  ];
+
+  document.getElementById('mp-thead').innerHTML = `<tr>${cols.map(c =>
+    `<th style="background:rgba(0,0,0,0.25);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:${mpSortKey===c.key?'var(--gold2)':'var(--slate2)'};padding:9px 12px;text-align:left;white-space:nowrap;cursor:pointer;" onclick="mpSortTableBy('${c.key}')">${c.label}${mpSortKey===c.key?' ↓':''}</th>`
+  ).join('')}</tr>`;
+
+  const search = (document.getElementById('mp-search')?.value||'').toLowerCase();
+  const filtered = search ? sorted.filter(r => r.name.toLowerCase().includes(search)) : sorted;
+
+  // Calculate load zones
+  const plVals = rows.map(r=>r.pl).filter(v=>v!==null);
+  const plMean = plVals.length ? plVals.reduce((a,b)=>a+b,0)/plVals.length : 0;
+  const plStd  = plVals.length ? Math.sqrt(plVals.reduce((a,b)=>a+(b-plMean)**2,0)/plVals.length) : 1;
+
+  document.getElementById('mp-tbody').innerHTML = filtered.map((row, i) => {
+    const zone = row.pl === null ? '' :
+      row.pl > plMean + plStd ? ' style="background:rgba(255,80,80,0.04);"' :
+      row.pl < plMean - plStd ? ' style="background:rgba(77,166,255,0.04);"' : '';
+    return `<tr${zone}>${cols.map(c => `<td style="padding:9px 12px;border-bottom:1px solid rgba(77,106,156,0.08);vertical-align:middle;">${c.fmt(row[c.key])}</td>`).join('')}</tr>`;
+  }).join('') || `<tr><td colspan="${cols.length}" style="text-align:center;color:var(--slate);padding:20px;">No players match filter</td></tr>`;
+}
+
+function mpSortTableBy(key) {
+  if (!mpCurrentData) return;
+  mpRenderTable(mpCurrentData.rows, key);
+}
+function mpFilterTable() {
+  if (!mpCurrentData) return;
+  mpRenderTable(mpCurrentData.rows, mpSortKey);
+}
+function mpSortTable() {
+  if (!mpCurrentData) return;
+  mpRenderTable(mpCurrentData.rows, document.getElementById('mp-sort').value);
+}
+
+function mpRenderHighLow(rows) {
+  const withPL = rows.filter(r => r.pl !== null).sort((a,b) => b.pl - a.pl);
+  const top3   = withPL.slice(0,3);
+  const watch  = withPL.slice(-3).reverse();
+
+  const rowHtml = (r, color, icon) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(77,106,156,0.08);">
+      <span style="font-size:16px;">${icon}</span>
+      <div style="flex:1;">
+        <div style="font-weight:700;color:var(--white);font-size:13px;">${r.name}</div>
+        <div style="font-size:11px;color:var(--slate2);">
+          PL/Min: ${r.plmin!==null?r.plmin.toFixed(2):'—'} · HSD: ${r.hsd!==null?Math.round(r.hsd).toLocaleString():'—'} yd
+        </div>
+      </div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;color:${color};">${r.pl.toFixed(1)}</div>
+    </div>`;
+
+  document.getElementById('mp-top').innerHTML   = top3.map((r,i)  => rowHtml(r,'var(--gold2)', ['🥇','🥈','🥉'][i])).join('') || '<div style="padding:16px;color:var(--slate);text-align:center;">No data</div>';
+  document.getElementById('mp-watch').innerHTML = watch.map(r => rowHtml(r,'#4da6ff','⚠️')).join('') || '<div style="padding:16px;color:var(--slate);text-align:center;">No data</div>';
+}
+
+// ── SAVE & HISTORY ─────────────────────────────────────────────────
+function mpSaveSession() {
+  if (!mpCurrentData) return;
+  const history = mpLoadHistory();
+  const id = Date.now();
+  history.unshift({ id, ...mpCurrentData });
+  if (history.length > 50) history.splice(50); // cap at 50 sessions
+  localStorage.setItem(MP_KEY, JSON.stringify(history));
+  mpRenderHistory();
+  showToast('Session saved ✓');
+}
+
+function mpLoadHistory() {
+  try { return JSON.parse(localStorage.getItem(MP_KEY)) || []; }
+  catch(e) { return []; }
+}
+
+function mpRenderHistory() {
+  const history = mpLoadHistory();
+  const el = document.getElementById('mp-history-list');
+  if (!history.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--slate);padding:24px;font-size:12px;">No sessions saved yet — import a Catapult CSV to get started.</div>';
+    return;
+  }
+  const typeIcon = { match:'🏆', training:'⚡', scrimmage:'🔵' };
+  el.innerHTML = history.map(s => `
+    <div style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid rgba(77,106,156,0.08);cursor:pointer;" onclick="mpLoadSavedSession(${s.id})" title="Click to reload">
+      <span style="font-size:18px;">${typeIcon[s.type]||'📋'}</span>
+      <div style="flex:1;">
+        <div style="font-weight:700;color:var(--white);font-size:13px;">${s.label}</div>
+        <div style="font-size:11px;color:var(--slate2);">${s.date} · ${s.rows.length} players</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);">Avg PL: ${avg(s.rows,'pl')!==null?avg(s.rows,'pl').toFixed(1):'—'}</div>
+        <button onclick="event.stopPropagation();mpDeleteSession(${s.id})" style="background:none;border:none;color:var(--slate);cursor:pointer;font-size:12px;padding:2px 5px;" title="Delete">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function mpLoadSavedSession(id) {
+  const history = mpLoadHistory();
+  const session = history.find(s => s.id === id);
+  if (!session) return;
+  mpCurrentData = session;
+  document.getElementById('mp-label').value = session.label;
+  document.getElementById('mp-date').value  = session.date;
+  document.getElementById('mp-type').value  = session.type;
+  mpRenderResults(session);
+  showToast(`Loaded: ${session.label}`);
+}
+
+function mpDeleteSession(id) {
+  const history = mpLoadHistory().filter(s => s.id !== id);
+  localStorage.setItem(MP_KEY, JSON.stringify(history));
+  mpRenderHistory();
+  showToast('Session deleted');
+}
+
+function mpClearAllHistory() {
+  if (!confirm('Delete all saved match performance sessions?')) return;
+  localStorage.removeItem(MP_KEY);
+  mpRenderHistory();
+  showToast('History cleared');
+}
+
+function mpClearSession() {
+  mpCurrentData = null;
+  document.getElementById('mp-upload-section').style.display = 'block';
+  document.getElementById('mp-results').style.display = 'none';
+  document.getElementById('mp-file-input').value = '';
+  mpRenderHistory();
+}
+
+// ── EXPORT CSV ─────────────────────────────────────────────────────
+function mpExportCSV() {
+  if (!mpCurrentData) return;
+  const rows = mpCurrentData.rows;
+  const headers = ['Player','Player Load','PL/Min','Duration (min)','Distance (yd)','HSD (yd)','Max Velocity','Accels','Decels','Sprints'];
+  const lines = [headers.join(',')];
+  rows.forEach(r => {
+    lines.push([
+      `"${r.name}"`,
+      r.pl?.toFixed(1)??'',
+      r.plmin?.toFixed(2)??'',
+      r.duration?.toFixed(0)??'',
+      r.dist?.toFixed(0)??'',
+      r.hsd?.toFixed(0)??'',
+      r.maxvel?.toFixed(1)??'',
+      r.accel?.toFixed(0)??'',
+      r.decel?.toFixed(0)??'',
+      r.sprints?.toFixed(0)??'',
+    ].join(','));
+  });
+  const blob = new Blob([lines.join('\n')], { type:'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${mpCurrentData.label.replace(/[^a-z0-9]/gi,'_')}_${mpCurrentData.date}.csv`;
+  a.click();
+}
+
+// ── INIT MATCH PERF DATE + HISTORY ────────────────────────────────
+document.getElementById('mp-date').value = new Date().toISOString().split('T')[0];
+mpRenderHistory();
 
 // ═══════════════════════════════════════════════════════════════════
 // INIT
