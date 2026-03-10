@@ -216,14 +216,30 @@
             <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--slate);">Drop PDF or CSV → AI extracts data → Push to Airtable</div>
           </div>
           <div class="card-body">
+            <!-- How-to guide -->
+            <div style="background:rgba(77,106,156,0.08);border:1px solid rgba(77,106,156,0.2);border-radius:8px;padding:12px 16px;margin-bottom:12px;font-size:11px;color:var(--slate2);line-height:1.8;">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;color:var(--white);margin-bottom:6px;">📡 How to Export from Catapult</div>
+              <strong style="color:var(--white);">Option 1 (Catapult ONE):</strong> Open session → <strong>Reports</strong> → <strong>Export</strong> → choose <strong>CSV</strong><br>
+              <strong style="color:var(--white);">Option 2 (Catapult SoftwareApp):</strong> Select session → <strong>File → Export → Session Summary CSV</strong><br>
+              <span style="color:var(--slate);">The CSV auto-maps columns: Player Name, Total Distance, HSR, Max Speed/Velocity, Player Load, Accels, Decels, Sprints</span>
+            </div>
             <div id="pdfDropZone" style="border:2px dashed rgba(201,151,58,0.4);border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;background:rgba(201,151,58,0.03);margin-bottom:14px;transition:all 0.2s;">
-              <div style="font-size:32px;margin-bottom:8px;">📄</div>
-              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:var(--white);margin-bottom:4px;">Drop Catapult PDF or CSV Here</div>
-              <div style="font-size:11px;color:var(--slate);margin-bottom:12px;">AI reads the file and extracts every player's load metrics automatically</div>
-              <button class="btn btn-gold" onclick="event.stopPropagation();document.getElementById('pdfFileInput').click()">Choose File</button>
-              <input type="file" id="pdfFileInput" accept=".pdf,.csv" style="display:none;">
+              <div style="font-size:32px;margin-bottom:8px;">📊</div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;color:var(--white);margin-bottom:4px;">Drop Catapult CSV Here</div>
+              <div style="font-size:11px;color:var(--slate);margin-bottom:12px;">Auto-maps columns → preview → push to Airtable in one click</div>
+              <button class="btn btn-gold" onclick="event.stopPropagation();document.getElementById('pdfFileInput').click()">Choose CSV File</button>
+              <input type="file" id="pdfFileInput" accept=".csv,text/csv" style="display:none;">
             </div>
             <div id="pdfStatus"></div>
+
+            <!-- SESSION PICKER — shown when multi-session CSV is loaded -->
+            <div id="sessionPickerSection" style="display:none;margin-bottom:14px;">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;color:var(--white);margin-bottom:10px;">
+                📋 Select a session to preview &amp; push:
+              </div>
+              <div id="sessionPickerList"></div>
+            </div>
+
             <div id="pdfPreviewSection" style="display:none;">
               <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;align-items:flex-end;">
                 <div class="form-group" style="margin:0;flex:1;">
@@ -956,9 +972,11 @@ async function loadLoadData() {
 }
 
 // ══════════════════════════════════════════════════════════════
-// CATAPULT PDF AI IMPORTER
+// CATAPULT CSV IMPORTER — MULTI-SESSION AWARE
 // ══════════════════════════════════════════════════════════════
-let pdfImportData = null;
+let pdfImportData = null;       // rows for currently selected session
+let allSessionsData = {};       // { "SessionName|Date": [rows] }
+let allSessionKeys = [];        // ordered list of session keys
 
 function initPDFImporter() {
   const zone = document.getElementById('pdfDropZone');
@@ -972,137 +990,174 @@ function initPDFImporter() {
 
 async function handlePDFFile(file) {
   if (!file) return;
-  const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-  const isCSV = file.name.toLowerCase().endsWith('.csv');
-  if (!isPDF && !isCSV) { showToast('Please upload a PDF or CSV file'); return; }
+  const isCSV = file.name.toLowerCase().endsWith('.csv') || file.type === 'text/csv';
+  if (!isCSV) {
+    document.getElementById('pdfStatus').innerHTML = `<div style="color:var(--gold2);padding:12px;font-size:12px;background:rgba(201,151,58,0.08);border-radius:8px;border:1px solid rgba(201,151,58,0.2);">
+      ⚠️ <strong>CSV file required.</strong> Catapult exports CSVs — PDFs cannot be parsed in the browser.<br>
+      <span style="color:var(--slate);">In Catapult: <strong>Reports → Export → CSV</strong> (or Session Summary CSV)</span>
+    </div>`;
+    return;
+  }
 
-  document.getElementById('pdfStatus').innerHTML = `<div class="loading"><div class="spinner"></div> Reading file with AI...</div>`;
+  document.getElementById('pdfStatus').innerHTML = `<div class="loading"><div class="spinner"></div> Parsing CSV...</div>`;
   document.getElementById('pdfPreviewSection').style.display = 'none';
+  document.getElementById('sessionPickerSection').style.display = 'none';
 
   try {
-    const base64 = await fileToBase64(file);
-    let parsedData;
+    const text = await file.text();
+    const { sessions, isMulti } = parseCSVDirect(text);
+    if (!sessions || Object.keys(sessions).length === 0) throw new Error('No player rows found — check your CSV format');
 
-    if (isCSV) {
-      // Parse CSV directly without AI
-      parsedData = parseCSVDirect(await file.text());
+    allSessionsData = sessions;
+    allSessionKeys = Object.keys(sessions);
+
+    if (isMulti && allSessionKeys.length > 1) {
+      // Multi-session CSV — show session picker
+      renderSessionPicker(allSessionKeys, file.name);
     } else {
-      // Use Claude AI to extract data from PDF
-      parsedData = await extractWithAI(base64, file.name);
+      // Single session — go straight to preview
+      const key = allSessionKeys[0];
+      const rows = sessions[key];
+      const [sessionName, sessionDate] = key.split('|||');
+      pdfImportData = rows;
+      renderPDFPreview(rows, file.name, sessionName, sessionDate);
     }
-
-    if (!parsedData || !parsedData.length) throw new Error('No player data found in file');
-    pdfImportData = parsedData;
-    renderPDFPreview(parsedData, file.name);
   } catch(e) {
     document.getElementById('pdfStatus').innerHTML = `<div style="color:var(--red);padding:12px;font-size:12px;">❌ ${e.message}</div>`;
   }
 }
 
-function fileToBase64(file) {
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload = () => res(r.result.split(',')[1]);
-    r.onerror = () => rej(new Error('File read failed'));
-    r.readAsDataURL(file);
-  });
-}
-
 function parseCSVDirect(text) {
   const lines = text.trim().split(/\r?\n/);
-  const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g,'').trim().toLowerCase());
-  const nameIdx = headers.findIndex(h => ['player name','player','name','athlete'].some(a => h.includes(a)));
-  const distIdx = headers.findIndex(h => h.includes('distance'));
-  const hsrIdx  = headers.findIndex(h => h.includes('high speed') || h.includes('hsr') || h.includes('hsd'));
-  const speedIdx= headers.findIndex(h => h.includes('max') && (h.includes('speed') || h.includes('veloc')));
-  const loadIdx = headers.findIndex(h => h.includes('player load') || h.includes('playerload'));
+  const rawHeaders = lines[0].split(',').map(h => h.replace(/^"|"$/g,'').trim());
+  const headers = rawHeaders.map(h => h.toLowerCase());
 
-  return lines.slice(1).filter(l=>l.trim()).map(line => {
-    const vals = line.split(',').map(v=>v.replace(/^"|"$/g,'').trim());
+  const nameIdx    = headers.findIndex(h => ['player name','player','name','athlete'].some(a => h.includes(a)));
+  const distIdx    = headers.findIndex(h => h.includes('total dist') || (h.includes('distance') && !h.includes('high') && !h.includes('hsd') && !h.includes('hsr')));
+  const hsrIdx     = headers.findIndex(h => h.includes('high speed') || h === 'hsr' || h === 'hsd' || (h.includes('hsd') && h.includes('dist')));
+  const speedIdx   = headers.findIndex(h => h.includes('max') && (h.includes('speed') || h.includes('veloc') || h.includes('vel')));
+  const loadIdx    = headers.findIndex(h => h.includes('player load') || h === 'playerload' || h === 'tot pl' || h === 'total pl');
+  const plMinIdx   = headers.findIndex(h => (h.includes('pl') && h.includes('min')) || h.includes('load per min'));
+  const accelIdx   = headers.findIndex(h => h.includes('accel') && !h.includes('decel') && !h.includes('load'));
+  const decelIdx   = headers.findIndex(h => h.includes('decel') && !h.includes('load'));
+  const sprintIdx  = headers.findIndex(h => h.includes('sprint'));
+  const sessionIdx = headers.findIndex(h => h === 'session' || h.includes('session name'));
+  const dateIdx    = headers.findIndex(h => h === 'date' || h.includes('session date'));
+
+  const sessions = {};
+  let isMulti = false;
+
+  lines.slice(1).filter(l => l.trim()).forEach(line => {
+    // Simple CSV split (handles quoted fields)
+    const vals = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] === '"') { inQ = !inQ; continue; }
+      if (line[i] === ',' && !inQ) { vals.push(cur.trim()); cur = ''; continue; }
+      cur += line[i];
+    }
+    vals.push(cur.trim());
+
     const name = nameIdx >= 0 ? vals[nameIdx] : null;
-    if (!name || name.match(/^rec[A-Za-z0-9]{10,}/)) return null;
-    return {
-      player: name,
-      distance: distIdx >= 0 ? parseFloat(vals[distIdx]) || null : null,
-      hsr: hsrIdx >= 0 ? parseFloat(vals[hsrIdx]) || null : null,
-      maxSpeed: speedIdx >= 0 ? parseFloat(vals[speedIdx]) || null : null,
-      playerLoad: loadIdx >= 0 ? parseFloat(vals[loadIdx]) || null : null,
-    };
-  }).filter(Boolean);
-}
+    if (!name || name.match(/^rec[A-Za-z0-9]{10,}/) || name.toLowerCase() === 'average' || name.toLowerCase() === 'player') return;
 
-async function extractWithAI(base64Data, filename) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 2000,
-      messages: [{
-        role: 'user',
-        content: [
-          {
-            type: 'document',
-            source: { type: 'base64', media_type: 'application/pdf', data: base64Data }
-          },
-          {
-            type: 'text',
-            text: `This is a Catapult GPS/sports science report PDF. Extract ALL player load data and return ONLY a JSON array with no other text, like this:
-[
-  {
-    "player": "Player Name",
-    "distance": 8500,
-    "hsr": 1200,
-    "maxSpeed": 28.5,
-    "playerLoad": 750,
-    "accels": 45,
-    "decels": 42,
-    "sprints": 8,
-    "duration": 90
-  }
-]
-Field notes:
-- distance: total distance in meters
-- hsr: high speed running distance in meters
-- maxSpeed: max velocity in km/h (convert from mph if needed: mph × 1.60934)
-- playerLoad: total player load (arbitrary units)
-- accels/decels: acceleration/deceleration count
-- sprints: sprint count
-- duration: session duration in minutes
-Use null for any field not found. Return ONLY the JSON array, no markdown, no explanation.`
-          }
-        ]
-      }]
-    })
+    const sessionName = sessionIdx >= 0 ? vals[sessionIdx] : 'Imported Session';
+    const sessionDate = dateIdx >= 0 ? vals[dateIdx] : new Date().toISOString().split('T')[0];
+    if (sessionIdx >= 0) isMulti = true;
+
+    const key = `${sessionName}|||${sessionDate}`;
+    if (!sessions[key]) sessions[key] = [];
+
+    sessions[key].push({
+      player:      name,
+      distance:    distIdx >= 0 ? parseFloat(vals[distIdx]) || null : null,
+      hsr:         hsrIdx >= 0 ? parseFloat(vals[hsrIdx]) || null : null,
+      maxSpeed:    speedIdx >= 0 ? parseFloat(vals[speedIdx]) || null : null,
+      playerLoad:  loadIdx >= 0 ? parseFloat(vals[loadIdx]) || null : null,
+      plMin:       plMinIdx >= 0 ? parseFloat(vals[plMinIdx]) || null : null,
+      accels:      accelIdx >= 0 ? parseFloat(vals[accelIdx]) || null : null,
+      decels:      decelIdx >= 0 ? parseFloat(vals[decelIdx]) || null : null,
+      sprints:     sprintIdx >= 0 ? parseFloat(vals[sprintIdx]) || null : null,
+      _session:    sessionName,
+      _date:       sessionDate,
+    });
   });
 
-  if (!response.ok) throw new Error(`AI API error: ${response.status}`);
-  const data = await response.json();
-  const text = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
-  const clean = text.replace(/```json|```/g, '').trim();
-  return JSON.parse(clean);
+  return { sessions, isMulti };
 }
 
-function renderPDFPreview(data, filename) {
-  document.getElementById('pdfStatus').innerHTML = `<div style="color:var(--green);font-size:12px;font-family:'DM Mono',monospace;">✓ AI extracted ${data.length} players from ${filename}</div>`;
+function renderSessionPicker(keys, filename) {
+  document.getElementById('pdfStatus').innerHTML = `<div style="color:var(--green);font-size:12px;font-family:'DM Mono',monospace;">✓ Found <strong>${keys.length} sessions</strong> in ${filename} — select one to preview & push</div>`;
+
+  const section = document.getElementById('sessionPickerSection');
+  section.style.display = '';
+
+  const list = document.getElementById('sessionPickerList');
+  list.innerHTML = keys.map((key, i) => {
+    const [name, date] = key.split('|||');
+    const rows = allSessionsData[key];
+    return `
+      <div class="session-pick-row" onclick="selectSessionForImport('${key.replace(/'/g,"\\'")}', this)"
+           style="padding:12px 16px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;cursor:pointer;
+                  background:rgba(255,255,255,0.02);margin-bottom:8px;transition:all 0.15s;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;color:var(--white);">${name}</div>
+          <div style="font-size:11px;color:var(--slate);margin-top:2px;">${date} &nbsp;·&nbsp; ${rows.length} players</div>
+        </div>
+        <div style="font-size:20px;opacity:0.4;">→</div>
+      </div>`;
+  }).join('');
+}
+
+function selectSessionForImport(key, el) {
+  // Highlight selected
+  document.querySelectorAll('.session-pick-row').forEach(r => {
+    r.style.background = 'rgba(255,255,255,0.02)';
+    r.style.borderColor = 'rgba(255,255,255,0.08)';
+  });
+  el.style.background = 'rgba(201,151,58,0.1)';
+  el.style.borderColor = 'rgba(201,151,58,0.4)';
+
+  const rows = allSessionsData[key];
+  const [sessionName, sessionDate] = key.split('|||');
+  pdfImportData = rows;
+
+  // Slight delay so user sees highlight before preview appears
+  setTimeout(() => {
+    renderPDFPreview(rows, sessionName, sessionName, sessionDate);
+    document.getElementById('pdfPreviewSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 120);
+}
+
+// extractWithAI removed — CSV parsing used instead (browser CORS blocks direct API calls)
+
+function renderPDFPreview(data, filename, sessionName, sessionDate) {
   const section = document.getElementById('pdfPreviewSection');
   section.style.display = '';
 
-  // Session info inputs
-  document.getElementById('pdfSessionDate').value = new Date().toISOString().split('T')[0];
+  // Pre-fill session name & date from CSV data
+  const nameInput = document.getElementById('pdfSessionName');
+  const dateInput = document.getElementById('pdfSessionDate');
+  if (sessionName && nameInput) nameInput.value = sessionName;
+  if (sessionDate && dateInput) dateInput.value = sessionDate;
+  else if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
 
   // Build preview table
   const tbody = document.getElementById('pdfPreviewBody');
-  tbody.innerHTML = data.map((p,i) => `<tr>
+  tbody.innerHTML = data.map(p => `<tr>
     <td style="font-weight:600;color:var(--white);">${p.player}</td>
-    <td>${p.distance ? (p.distance/1000).toFixed(2)+'km' : '—'}</td>
-    <td>${p.hsr ? p.hsr+'m' : '—'}</td>
-    <td>${p.maxSpeed ? p.maxSpeed.toFixed(2)+'km/h' : '—'}</td>
-    <td style="color:var(--gold2);font-weight:700;">${p.playerLoad || '—'}</td>
-    <td>${p.accels || '—'}</td>
-    <td>${p.decels || '—'}</td>
-    <td>${p.sprints || '—'}</td>
+    <td>${p.distance ? (p.distance > 1000 ? (p.distance/1000).toFixed(2)+'km' : p.distance+'y') : '—'}</td>
+    <td>${p.hsr != null ? p.hsr : '—'}</td>
+    <td>${p.maxSpeed != null ? p.maxSpeed : '—'}</td>
+    <td style="color:var(--gold2);font-weight:700;">${p.playerLoad != null ? p.playerLoad : '—'}</td>
+    <td>${p.accels != null ? p.accels : '—'}</td>
+    <td>${p.decels != null ? p.decels : '—'}</td>
+    <td>${p.sprints != null ? p.sprints : '—'}</td>
   </tr>`).join('');
+
+  if (!document.getElementById('sessionPickerSection').style.display || document.getElementById('sessionPickerSection').style.display === 'none') {
+    document.getElementById('pdfStatus').innerHTML = `<div style="color:var(--green);font-size:12px;font-family:'DM Mono',monospace;">✓ Parsed ${data.length} players from ${filename}</div>`;
+  }
 }
 
 async function importPDFToAirtable() {
